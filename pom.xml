@@ -121,7 +121,7 @@
                     <artifactId>mockito-all</artifactId>
                 </exclusion>
             </exclusions>
-            <version>3.1.2-SNAPSHOT</version>
+            <version>3.1.2</version>
         </dependency>
 
         <!-- Spring Libraries -->
