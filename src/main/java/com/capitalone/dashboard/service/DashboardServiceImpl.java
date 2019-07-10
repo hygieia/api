@@ -660,12 +660,7 @@ public class DashboardServiceImpl implements DashboardService {
     private void dashboardUpdate(Dashboard dashboard, int index) {
         if(index!=-1){
             dashboard.getWidgets().set(index, null);
-            List<Widget> widgets = dashboard.getWidgets();
-            List<Widget> updatedWidgets = new ArrayList<>();
-            for (Widget w: widgets) {
-                if(w!=null)
-                    updatedWidgets.add(w);
-            }
+            List<Widget> updatedWidgets = dashboard.getWidgets().stream().filter(Objects::nonNull).collect(Collectors.toList());
             dashboard.setWidgets(updatedWidgets);
             dashboardRepository.save(dashboard);
         }
@@ -699,15 +694,43 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     private static String findWidgetName(CollectorType collectorType){
-        if(collectorType.equals(CollectorType.Build)) return BUILD;
-        if(collectorType.equals(CollectorType.AgileTool)) return FEATURE;
-        if(collectorType.equals(CollectorType.Deployment)) return DEPLOY;
-        if(collectorType.equals(CollectorType.SCM)) return REPO;
-        if(collectorType.equals(CollectorType.AppPerformance)) return PERFORMANCE;
-        if(collectorType.equals(CollectorType.Cloud)) return CLOUD;
-        if(collectorType.equals(CollectorType.ChatOps)) return CHATOPS;
-        if(collectorType.equals(CollectorType.CodeQuality) || collectorType.equals(CollectorType.StaticSecurityScan)  ||collectorType.equals(CollectorType.LibraryPolicy)  ||collectorType.equals(CollectorType.Test) ) return CODEANALYSIS;
-        return null;
+        String widgetName;
+        switch (collectorType){
+            case Build:
+                widgetName = BUILD;
+                break;
+            case AgileTool:
+                widgetName = FEATURE;
+                break;
+            case Deployment:
+                widgetName = DEPLOY;
+                break;
+            case SCM:
+                widgetName = REPO;
+                break;
+            case AppPerformance:
+                widgetName = PERFORMANCE;
+                break;
+            case Cloud:
+                widgetName = CLOUD;
+                break;
+            case ChatOps:
+                widgetName = CHATOPS;
+                break;
+            case CodeQuality:
+                widgetName = CODEANALYSIS;
+            case StaticSecurityScan:
+                widgetName = CODEANALYSIS;
+            case LibraryPolicy:
+                widgetName = CODEANALYSIS;
+            case Test:
+                widgetName = CODEANALYSIS;
+                break;
+            default:
+                widgetName = null;
+                break;
+        }
+        return widgetName;
     }
 
 
