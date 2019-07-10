@@ -13,6 +13,7 @@ import com.capitalone.dashboard.model.Owner;
 import com.capitalone.dashboard.model.Widget;
 import com.capitalone.dashboard.model.ScoreDisplayType;
 import com.capitalone.dashboard.repository.CmdbRepository;
+import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.repository.CollectorRepository;
 import com.capitalone.dashboard.repository.ComponentRepository;
 import com.capitalone.dashboard.repository.CustomRepositoryQuery;
@@ -47,12 +48,14 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
     private final UserInfoService userInfoService;
     private final CmdbRepository cmdbRepository;
     private final ComponentRepository componentRepository;
+    private final CollectorItemRepository collectorItemRepository;
 
     @Autowired
     public DashboardRemoteServiceImpl(
             CollectorRepository collectorRepository,
             CustomRepositoryQuery customRepositoryQuery,
-            DashboardRepository dashboardRepository, DashboardService dashboardService, CollectorService collectorService, UserInfoService userInfoService, CmdbRepository cmdbRepository, ComponentRepository componentRepository) {
+            DashboardRepository dashboardRepository, DashboardService dashboardService, CollectorService collectorService, UserInfoService userInfoService, CmdbRepository cmdbRepository, ComponentRepository componentRepository,
+            CollectorItemRepository collectorItemRepository) {
         this.collectorRepository = collectorRepository;
         this.customRepositoryQuery = customRepositoryQuery;
         this.dashboardRepository = dashboardRepository;
@@ -61,6 +64,7 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
         this.userInfoService = userInfoService;
         this.cmdbRepository = cmdbRepository;
         this.componentRepository = componentRepository;
+        this.collectorItemRepository = collectorItemRepository;
     }
 
     /**
@@ -134,26 +138,24 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
 
         List<DashboardRemoteRequest.Entry> entries = request.getAllEntries();
         Map<String, WidgetRequest> allWidgetRequests = generateRequestWidgetList( entries, dashboard);
+        Set<CollectorType> existingTypes = new HashSet<>();
+        Set<CollectorType> incomingTypes = new HashSet<>();
+        Component component = componentRepository.findOne(dashboard.getApplication().getComponents().get(0).getId());
+        component.getCollectorItems().forEach((item,val)->{
+            existingTypes.add(item);
+        });
+
         //adds widgets
         for (String key : allWidgetRequests.keySet()) {
             WidgetRequest widgetRequest = allWidgetRequests.get(key);
 
-            if( key.equals( "codeanalysis" ) ){
+            widgetRequest.getCollectorItemIds().forEach(id->{
+                CollectorItem  c = collectorItemRepository.findOne(id);
+                Collector collector = collectorRepository.findOne(c.getCollectorId());
+                incomingTypes.add(collector.getCollectorType());
+            });
 
-                List< CollectorItem > list = new ArrayList<>();
-                Component component = componentRepository.findOne( dashboard.getApplication().getComponents().get(0).getId() );
-
-                list.addAll( component.getCollectorItems(CollectorType.Test ));
-                list.addAll( component.getCollectorItems(CollectorType.StaticSecurityScan ) );
-                list.addAll( component.getCollectorItems(CollectorType.CodeQuality ) );
-                list.addAll( component.getCollectorItems(CollectorType.LibraryPolicy ) );
-
-                List< ObjectId > collectorItemIdList = list.stream().map( CollectorItem::getId).collect(Collectors.toList() );
-                widgetRequest.getCollectorItemIds().addAll( collectorItemIdList );
-            }
-
-            Component component = dashboardService.associateCollectorToComponent(
-                    dashboard.getApplication().getComponents().get(0).getId(), widgetRequest.getCollectorItemIds());
+            component = dashboardService.associateCollectorToComponent(dashboard.getApplication().getComponents().get(0).getId(), widgetRequest.getCollectorItemIds(),component);
             Widget newWidget = widgetRequest.widget();
             if (isUpdate) {
                 Widget oldWidget = existingWidgets.get(newWidget.getName());
@@ -167,7 +169,31 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
                 dashboardService.addWidget(dashboard, newWidget);
             }
         }
+
+
+        Set<CollectorType> deleteSet = existingTypes.stream().filter(type->!incomingTypes.contains(type)).collect(Collectors.toSet());
+        for (CollectorType type: deleteSet) {
+            component.getCollectorItems().remove(type);
+            if(!codeAnalysisWidget(type)){
+                dashboardService.deleteWidget(dashboard,type);
+            }
+        }
+        // delete code analysis widget
+        if(isQualityWidget(deleteSet)){
+            dashboardService.deleteWidget(dashboard,CollectorType.CodeQuality);
+        }
+
+        componentRepository.save(component);
         return (dashboard != null) ? dashboardService.get(dashboard.getId()) : null;
+    }
+
+    private boolean isQualityWidget(Set<CollectorType> deleteSet) {
+        return DashboardServiceImpl.QualityWidget.stream().allMatch(deleteSet::contains);
+
+    }
+
+    private boolean codeAnalysisWidget(CollectorType collectorType){
+        return DashboardServiceImpl.QualityWidget.stream().filter(collectorType::equals).findAny().isPresent();
     }
 
     /**

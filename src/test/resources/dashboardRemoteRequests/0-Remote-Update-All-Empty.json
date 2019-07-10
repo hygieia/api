@@ -1,0 +1,46 @@
+{
+  "metaData":
+  {
+    "applicationName":"TestAudit",
+    "componentName":"TestAudit",
+    "owner":
+    {
+      "authType":"STANDARD",
+      "username":"topopal"
+    },
+    "owners":
+    [
+        {
+          "authType":"STANDARD",
+          "username":"topopal"
+        },
+        {
+          "authType":"STANDARD",
+          "username":"topopal"
+        },
+        {
+          "authType":"STANDARD",
+          "username":"testuser1"
+        },
+        {
+          "authType":"STANDARD",
+          "username":"testuser1"
+        },
+        {
+          "authType":"STANDARD",
+          "username":"testuser2"
+        }
+    ],
+    "template":"CapOne",
+    "title":"TestSSA",
+    "type":"Team"
+  },
+  "codeRepoEntries" : [],
+  "functionalTestEntries" : [],
+  "buildEntries" : [],
+  "libraryScanEntries": [],
+  "securityScanEntries" : [],
+  "staticCodeEntries" : [],
+  "featureEntries" : [],
+  "deploymentEntries" : []
+}

@@ -76,6 +76,15 @@ public interface DashboardService {
     Component associateCollectorToComponent(ObjectId componentId, List<ObjectId> collectorItemIds);
 
     /**
+     * Associate a CollectorItem to a Component
+     *
+     * @param componentId unique identifier of the Component
+     * @param collectorItemIds List of unique identifier of the CollectorItem
+     * @return Component
+     */
+    Component associateCollectorToComponent(ObjectId componentId, List<ObjectId> collectorItemIds,Component component);
+
+    /**
      * Creates a new Widget and adds it to the Dashboard indicated by the dashboardId parameter.
      *
      * @param dashboard add widget to this Dashboard
@@ -111,13 +120,22 @@ public interface DashboardService {
      */
     void deleteWidget(Dashboard dashboard, Widget widget,ObjectId componentId);
 
+    /**
+     * Deletes an existing Widget.
+     *
+     * @param dashboard delete widget on this Dashboard
+     * @param collectorType Collector type to delete
+     *
+     */
+    void deleteWidget(Dashboard dashboard, CollectorType collectorType);
+
 
 
     /**
      * Gets all dashboard belonging to the authenticated user
      * @return List of dashboards
      */
-    
+
     List<Dashboard> getOwnedDashboards();
 
     /**
@@ -128,7 +146,7 @@ public interface DashboardService {
 
     /**
      * Get the set of owners for a given dashboard
-     * 
+     *
      * @param id get owners for this dashboard
      * @return the set of owners for provided dashboard
      */
@@ -136,20 +154,20 @@ public interface DashboardService {
 
     /**
      * Updates the owners of the given dashboard with the set of given owners
-     * 
+     *
      * @param dashboardId update owners on this dashboard
      * @param owners full collection of owners
      * @return the new set of owners for provided dashboard
      */
     Iterable<Owner> updateOwners(ObjectId dashboardId, Iterable<Owner> owners);
-    
+
     /**
      * Get owner of dashboard on supplying dashboard Title
      * @Param dashboardTitle
      * @return String username
-     * 
+     *
      */
-    
+
     String getDashboardOwner(String dashboardTitle);
 
     /**
