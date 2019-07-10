@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertNotNull;
 
@@ -87,8 +88,32 @@ public class DashboardRemoteServiceTest {
     }
 
     @Test
+    public void remoteUpdateAllEntries() throws IOException, HygieiaException {
+        DashboardRemoteRequest request = getRemoteRequest("./dashboardRemoteRequests/0-Remote-Update-All.json");
+        dashboardRemoteService.remoteCreate(request, true);
+        List<Dashboard> dashboard = dashboardService.getByTitle("TestSSA");
+        Component component = componentRepository.findOne(dashboard.get(0).getApplication().getComponents().get(0).getId());
+        assertEquals(3, component.getCollectorItems().get(CollectorType.SCM).size());
+        assertEquals(2, component.getCollectorItems().get(CollectorType.Build).size());
+        assertEquals(2, component.getCollectorItems().get(CollectorType.LibraryPolicy).size());
+        assertEquals(2, component.getCollectorItems().get(CollectorType.CodeQuality).size());
+    }
+
+    @Test
+    public void remoteUpdateAllEmptyEntries() throws IOException, HygieiaException {
+        DashboardRemoteRequest request = getRemoteRequest("./dashboardRemoteRequests/0-Remote-Update-All-Empty.json");
+        dashboardRemoteService.remoteCreate(request, true);
+        List<Dashboard> dashboard = dashboardService.getByTitle("TestSSA");
+        Component component = componentRepository.findOne(dashboard.get(0).getApplication().getComponents().get(0).getId());
+        assertNull( component.getCollectorItems().get(CollectorType.SCM));
+        assertNull(component.getCollectorItems().get(CollectorType.Build));
+        assertNull( component.getCollectorItems().get(CollectorType.LibraryPolicy));
+        assertNull(component.getCollectorItems().get(CollectorType.CodeQuality));
+    }
+
+    @Test
     public void remoteUpdateMultipleOwners() throws IOException, HygieiaException {
-        DashboardRemoteRequest request = getRemoteRequest("./dashboardRemoteRequests/0-Remote-Update-Repo.json");
+        DashboardRemoteRequest request = getRemoteRequest("./dashboardRemoteRequests/0-Remote-Update-All.json");
         Dashboard dashboard = dashboardRemoteService.remoteCreate(request, true);
         int expectedNumOwners = 3;
         assertEquals(dashboard.getOwners().size(), expectedNumOwners);
@@ -322,9 +347,9 @@ public class DashboardRemoteServiceTest {
         List<Dashboard> dashboard = dashboardService.getByTitle("TestSSA");
         Component component = componentRepository.findOne(dashboard.get(0).getApplication().getComponents().get(0).getId());
         assertEquals(2, component.getCollectorItems().get(CollectorType.LibraryPolicy).size());
-        assertNotNull(component.getCollectorItems().get(CollectorType.CodeQuality));
-        assertNotNull(component.getCollectorItems().get(CollectorType.Test));
-        assertNotNull(component.getCollectorItems().get(CollectorType.StaticSecurityScan));
+        assertNull(component.getCollectorItems().get(CollectorType.CodeQuality));
+        assertNull(component.getCollectorItems().get(CollectorType.Test));
+        assertNull(component.getCollectorItems().get(CollectorType.StaticSecurityScan));
 
     }
 

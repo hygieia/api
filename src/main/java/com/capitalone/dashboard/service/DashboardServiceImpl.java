@@ -53,6 +53,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class DashboardServiceImpl implements DashboardService {
+
     private static final Log LOG = LogFactory.getLog(DashboardServiceImpl.class);
     private final DashboardRepository dashboardRepository;
     private final ComponentRepository componentRepository;
@@ -67,7 +68,16 @@ public class DashboardServiceImpl implements DashboardService {
     private final ScoreDashboardService scoreDashboardService;
     private final CmdbService cmdbService;
     private final String UNDEFINED = "undefined";
-    private final static EnumSet<CollectorType> QualityWidget = EnumSet.of(CollectorType.Test , CollectorType.StaticSecurityScan, CollectorType.CodeQuality, CollectorType.LibraryPolicy);
+    public final static EnumSet<CollectorType> QualityWidget = EnumSet.of(CollectorType.Test , CollectorType.StaticSecurityScan, CollectorType.CodeQuality, CollectorType.LibraryPolicy);
+    public static final String BUILD = "build";
+    public static final String FEATURE = "feature";
+    public static final String DEPLOY = "deploy";
+    public static final String REPO = "repo";
+    public static final String PERFORMANCE = "performanceanalysis";
+    public static final String CLOUD = "cloud";
+    public static final String CHATOPS = "chatops";
+    public static final String TEST = "test";
+    public static final String CODEANALYSIS = "codeanalysis";
 
     @Autowired
     private ApiSettings settings;
@@ -160,7 +170,7 @@ public class DashboardServiceImpl implements DashboardService {
         if(!isUpdate) {
             components = componentRepository.save(dashboard.getApplication().getComponents());
         } else {
-           dashboard.setUpdatedAt(System.currentTimeMillis());
+            dashboard.setUpdatedAt(System.currentTimeMillis());
         }
 
         try {
@@ -273,16 +283,27 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public Component associateCollectorToComponent(ObjectId componentId, List<ObjectId> collectorItemIds) {
-        final String METHOD_NAME = "DashboardServiceImpl.associateCollectorToComponent :";
         if (componentId == null || collectorItemIds == null) {
             // Not all widgets gather data from collectors
             return null;
         }
-
         com.capitalone.dashboard.model.Component component = componentRepository.findOne(componentId); //NOPMD - using fully qualified name for clarity
-        //we can not assume what collector item is added, what is removed etc so, we will
-        //refresh the association. First disable all collector items, then remove all and re-add
+        associateCollectorItemsToComponent(collectorItemIds, true, component);
+        return component;
+    }
 
+    @Override
+    public Component associateCollectorToComponent(ObjectId componentId, List<ObjectId> collectorItemIds,Component component) {
+        if (componentId == null || collectorItemIds == null) {
+            // Not all widgets gather data from collectors
+            return null;
+        }
+        associateCollectorItemsToComponent(collectorItemIds, false, component);
+        return component;
+    }
+
+    private void associateCollectorItemsToComponent(List<ObjectId> collectorItemIds, boolean save, Component component) {
+        final String METHOD_NAME = "DashboardServiceImpl.associateCollectorToComponent :";
         //First: disable all collectorItems of the Collector TYPEs that came in with the request.
         //Second: remove all the collectorItem association of the Collector Type  that came in
         HashSet<CollectorType> incomingTypes = new HashSet<>();
@@ -352,8 +373,9 @@ public class DashboardServiceImpl implements DashboardService {
             deleteSet.add(toSaveCollectorItems.get(id));
         }
         collectorItemRepository.save(deleteSet);
-        componentRepository.save(component);
-        return component;
+        if(save){
+            componentRepository.save(component);
+        }
     }
 
     protected boolean compareMaps (Map<String, Object> map1, Map<String, Object> map2) {
@@ -431,13 +453,13 @@ public class DashboardServiceImpl implements DashboardService {
         }).orNull();
     }
 
-	@Override
-	public List<Dashboard> getOwnedDashboards() {
+    @Override
+    public List<Dashboard> getOwnedDashboards() {
         Owner owner = new Owner(AuthenticationUtil.getUsernameFromContext(), AuthenticationUtil.getAuthTypeFromContext());
         List<Dashboard> findByOwnersList = dashboardRepository.findByOwners(owner);
         getAppAndComponentNames(findByOwnersList);
         return findByOwnersList.stream().distinct().collect(Collectors.toList());
-	}
+    }
 
     @Override
     public List<ObjectId> getOwnedDashboardsObjectIds() {
@@ -459,26 +481,26 @@ public class DashboardServiceImpl implements DashboardService {
     @Override
     public Iterable<Owner> updateOwners(ObjectId dashboardId, Iterable<Owner> owners) {
         for(Owner owner : owners) {
-        	String username = owner.getUsername();
+            String username = owner.getUsername();
             AuthType authType = owner.getAuthType();
             if (!userInfoService.isUserValid(username, authType)) {
                 throw new UserNotFoundException(username, authType);
             }
         }
 
-    	Dashboard dashboard = dashboardRepository.findOne(dashboardId);
+        Dashboard dashboard = dashboardRepository.findOne(dashboardId);
         dashboard.setOwners(Lists.newArrayList(owners));
         Dashboard result = dashboardRepository.save(dashboard);
 
         return result.getOwners();
     }
 
-	@Override
-	public String getDashboardOwner(String dashboardTitle) {
-		String dashboardOwner=dashboardRepository.findByTitle(dashboardTitle).get(0).getOwner();
+    @Override
+    public String getDashboardOwner(String dashboardTitle) {
+        String dashboardOwner=dashboardRepository.findByTitle(dashboardTitle).get(0).getOwner();
 
-		return dashboardOwner;
-	}
+        return dashboardOwner;
+    }
 
     @SuppressWarnings("unused")
     private DashboardType getDashboardType(Dashboard dashboard) {
@@ -539,7 +561,7 @@ public class DashboardServiceImpl implements DashboardService {
         Iterable<Dashboard> rt = null;
 
         if(cmdb != null){
-           rt = dashboardRepository.findAllByConfigurationItemBusAppName(cmdb.getConfigurationItem());
+            rt = dashboardRepository.findAllByConfigurationItemBusAppName(cmdb.getConfigurationItem());
         }
         return new DataResponse<>(rt, System.currentTimeMillis());
     }
@@ -613,18 +635,8 @@ public class DashboardServiceImpl implements DashboardService {
     @Override
     public void deleteWidget(Dashboard dashboard, Widget widget,ObjectId componentId) {
         int index = dashboard.getWidgets().indexOf(widget);
-        dashboard.getWidgets().set(index, null);
-        List<Widget> widgets = dashboard.getWidgets();
-        List<Widget> updatedWidgets = new ArrayList<>();
-        for (Widget w: widgets) {
-            if(w!=null)
-                updatedWidgets.add(w);
-        }
-        dashboard.setWidgets(updatedWidgets);
-        dashboardRepository.save(dashboard);
-
+        dashboardUpdate(dashboard, index);
         String widgetName = widget.getName();
-
         List<CollectorType> collectorTypesToDelete = new ArrayList<>();
         CollectorType cType = findCollectorType(widgetName);
         collectorTypesToDelete.add(cType);
@@ -645,6 +657,24 @@ public class DashboardServiceImpl implements DashboardService {
 
     }
 
+    private void dashboardUpdate(Dashboard dashboard, int index) {
+        if(index!=-1){
+            dashboard.getWidgets().set(index, null);
+            List<Widget> updatedWidgets = dashboard.getWidgets().stream().filter(Objects::nonNull).collect(Collectors.toList());
+            dashboard.setWidgets(updatedWidgets);
+            dashboardRepository.save(dashboard);
+        }
+    }
+
+    @Override
+    public void deleteWidget(Dashboard dashboard, CollectorType collectorType){
+        if(CollectionUtils.isNotEmpty(dashboard.getWidgets())){
+            String widgetName = findWidgetName(collectorType);
+            List<String> widgetNames = dashboard.getWidgets().stream().map(widget-> widget.getName()).collect(Collectors.toList());
+            int index = widgetNames.indexOf(widgetName);
+            dashboardUpdate(dashboard,index);
+        }
+    }
 
     private List<String> findUpdateCollectorItems(List<String> existingWidgets,List<String> currentWidgets){
         List<String> result = existingWidgets.stream().filter(elem -> !currentWidgets.contains(elem)).collect(Collectors.toList());
@@ -652,16 +682,46 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     private static CollectorType findCollectorType(String widgetName){
-        if(widgetName.equalsIgnoreCase("build")) return CollectorType.Build;
-        if(widgetName.equalsIgnoreCase("feature")) return CollectorType.AgileTool;
-        if(widgetName.equalsIgnoreCase("deploy")) return CollectorType.Deployment;
-        if(widgetName.equalsIgnoreCase("repo")) return CollectorType.SCM;
-        if(widgetName.equalsIgnoreCase("performanceanalysis")) return CollectorType.AppPerformance;
-        if(widgetName.equalsIgnoreCase("cloud")) return CollectorType.Cloud;
-        if(widgetName.equalsIgnoreCase("chatops")) return CollectorType.ChatOps;
-        if(widgetName.equalsIgnoreCase("test")) return CollectorType.Test;
+        if(widgetName.equalsIgnoreCase(BUILD)) return CollectorType.Build;
+        if(widgetName.equalsIgnoreCase(FEATURE)) return CollectorType.AgileTool;
+        if(widgetName.equalsIgnoreCase(DEPLOY)) return CollectorType.Deployment;
+        if(widgetName.equalsIgnoreCase(REPO)) return CollectorType.SCM;
+        if(widgetName.equalsIgnoreCase(PERFORMANCE)) return CollectorType.AppPerformance;
+        if(widgetName.equalsIgnoreCase(CLOUD)) return CollectorType.Cloud;
+        if(widgetName.equalsIgnoreCase(CHATOPS)) return CollectorType.ChatOps;
+        if(widgetName.equalsIgnoreCase(TEST)) return CollectorType.Test;
         return null;
     }
+
+    private static String findWidgetName(CollectorType collectorType) {
+        switch (collectorType) {
+            case Build:
+                return BUILD;
+            case AgileTool:
+                return FEATURE;
+            case Deployment:
+                return DEPLOY;
+            case SCM:
+                return REPO;
+            case AppPerformance:
+                return PERFORMANCE;
+            case Cloud:
+                return CLOUD;
+            case ChatOps:
+                return CHATOPS;
+            case CodeQuality:
+            case StaticSecurityScan:
+            case LibraryPolicy:
+            case Test:
+                return CODEANALYSIS;
+            default:
+                return null;
+        }
+
+    }
+
+
+
 
     private void getAppAndComponentNames(List<Dashboard> findByOwnersList) {
         for(Dashboard dashboard: findByOwnersList){
@@ -855,7 +915,7 @@ public class DashboardServiceImpl implements DashboardService {
     public Dashboard updateScoreSettings(ObjectId dashboardId, boolean scoreEnabled, ScoreDisplayType scoreDisplay) {
         Dashboard dashboard = get(dashboardId);
         if ((scoreEnabled == dashboard.isScoreEnabled()) &&
-            (scoreDisplay == dashboard.getScoreDisplay())) {
+                (scoreDisplay == dashboard.getScoreDisplay())) {
             return null;
         }
 

@@ -46,6 +46,9 @@ public class DashboardRemoteRequest {
     @Valid
     private List<FunctionalTestEntry> functionalTestEntries = new ArrayList<>();
 
+    @Valid
+    private List<ArtifactEntry> artifactEntries = new ArrayList<>();
+
     /**
      * Dashboard Metadata
      */
@@ -452,6 +455,36 @@ public class DashboardRemoteRequest {
         }
     }
 
+
+    /**
+     * Entry to create Functional Test in Code Quality Widget
+     */
+    public static class ArtifactEntry extends Entry {
+
+        @Override
+        public CollectorType getType() {
+            return CollectorType.Artifact;
+        }
+
+        @Override
+        public String getWidgetId() {
+            return "build0";
+        }
+
+        @Override
+        public String getWidgetName() {
+            return "build";
+        }
+
+        @Override
+        public Map<String, Object> toWidgetOptions() {
+            Map<String, Object> opts = new HashMap<>();
+            opts.put("id", getWidgetId());
+            return opts;
+        }
+    }
+
+
     /**
      * Entry to create Deployment widget
      */
@@ -555,6 +588,14 @@ public class DashboardRemoteRequest {
         this.functionalTestEntries = functionalTestEntries;
     }
 
+    public List<ArtifactEntry> getArtifactEntries() {
+        return artifactEntries;
+    }
+
+    public void setArtifactEntries(List<ArtifactEntry> artifactEntries) {
+        this.artifactEntries = artifactEntries;
+    }
+
     public List<Entry> getAllEntries() {
         List<Entry> all = new ArrayList<>();
         all.addAll(buildEntries);
@@ -565,6 +606,7 @@ public class DashboardRemoteRequest {
         all.addAll(functionalTestEntries);
         all.addAll(deploymentEntries);
         all.addAll(featureEntries);
+        all.addAll(artifactEntries);
         return all;
     }
 }

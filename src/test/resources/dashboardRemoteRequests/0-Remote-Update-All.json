@@ -1,0 +1,133 @@
+{
+  "metaData":
+  {
+    "applicationName":"TestAudit",
+    "componentName":"TestAudit",
+    "owner":
+    {
+      "authType":"STANDARD",
+      "username":"topopal"
+    },
+    "owners":
+    [
+        {
+          "authType":"STANDARD",
+          "username":"topopal"
+        },
+        {
+          "authType":"STANDARD",
+          "username":"topopal"
+        },
+        {
+          "authType":"STANDARD",
+          "username":"testuser1"
+        },
+        {
+          "authType":"STANDARD",
+          "username":"testuser1"
+        },
+        {
+          "authType":"STANDARD",
+          "username":"testuser2"
+        }
+    ],
+    "template":"CapOne",
+    "title":"TestSSA",
+    "type":"Team"
+  },
+  "codeRepoEntries" : [
+    {
+      "toolName" : "GitHub",
+      "description" : "Registered by user.",
+      "options" : {
+        "branch" : "master",
+        "url" : "https://github.com/Hygieia"
+      },
+      "niceName" : null
+    },
+    {
+      "toolName" : "GitHub",
+      "description" : "Registered by user.",
+      "options" : {
+        "branch" : "master",
+        "url" : "https://github.com/api"
+      },
+      "niceName" : null
+    },
+    {
+      "toolName" : "GitHub",
+      "description" : "Registered by user.",
+      "options" : {
+        "branch" : "master",
+        "url" : "https://github.com/UI"
+      },
+      "niceName" : null
+    }
+  ],
+  "functionalTestEntries" : [],
+  "buildEntries" : [
+    {
+      "toolName" : "Hudson",
+      "description" : "job/master/",
+      "options" : {
+        "jobName" : "job/master/",
+        "jobUrl" : "https://jenkins.com/job/master/",
+        "instanceUrl" : "https://jenkins.com/"
+      },
+      "niceName" : null
+    },
+    {
+      "toolName" : "Hudson",
+      "niceName" : "",
+      "description" : "job/infra/job/master/",
+      "options" : {
+        "jobName" : "job/infra/job/master/",
+        "jobUrl" : "https://jenkins.com/job/infra/job/master/",
+        "instanceUrl" : "https://jenkins.com/"
+      }
+    }
+  ],
+  "libraryScanEntries": [
+    {
+      "toolName" : "NexusIQ",
+      "niceName" : "",
+      "description" : "search",
+      "options" : {
+        "applicationName":"appName",
+        "instanceUrl" : "https://nexusiq.com"
+      }
+    },
+    {
+      "toolName" : "NexusIQ",
+      "niceName" : "",
+      "description" : "api",
+      "options" : {
+        "applicationName":"appName",
+        "instanceUrl" : "https://nexusiq.com"
+      }
+    }
+  ],
+  "securityScanEntries" : [],
+  "staticCodeEntries" : [
+    {
+      "toolName" : "Sonar",
+      "description" : "sonar-project",
+      "options" : {
+        "projectName" : "sonar-project",
+        "instanceUrl" : "https://sonarqube.com"
+      },
+      "niceName" : "sonarqube"
+    },
+    {
+      "toolName" : "Sonar",
+      "description" : "description",
+      "options" : {
+        "projectName" : "sonar-project",
+        "instanceUrl" : "https://sonarqube.com"
+      },
+      "niceName" : "sonarqube"
+    }
+  ],
+  "featureEntries" : [],
+  "deploymentEntries" : []
+}
