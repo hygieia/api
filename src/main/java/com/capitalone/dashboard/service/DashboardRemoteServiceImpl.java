@@ -175,7 +175,9 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
 
         Set<CollectorType> deleteSet = existingTypes.stream().filter(type->!incomingTypes.contains(type)).collect(Collectors.toSet());
         for (CollectorType type: deleteSet) {
-            component.getCollectorItems().remove(type);
+            if(!type.equals(CollectorType.Artifact)){
+                component.getCollectorItems().remove(type);
+            }
             if(!codeAnalysisWidget(type)){
                 dashboardService.deleteWidget(dashboard,type);
             }
