@@ -693,44 +693,31 @@ public class DashboardServiceImpl implements DashboardService {
         return null;
     }
 
-    private static String findWidgetName(CollectorType collectorType){
-        String widgetName;
-        switch (collectorType){
+    private static String findWidgetName(CollectorType collectorType) {
+        switch (collectorType) {
             case Build:
-                widgetName = BUILD;
-                break;
+                return BUILD;
             case AgileTool:
-                widgetName = FEATURE;
-                break;
+                return FEATURE;
             case Deployment:
-                widgetName = DEPLOY;
-                break;
+                return DEPLOY;
             case SCM:
-                widgetName = REPO;
-                break;
+                return REPO;
             case AppPerformance:
-                widgetName = PERFORMANCE;
-                break;
+                return PERFORMANCE;
             case Cloud:
-                widgetName = CLOUD;
-                break;
+                return CLOUD;
             case ChatOps:
-                widgetName = CHATOPS;
-                break;
+                return CHATOPS;
             case CodeQuality:
-                widgetName = CODEANALYSIS;
             case StaticSecurityScan:
-                widgetName = CODEANALYSIS;
             case LibraryPolicy:
-                widgetName = CODEANALYSIS;
             case Test:
-                widgetName = CODEANALYSIS;
-                break;
+                return CODEANALYSIS;
             default:
-                widgetName = null;
-                break;
+                return null;
         }
-        return widgetName;
+
     }
 
 
