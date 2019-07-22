@@ -3,11 +3,14 @@ package com.capitalone.dashboard.rest;
 import com.capitalone.dashboard.auth.access.Admin;
 import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.ApiToken;
+import com.capitalone.dashboard.model.FeatureFlag;
 import com.capitalone.dashboard.model.ServiceAccount;
 import com.capitalone.dashboard.model.UserInfo;
 import com.capitalone.dashboard.request.ApiTokenRequest;
+import com.capitalone.dashboard.request.FeatureFlagRequest;
 import com.capitalone.dashboard.request.ServiceAccountRequest;
 import com.capitalone.dashboard.service.ApiTokenService;
+import com.capitalone.dashboard.service.FeatureFlagService;
 import com.capitalone.dashboard.service.ServiceAccountService;
 import com.capitalone.dashboard.service.UserInfoService;
 import com.capitalone.dashboard.util.EncryptionException;
@@ -23,6 +26,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import javax.validation.Valid;
 import java.util.Collection;
+import java.util.List;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -37,11 +41,14 @@ public class AdminController {
 
     private final ServiceAccountService serviceAccountService;
 
+    private final FeatureFlagService featureFlagService;
+
     @Autowired
-    public AdminController(UserInfoService userInfoService, ApiTokenService apiTokenService,ServiceAccountService serviceAccountService) {
+    public AdminController(UserInfoService userInfoService, ApiTokenService apiTokenService,ServiceAccountService serviceAccountService,FeatureFlagService featureFlagService) {
         this.userInfoService = userInfoService;
         this.apiTokenService = apiTokenService;
         this.serviceAccountService = serviceAccountService;
+        this.featureFlagService = featureFlagService;
     }
     
     @RequestMapping(path = "/users/addAdmin", method = RequestMethod.POST)
@@ -139,4 +146,31 @@ public class AdminController {
         serviceAccountService.deleteAccount(id);
         return ResponseEntity.<Void>noContent().build();
     }
+
+    @RequestMapping(value = "/addOrUpdateFeatureFlags", method = RequestMethod.POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> addFeatureFlags(@Valid @RequestBody FeatureFlagRequest featureFlagRequest) {
+        try {
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(featureFlagService.createOrUpdateFlags(featureFlagRequest.getJson()));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+        }
+    }
+
+    @RequestMapping(path = "/featureFlags", method = RequestMethod.GET)
+    public List<FeatureFlag> getFeatureFlags() {
+        List<FeatureFlag> ff = featureFlagService.getFeatureFlags();
+        return ff;
+    }
+
+    @RequestMapping(path = "/deleteFeatureFlags/{id}", method = RequestMethod.DELETE)
+    public ResponseEntity<Void> deleteFeatureFlags(@PathVariable ObjectId id) {
+        featureFlagService.deleteFlags(id);
+        return ResponseEntity.<Void>noContent().build();
+    }
+
+
 }
