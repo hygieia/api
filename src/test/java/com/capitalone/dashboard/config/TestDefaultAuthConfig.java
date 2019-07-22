@@ -25,6 +25,7 @@ import com.capitalone.dashboard.service.DashboardService;
 import com.capitalone.dashboard.service.DefaultAuthenticationServiceImpl;
 import com.capitalone.dashboard.service.DeployService;
 import com.capitalone.dashboard.service.EncryptionService;
+import com.capitalone.dashboard.service.FeatureFlagService;
 import com.capitalone.dashboard.service.FeatureService;
 import com.capitalone.dashboard.service.GenericCollectorItemService;
 import com.capitalone.dashboard.service.GitRequestService;
@@ -281,6 +282,9 @@ import org.springframework.context.annotation.ComponentScan;
 	 public MetadataService metadataService() {
 		 return Mockito.mock(MetadataService.class);
 	 }
+
+	 @Bean
+	 public FeatureFlagService featureFlagService(){return Mockito.mock(FeatureFlagService.class);}
 
  }
 
