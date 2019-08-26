@@ -89,6 +89,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, "/generic-item").permitAll()
                 .antMatchers(HttpMethod.POST, "/generic-binary-artifact").permitAll()
                 .antMatchers(HttpMethod.POST, "/metadata/create").permitAll()
+                .antMatchers(HttpMethod.POST, "/autodiscovery/updateStatus").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(standardLoginRequestFilter(), UsernamePasswordAuthenticationFilter.class)
