@@ -3,7 +3,7 @@ package com.capitalone.dashboard.service;
 import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.AutoDiscovery;
 import com.capitalone.dashboard.repository.AutoDiscoveryRepository;
-import com.capitalone.dashboard.request.AutoDiscoveryRemoteRequest;
+import com.capitalone.dashboard.model.AutoDiscoveryRemoteRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bson.types.ObjectId;
