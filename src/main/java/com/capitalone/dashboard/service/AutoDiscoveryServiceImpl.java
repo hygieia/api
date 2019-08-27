@@ -1,17 +1,15 @@
 package com.capitalone.dashboard.service;
 
 import com.capitalone.dashboard.misc.HygieiaException;
-import com.capitalone.dashboard.model.*;
+import com.capitalone.dashboard.model.AutoDiscovery;
 import com.capitalone.dashboard.repository.AutoDiscoveryRepository;
 import com.capitalone.dashboard.request.AutoDiscoveryRemoteRequest;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
 
 @Service
 public class AutoDiscoveryServiceImpl implements AutoDiscoveryService {
