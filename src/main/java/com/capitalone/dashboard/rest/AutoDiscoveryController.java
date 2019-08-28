@@ -20,9 +20,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 @RestController
 public class AutoDiscoveryController {
 
-//    private static final Logger LOGGER = LoggerFactory.getLogger(AutoDiscoveryController.class);
     private final AutoDiscoveryService autoDiscoveryService;
-
 
     @Autowired
     public AutoDiscoveryController(AutoDiscoveryService autoDiscoveryService) {
