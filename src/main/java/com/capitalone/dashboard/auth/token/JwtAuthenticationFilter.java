@@ -1,11 +1,13 @@
 package com.capitalone.dashboard.auth.token;
 import java.io.IOException;
+import java.util.Objects;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -35,6 +37,11 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
         }
 
         Authentication authentication = tokenAuthenticationService.getAuthentication((HttpServletRequest)request);
+        //Handle Expired or bad JWT tokens
+        if (Objects.isNull(authentication)) {
+            ((HttpServletResponse) response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            filterChain.doFilter(request, response);
+        }
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         filterChain.doFilter(request,response);
