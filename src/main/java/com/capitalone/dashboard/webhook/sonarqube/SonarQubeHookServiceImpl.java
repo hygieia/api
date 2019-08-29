@@ -46,11 +46,13 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
     private static final String EVENTS = "events";
 
     private final CodeQualityRepository codeQualityRepository;
+    private final SonarQubeWebhookRepository sonarQubeWebhookRepository;
 
     @Autowired
-    SonarQubeHookServiceImpl( CodeQualityRepository codeQualityRepository)
+    SonarQubeHookServiceImpl( CodeQualityRepository codeQualityRepository, SonarQubeWebhookRepository sonarQubeWebhookRepository)
     {
         this.codeQualityRepository = codeQualityRepository;
+        this.sonarQubeWebhookRepository = sonarQubeWebhookRepository;
     }
 
     @Override
