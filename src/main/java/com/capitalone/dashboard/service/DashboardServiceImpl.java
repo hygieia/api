@@ -3,6 +3,7 @@ package com.capitalone.dashboard.service;
 import com.capitalone.dashboard.auth.AuthenticationUtil;
 import com.capitalone.dashboard.auth.exceptions.UserNotFoundException;
 import com.capitalone.dashboard.misc.HygieiaException;
+import com.capitalone.dashboard.model.ActiveWidget;
 import com.capitalone.dashboard.model.AuthType;
 import com.capitalone.dashboard.model.BaseModel;
 import com.capitalone.dashboard.model.Cmdb;
@@ -282,40 +283,25 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    public Component associateCollectorToComponent(ObjectId componentId, List<ObjectId> collectorItemIds) {
-        if (componentId == null || collectorItemIds == null) {
-            // Not all widgets gather data from collectors
-            return null;
-        }
-        com.capitalone.dashboard.model.Component component = componentRepository.findOne(componentId); //NOPMD - using fully qualified name for clarity
-        associateCollectorItemsToComponent(collectorItemIds, true, component);
-        return component;
-    }
-
-    @Override
-    public Component associateCollectorToComponent(ObjectId componentId, List<ObjectId> collectorItemIds,Component component) {
-        if (componentId == null || collectorItemIds == null) {
-            // Not all widgets gather data from collectors
-            return null;
-        }
-        associateCollectorItemsToComponent(collectorItemIds, false, component);
-        return component;
-    }
-
-    private void associateCollectorItemsToComponent(List<ObjectId> collectorItemIds, boolean save, Component component) {
+    public Component associateCollectorToComponent(ObjectId componentId, List<ObjectId> collectorItemIds, List<ObjectId> oldCollectorItems) {
         final String METHOD_NAME = "DashboardServiceImpl.associateCollectorToComponent :";
+        if (componentId == null || collectorItemIds == null) {
+            // Not all widgets gather data from collectors
+            return null;
+        }
+
+        com.capitalone.dashboard.model.Component component = componentRepository.findOne(componentId); //NOPMD - using fully qualified name for clarity
+        //we can not assume what collector item is added, what is removed etc so, we will
+        //refresh the association. First disable all collector items, then remove all and re-add
+
         //First: disable all collectorItems of the Collector TYPEs that came in with the request.
         //Second: remove all the collectorItem association of the Collector Type  that came in
         HashSet<CollectorType> incomingTypes = new HashSet<>();
         HashMap<ObjectId, CollectorItem> toSaveCollectorItems = new HashMap<>();
-        for (ObjectId collectorItemId : collectorItemIds) {
-            CollectorItem collectorItem = collectorItemRepository.findOne(collectorItemId);
-            if(collectorItem == null) {
-                LOG.warn(METHOD_NAME + " Bad CollectorItemId passed in the request : " + collectorItemId);
-                continue;
-            }
-            Collector collector = collectorRepository.findOne(collectorItem.getCollectorId());
-            if (!incomingTypes.contains(collector.getCollectorType())) {
+        if (null!=oldCollectorItems) {
+            for (ObjectId collectorItemId : oldCollectorItems) {
+                CollectorItem collectorItem = collectorItemRepository.findOne(collectorItemId);
+                Collector collector = collectorRepository.findOne(collectorItem.getCollectorId());
                 incomingTypes.add(collector.getCollectorType());
                 List<CollectorItem> cItems = component.getCollectorItems(collector.getCollectorType());
                 // Save all collector items as disabled for now
@@ -326,24 +312,12 @@ public class DashboardServiceImpl implements DashboardService {
                         toSaveCollectorItems.put(ci.getId(), ci);
                     }
                 }
-                // remove all collector items of a type
-                component.getCollectorItems().remove(collector.getCollectorType());
-            }
-        }
-
-        // If a collector type is within the code analysis widget, check to see if any of the remaining fields were passed values
-        if(incomingTypes.stream().anyMatch(QualityWidget::contains)){
-            if(!incomingTypes.contains(CollectorType.Test)){
-                component.getCollectorItems().remove(CollectorType.Test);
-            }
-            if(!incomingTypes.contains(CollectorType.StaticSecurityScan)){
-                component.getCollectorItems().remove(CollectorType.StaticSecurityScan);
-            }
-            if(!incomingTypes.contains(CollectorType.CodeQuality)){
-                component.getCollectorItems().remove(CollectorType.CodeQuality);
-            }
-            if(!incomingTypes.contains(CollectorType.LibraryPolicy)){
-                component.getCollectorItems().remove(CollectorType.LibraryPolicy);
+                // remove the old collector item
+                List<CollectorItem> allOfType = component.getCollectorItems().get(collector.getCollectorType());
+                allOfType.remove(collectorItem);
+                if (allOfType.isEmpty()) {
+                    component.getCollectorItems().remove(collector.getCollectorType());
+                }
             }
         }
 
@@ -356,11 +330,6 @@ public class DashboardServiceImpl implements DashboardService {
             }
             //the new collector items must be set to true
             collectorItem.setEnabled(true);
-            CollectorItem existingCollectorItem = toSaveCollectorItems.get(collectorItem.getId());
-            if ( (existingCollectorItem == null)
-                    || compareMaps(collectorItem.getOptions(), existingCollectorItem.getOptions()) ) {
-                collectorItem.setLastUpdated(System.currentTimeMillis());
-            }
             Collector collector = collectorRepository.findOne(collectorItem.getCollectorId());
             component.addCollectorItem(collector.getCollectorType(), collectorItem);
             toSaveCollectorItems.put(collectorItemId, collectorItem);
@@ -373,9 +342,8 @@ public class DashboardServiceImpl implements DashboardService {
             deleteSet.add(toSaveCollectorItems.get(id));
         }
         collectorItemRepository.save(deleteSet);
-        if(save){
-            componentRepository.save(component);
-        }
+        componentRepository.save(component);
+        return component;
     }
 
     protected boolean compareMaps (Map<String, Object> map1, Map<String, Object> map2) {
@@ -586,22 +554,22 @@ public class DashboardServiceImpl implements DashboardService {
     @Override
     public Dashboard updateDashboardWidgets(ObjectId dashboardId, Dashboard request) throws HygieiaException {
         Dashboard dashboard = get(dashboardId);
-        List<String> existingActiveWidgets = dashboard.getActiveWidgets();
+        List<ActiveWidget> existingActiveWidgets = dashboard.getActiveWidgets();
         List<Component> components = dashboard.getApplication().getComponents();
-        List<String> widgetToDelete =  findUpdateCollectorItems(existingActiveWidgets,request.getActiveWidgets());
+        List<ActiveWidget> widgetToDelete =  findDeletedWidgets(existingActiveWidgets,request.getActiveWidgets());
         List<Widget> widgets = dashboard.getWidgets();
         ObjectId componentId = components.get(0)!=null?components.get(0).getId():null;
         List<Integer> indexList = new ArrayList<>();
         List<CollectorType> collectorTypesToDelete = new ArrayList<>();
         List<Widget> updatedWidgets = new ArrayList<>();
 
-        for (String widgetName: widgetToDelete) {
+        for (ActiveWidget activeWidget: widgetToDelete) {
             for (Widget widget:widgets) {
-                if(widgetName.equalsIgnoreCase(widget.getName())){
+                if(activeWidget.getTitle().equalsIgnoreCase(widget.getName())){
                     int widgetIndex = widgets.indexOf(widget);
                     indexList.add(widgetIndex);
-                    collectorTypesToDelete.add(findCollectorType(widgetName));
-                    if(widgetName.equalsIgnoreCase("codeanalysis")){
+                    collectorTypesToDelete.add(findCollectorType(activeWidget.getType()));
+                    if(activeWidget.getTitle().equalsIgnoreCase("codeanalysis")){
                         collectorTypesToDelete.add(CollectorType.CodeQuality);
                         collectorTypesToDelete.add(CollectorType.StaticSecurityScan);
                         collectorTypesToDelete.add(CollectorType.LibraryPolicy);
@@ -676,8 +644,8 @@ public class DashboardServiceImpl implements DashboardService {
         }
     }
 
-    private List<String> findUpdateCollectorItems(List<String> existingWidgets,List<String> currentWidgets){
-        List<String> result = existingWidgets.stream().filter(elem -> !currentWidgets.contains(elem)).collect(Collectors.toList());
+    private List<ActiveWidget> findDeletedWidgets(List<ActiveWidget> existingWidgets, List<ActiveWidget> newWidgets){
+        List<ActiveWidget> result = existingWidgets.stream().filter(elem -> !newWidgets.contains(elem)).collect(Collectors.toList());
         return result;
     }
 

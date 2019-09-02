@@ -159,7 +159,7 @@ public class DashboardController {
         Dashboard dashboard = dashboardService.get(id);
 
         Component component = dashboardService.associateCollectorToComponent(
-                request.getComponentId(), request.getCollectorItemIds());
+                request.getComponentId(), request.getCollectorItemIds(), null);
 
         Widget widget = dashboardService.addWidget(dashboard, request.widget());
 
@@ -172,11 +172,13 @@ public class DashboardController {
     public ResponseEntity<WidgetResponse> updateWidget(@PathVariable ObjectId id,
                                                        @PathVariable ObjectId widgetId,
                                                        @RequestBody WidgetRequest request) {
-        Component component = dashboardService.associateCollectorToComponent(
-                request.getComponentId(), request.getCollectorItemIds());
-
         Dashboard dashboard = dashboardService.get(id);
-        Widget widget = request.updateWidget(dashboardService.getWidget(dashboard, widgetId));
+        Widget originalWidget = dashboardService.getWidget(dashboard,widgetId);
+        List<ObjectId> originalObjectItemsForWidget = originalWidget.getCollectorItemIds();
+        // re-sort
+        Component component = dashboardService.associateCollectorToComponent(
+            request.getComponentId(), request.getCollectorItemIds(), originalObjectItemsForWidget);
+        Widget widget = request.updateWidget(originalWidget);
         widget = dashboardService.updateWidget(dashboard, widget);
 
         return ResponseEntity.ok().body(new WidgetResponse(component, widget));
@@ -308,7 +310,7 @@ public class DashboardController {
                                                        @PathVariable ObjectId widgetId,
                                                        @RequestBody WidgetRequest request) {
         Component component = dashboardService.associateCollectorToComponent(
-                request.getComponentId(), request.getCollectorItemIds());
+                request.getComponentId(), null,request.getCollectorItemIds());
 
         Dashboard dashboard = dashboardService.get(id);
         Widget widget =dashboardService.getWidget(dashboard, widgetId);

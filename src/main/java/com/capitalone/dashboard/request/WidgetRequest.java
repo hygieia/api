@@ -57,6 +57,7 @@ public class WidgetRequest {
                 widget.getOptions().putAll(options);
             }
         }
+        widget.setCollectorItemIds(this.collectorItemIds);
         return widget;
     }
 
@@ -67,6 +68,7 @@ public class WidgetRequest {
         if ((options != null) && !options.isEmpty()) {
             widget.getOptions().putAll(options);
         }
+        widget.setCollectorItemIds(this.collectorItemIds);
         return widget;
     }
 }
