@@ -296,13 +296,11 @@ public class DashboardServiceImpl implements DashboardService {
 
         //First: disable all collectorItems of the Collector TYPEs that came in with the request.
         //Second: remove all the collectorItem association of the Collector Type  that came in
-        HashSet<CollectorType> incomingTypes = new HashSet<>();
         HashMap<ObjectId, CollectorItem> toSaveCollectorItems = new HashMap<>();
         if (null!=oldCollectorItems) {
             for (ObjectId collectorItemId : oldCollectorItems) {
                 CollectorItem collectorItem = collectorItemRepository.findOne(collectorItemId);
                 Collector collector = collectorRepository.findOne(collectorItem.getCollectorId());
-                incomingTypes.add(collector.getCollectorType());
                 List<CollectorItem> cItems = component.getCollectorItems(collector.getCollectorType());
                 // Save all collector items as disabled for now
                 if (!CollectionUtils.isEmpty(cItems)) {

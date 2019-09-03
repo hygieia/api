@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.capitalone.dashboard.model.ActiveWidget;
 import com.capitalone.dashboard.model.CollectorItem;
 import com.capitalone.dashboard.model.Component;
 import com.capitalone.dashboard.model.Dashboard;
@@ -213,7 +214,7 @@ public class DashboardServiceTest {
         when(collectorRepository.findOne(collId)).thenReturn(collector);
         when(componentRepository.findOne(compId)).thenReturn(component);
 
-        dashboardService.associateCollectorToComponent(compId, collItemIds);
+        dashboardService.associateCollectorToComponent(compId, collItemIds,null);
 
         assertThat(component.getCollectorItems().get(CollectorType.Build), contains(item));
 
@@ -241,7 +242,7 @@ public class DashboardServiceTest {
         when(collectorRepository.findOne(collId)).thenReturn(collector);
         when(componentRepository.findOne(compId)).thenReturn(component);
 
-        dashboardService.associateCollectorToComponent(compId, collItemIds);
+        dashboardService.associateCollectorToComponent(compId, collItemIds,null);
 
         assertThat(component.getCollectorItems().get(CollectorType.Build), contains(item));
 
@@ -273,7 +274,7 @@ public class DashboardServiceTest {
         when(componentRepository.findOne(compId)).thenReturn(component1);
         when(customRepositoryQuery.findComponents(collector, item)).thenReturn(Arrays.asList(component1, component2));
 
-        dashboardService.associateCollectorToComponent(compId, collItemIds);
+        dashboardService.associateCollectorToComponent(compId, collItemIds,null);
 
         assertThat(component1.getCollectorItems().get(CollectorType.Build), contains(item));
         assertThat(item.isEnabled(), is(true));
@@ -301,7 +302,7 @@ public class DashboardServiceTest {
         when(collectorRepository.findOne(collId)).thenReturn(collector);
         when(componentRepository.findOne(compId)).thenReturn(component);
 
-        dashboardService.associateCollectorToComponent(compId, collItemIds);
+        dashboardService.associateCollectorToComponent(compId, collItemIds,null);
 
         assertThat(component.getCollectorItems().get(CollectorType.Build), contains(item));
         assertThat(item.isEnabled(), is(true));
@@ -345,7 +346,7 @@ public class DashboardServiceTest {
         when(collectorRepository.findOne(collId)).thenReturn(collector);
         when(componentRepository.findOne(compId)).thenReturn(component);
 
-        dashboardService.associateCollectorToComponent(compId, collItemIds);
+        dashboardService.associateCollectorToComponent(compId, collItemIds,null);
 
         assertThat(component.getCollectorItems().get(CollectorType.Build), contains(item2));
         assertThat(item1.isEnabled(), is(false));
@@ -393,7 +394,7 @@ public class DashboardServiceTest {
         when(componentRepository.findOne(compId)).thenReturn(component1);
         when(customRepositoryQuery.findComponents(collector, item1)).thenReturn(Arrays.asList(component1, component2));
 
-        dashboardService.associateCollectorToComponent(compId, collItemIds);
+        dashboardService.associateCollectorToComponent(compId, collItemIds,null);
 
         assertThat(component1.getCollectorItems().get(CollectorType.Build), contains(item2));
         assertThat(item1.isEnabled(), is(true));
@@ -443,7 +444,7 @@ public class DashboardServiceTest {
         when(collectorRepository.findOne(collId)).thenReturn(collector);
         when(componentRepository.findOne(compId)).thenReturn(component);
 
-        dashboardService.associateCollectorToComponent(compId, collItemIds);
+        dashboardService.associateCollectorToComponent(compId, collItemIds,null);
 
         assertThat(component.getCollectorItems().get(CollectorType.Build), contains(item2, item3));
         assertThat(item1.isEnabled(), is(false));
@@ -497,7 +498,7 @@ public class DashboardServiceTest {
         when(collectorRepository.findOne(collId)).thenReturn(collector);
         when(componentRepository.findOne(compId)).thenReturn(component);
 
-        dashboardService.associateCollectorToComponent(compId, collItemIds);
+        dashboardService.associateCollectorToComponent(compId, collItemIds,null);
 
         assertThat(component.getCollectorItems().get(CollectorType.Build), contains(item3));
         assertThat(item1.isEnabled(), is(false));
@@ -712,7 +713,7 @@ public class DashboardServiceTest {
     @Test
     public void updateOwners_empty_owner_set() {
     	Iterable<Owner> owners = Lists.newArrayList();
-        List<String> activeWidgets = new ArrayList<>();
+        List<ActiveWidget> activeWidgets = new ArrayList<>();
     	Dashboard dashboard = new Dashboard("template", "title", new Application("Application"), null, DashboardType.Team, configItemBusServName, configItemBusAppName, activeWidgets, false, ScoreDisplayType.HEADER);
 
     	when(dashboardRepository.findOne(dashboard.getId())).thenReturn(dashboard);
@@ -745,7 +746,7 @@ public class DashboardServiceTest {
     	UserInfo existingInfo = new UserInfo();
     	existingInfo.setUsername("existing");
     	existingInfo.setAuthType(AuthType.LDAP);
-        List<String> activeWidgets = new ArrayList<>();
+        List<ActiveWidget> activeWidgets = new ArrayList<>();
         List<Owner> existingOwners = new ArrayList<>();
         existingOwners.add(existingOwner);
     	Dashboard dashboard = new Dashboard("template", "title", new Application("Application"), existingOwners, DashboardType.Team,configItemBusServName,configItemBusAppName, activeWidgets, false, ScoreDisplayType.HEADER);
@@ -888,7 +889,7 @@ public class DashboardServiceTest {
         for (String compName : compNames) {
             app.addComponent(new Component(compName));
         }
-        List<String> activeWidgets = new ArrayList<>();
+        List<ActiveWidget> activeWidgets = new ArrayList<>();
         List<Owner> owners = new ArrayList<>();
         owners.add(new Owner(owner, AuthType.STANDARD));
         return new Dashboard(template, title, app, owners, DashboardType.Team, configItemBusServName, configItemBusAppName, activeWidgets, false, ScoreDisplayType.HEADER);

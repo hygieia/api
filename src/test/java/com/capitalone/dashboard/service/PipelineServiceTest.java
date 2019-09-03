@@ -146,7 +146,7 @@ public class PipelineServiceTest {
         for (String compName : compNames) {
             app.addComponent(new Component(compName));
         }
-        List<String> activeWidgets = new ArrayList<>();
+        List<ActiveWidget> activeWidgets = new ArrayList<>();
         List<Owner> owners = new ArrayList<>();
         owners.add(new Owner(owner, AuthType.STANDARD));
         Dashboard dashboard = new Dashboard(template, title, app, owners, DashboardType.Team, configItemAppName, configItemComponentName, activeWidgets, false, ScoreDisplayType.HEADER);

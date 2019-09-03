@@ -1,6 +1,7 @@
 package com.capitalone.dashboard.service;
 
 import com.capitalone.dashboard.misc.HygieiaException;
+import com.capitalone.dashboard.model.ActiveWidget;
 import com.capitalone.dashboard.model.Application;
 import com.capitalone.dashboard.model.Cmdb;
 import com.capitalone.dashboard.model.Collector;
@@ -138,66 +139,30 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
 
         List<DashboardRemoteRequest.Entry> entries = request.getAllEntries();
         Map<String, WidgetRequest> allWidgetRequests = generateRequestWidgetList( entries, dashboard);
-        Set<CollectorType> existingTypes = new HashSet<>();
-        Set<CollectorType> incomingTypes = new HashSet<>();
-        Component component = componentRepository.findOne(dashboard.getApplication().getComponents().get(0).getId());
-        component.getCollectorItems().forEach((item,val)->{
-            existingTypes.add(item);
-        });
 
         //adds widgets
         for (String key : allWidgetRequests.keySet()) {
             WidgetRequest widgetRequest = allWidgetRequests.get(key);
-
-            widgetRequest.getCollectorItemIds().forEach(id->{
-                CollectorItem  c = collectorItemRepository.findOne(id);
-                if(c!=null) {
-                    Collector collector = collectorRepository.findOne(c.getCollectorId());
-                    incomingTypes.add(collector.getCollectorType());
-                }
-            });
-
-            component = dashboardService.associateCollectorToComponent(dashboard.getApplication().getComponents().get(0).getId(), widgetRequest.getCollectorItemIds(),component);
             Widget newWidget = widgetRequest.widget();
+            List<ObjectId> originalWigetCollectoItemIds=null;
             if (isUpdate) {
                 Widget oldWidget = existingWidgets.get(newWidget.getName());
                 if (oldWidget == null) {
                     dashboardService.addWidget(dashboard, newWidget);
                 } else {
-                    Widget widget = widgetRequest.updateWidget(dashboardService.getWidget(dashboard, oldWidget.getId()));
+                    Widget originalWidget = dashboardService.getWidget(dashboard, oldWidget.getId());
+                    originalWigetCollectoItemIds = originalWidget.getCollectorItemIds();
+                    Widget widget = widgetRequest.updateWidget(originalWidget);
                     dashboardService.updateWidget(dashboard, widget);
                 }
             } else {
                 dashboardService.addWidget(dashboard, newWidget);
             }
+            dashboardService.associateCollectorToComponent(
+                    dashboard.getApplication().getComponents().get(0).getId(), widgetRequest.getCollectorItemIds(),originalWigetCollectoItemIds);
         }
 
-
-        Set<CollectorType> deleteSet = existingTypes.stream().filter(type->!incomingTypes.contains(type)).collect(Collectors.toSet());
-        for (CollectorType type: deleteSet) {
-            if(!type.equals(CollectorType.Artifact)){
-                component.getCollectorItems().remove(type);
-            }
-            if(!codeAnalysisWidget(type)){
-                dashboardService.deleteWidget(dashboard,type);
-            }
-        }
-        // delete code analysis widget
-        if(isQualityWidget(deleteSet)){
-            dashboardService.deleteWidget(dashboard,CollectorType.CodeQuality);
-        }
-
-        componentRepository.save(component);
         return (dashboard != null) ? dashboardService.get(dashboard.getId()) : null;
-    }
-
-    private boolean isQualityWidget(Set<CollectorType> deleteSet) {
-        return DashboardServiceImpl.QualityWidget.stream().allMatch(deleteSet::contains);
-
-    }
-
-    private boolean codeAnalysisWidget(CollectorType collectorType){
-        return DashboardServiceImpl.QualityWidget.stream().filter(collectorType::equals).findAny().isPresent();
     }
 
     /**
@@ -299,7 +264,7 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
             if (service == null) throw new HygieiaException("Invalid Business Service Name.", HygieiaException.BAD_DATA);
             serviceName = service.getConfigurationItem();
         }
-        List<String> activeWidgets = new ArrayList<>();
+        List<ActiveWidget> activeWidgets = new ArrayList<>();
         return new Dashboard(true, metaData.getTemplate(), metaData.getTitle(), application, metaData.getOwners(), DashboardType.fromString(metaData.getType()), serviceName, appName,activeWidgets, false, ScoreDisplayType.HEADER);
     }
 }

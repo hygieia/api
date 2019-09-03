@@ -51,7 +51,7 @@ public class MethodLevelSecurityHandlerTest {
 	@Test
 	public void testIsOwnerOfDashboard_legacyDashFound() {
 		initiateSecurityContext();
-		List<String> activeWidgets = new ArrayList<>();
+		List<ActiveWidget> activeWidgets = new ArrayList<>();
 		Dashboard dashboard = new Dashboard("team", "title", null, null, DashboardType.Team, configItemAppName,configItemComponentName,activeWidgets, false, ScoreDisplayType.HEADER);
 		dashboard.setOwner(USERNAME);
 		when(dashboardRepository.findOne(any(ObjectId.class))).thenReturn(dashboard);
@@ -62,7 +62,7 @@ public class MethodLevelSecurityHandlerTest {
 	@Test
 	public void testIsOwnerOfDashboard_newDashFound() {
 		initiateSecurityContext();
-		List<String> activeWidgets = new ArrayList<>();
+		List<ActiveWidget> activeWidgets = new ArrayList<>();
 		List<Owner> owners = new ArrayList<>();
 		owners.add(new Owner(USERNAME, AuthType.STANDARD));
 		Dashboard dashboard = new Dashboard("team", "title", null, owners, DashboardType.Team, configItemAppName,configItemComponentName,activeWidgets, false, ScoreDisplayType.HEADER);
@@ -74,7 +74,7 @@ public class MethodLevelSecurityHandlerTest {
 	@Test
 	public void testIsNotOwnerOfDashboard() {
 		initiateSecurityContext();
-		List<String> activeWidgets = new ArrayList<>();
+		List<ActiveWidget> activeWidgets = new ArrayList<>();
 		Dashboard dashboard = new Dashboard("team", "title", null, null, DashboardType.Team,configItemAppName,configItemComponentName,activeWidgets, false, ScoreDisplayType.HEADER);
 		dashboard.setOwner(SOME_OTHER_USER);
 		when(dashboardRepository.findOne(any(ObjectId.class))).thenReturn(dashboard);
