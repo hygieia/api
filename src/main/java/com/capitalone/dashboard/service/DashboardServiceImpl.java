@@ -41,6 +41,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -283,7 +284,7 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    public Component associateCollectorToComponent(ObjectId componentId, List<ObjectId> collectorItemIds, List<ObjectId> oldCollectorItems) {
+    public Component associateCollectorToComponent(ObjectId componentId, Collection<ObjectId> collectorItemIds, Collection<ObjectId> oldCollectorItems) {
         final String METHOD_NAME = "DashboardServiceImpl.associateCollectorToComponent :";
         if (componentId == null || collectorItemIds == null) {
             // Not all widgets gather data from collectors
@@ -294,27 +295,32 @@ public class DashboardServiceImpl implements DashboardService {
         //we can not assume what collector item is added, what is removed etc so, we will
         //refresh the association. First disable all collector items, then remove all and re-add
 
-        //First: disable all collectorItems of the Collector TYPEs that came in with the request.
+        //First: disable all collectorItems that are no longer active.
         //Second: remove all the collectorItem association of the Collector Type  that came in
         HashMap<ObjectId, CollectorItem> toSaveCollectorItems = new HashMap<>();
         if (null!=oldCollectorItems) {
             for (ObjectId collectorItemId : oldCollectorItems) {
                 CollectorItem collectorItem = collectorItemRepository.findOne(collectorItemId);
-                Collector collector = collectorRepository.findOne(collectorItem.getCollectorId());
-                List<CollectorItem> cItems = component.getCollectorItems(collector.getCollectorType());
-                // Save all collector items as disabled for now
-                if (!CollectionUtils.isEmpty(cItems)) {
-                    for (CollectorItem ci : cItems) {
-                        //if item is orphaned, disable it. Otherwise keep it enabled.
-                        ci.setEnabled(!isLonely(ci, collector, component));
-                        toSaveCollectorItems.put(ci.getId(), ci);
+                if (null != collectorItem) {
+                    Collector collector = collectorRepository.findOne(collectorItem.getCollectorId());
+                    List<CollectorItem> cItems = component.getCollectorItems(collector.getCollectorType());
+                    // Save all collector items as disabled for now
+                    if (!CollectionUtils.isEmpty(cItems)) {
+                        for (CollectorItem ci : cItems) {
+                            //if item is orphaned, disable it. Otherwise keep it enabled.
+                            ci.setEnabled(!isLonely(ci, collector, component));
+                            toSaveCollectorItems.put(ci.getId(), ci);
+                        }
                     }
-                }
-                // remove the old collector item
-                List<CollectorItem> allOfType = component.getCollectorItems().get(collector.getCollectorType());
-                allOfType.remove(collectorItem);
-                if (allOfType.isEmpty()) {
-                    component.getCollectorItems().remove(collector.getCollectorType());
+
+                    // remove the old collector item
+                    List<CollectorItem> allOfType = component.getCollectorItems().get(collector.getCollectorType());
+                    if (null != allOfType) {
+                        allOfType.remove(collectorItem);
+                        if (allOfType.isEmpty()) {
+                            component.getCollectorItems().remove(collector.getCollectorType());
+                        }
+                    }
                 }
             }
         }
@@ -557,68 +563,41 @@ public class DashboardServiceImpl implements DashboardService {
         List<ActiveWidget> widgetToDelete =  findDeletedWidgets(existingActiveWidgets,request.getActiveWidgets());
         List<Widget> widgets = dashboard.getWidgets();
         ObjectId componentId = components.get(0)!=null?components.get(0).getId():null;
-        List<Integer> indexList = new ArrayList<>();
-        List<CollectorType> collectorTypesToDelete = new ArrayList<>();
-        List<Widget> updatedWidgets = new ArrayList<>();
 
-        for (ActiveWidget activeWidget: widgetToDelete) {
-            for (Widget widget:widgets) {
-                if(activeWidget.getTitle().equalsIgnoreCase(widget.getName())){
-                    int widgetIndex = widgets.indexOf(widget);
-                    indexList.add(widgetIndex);
-                    collectorTypesToDelete.add(findCollectorType(activeWidget.getType()));
-                    if(activeWidget.getTitle().equalsIgnoreCase("codeanalysis")){
-                        collectorTypesToDelete.add(CollectorType.CodeQuality);
-                        collectorTypesToDelete.add(CollectorType.StaticSecurityScan);
-                        collectorTypesToDelete.add(CollectorType.LibraryPolicy);
-                        collectorTypesToDelete.add(CollectorType.Test);
-                    }
-                }
-            }
-        }
-        //iterate through index and remove widgets
-        for (Integer i:indexList) {
-            widgets.set(i,null);
-        }
-        for (Widget w:widgets) {
-            if(w!=null)
-                updatedWidgets.add(w);
-        }
-        dashboard.setWidgets(updatedWidgets);
+        widgets.removeAll(widgetToDelete);
+        dashboard.setWidgets(widgets);
         dashboard.setActiveWidgets(request.getActiveWidgets());
         dashboard = update(dashboard);
         if(componentId!=null){
-            com.capitalone.dashboard.model.Component component = componentRepository.findOne(componentId);
-            for (CollectorType cType :collectorTypesToDelete) {
-                component.getCollectorItems().remove(cType);
-            }
-            componentRepository.save(component);
+            removeOrphanedCollectorItems(dashboard, componentId);
         }
         return dashboard;
+    }
+
+    private void removeOrphanedCollectorItems(Dashboard dashboard, ObjectId componentId) {
+        List<ObjectId> allActiveCollectorItems = new ArrayList<>();
+        for(Widget widget : dashboard.getWidgets()) {
+            allActiveCollectorItems.addAll(widget.getCollectorItemIds());
+        }
+        com.capitalone.dashboard.model.Component component = componentRepository.findOne(componentId);
+        Map<CollectorType,List<CollectorItem>> activeEntries = component.getCollectorItems().entrySet().stream()
+                .filter(
+                        entry -> entry.getValue().stream()
+                                .filter(collectorItem -> allActiveCollectorItems.contains(collectorItem.getCollectorId()))
+                                .findFirst().isPresent()).collect(
+                        Collectors.toMap(item->item.getKey(), item->item.getValue()));
+        component.setAllCollectorItems(activeEntries);
+        componentRepository.save(component);
     }
 
 
     @Override
     public void deleteWidget(Dashboard dashboard, Widget widget,ObjectId componentId) {
-        int index = dashboard.getWidgets().indexOf(widget);
-        dashboardUpdate(dashboard, index);
-        String widgetName = widget.getName();
-        List<CollectorType> collectorTypesToDelete = new ArrayList<>();
-        CollectorType cType = findCollectorType(widgetName);
-        collectorTypesToDelete.add(cType);
-        if(widgetName.equalsIgnoreCase("codeanalysis")){
-            collectorTypesToDelete.add(CollectorType.CodeQuality);
-            collectorTypesToDelete.add(CollectorType.StaticSecurityScan);
-            collectorTypesToDelete.add(CollectorType.LibraryPolicy);
-            collectorTypesToDelete.add(CollectorType.Test);
-        }
-        if(componentId!=null){
-            Component component = componentRepository.findOne(componentId);
-            for (CollectorType c:collectorTypesToDelete) {
-                component.getCollectorItems().remove(c);
-            }
+        dashboard.getWidgets().remove(widget);
+        dashboardRepository.save(dashboard);
 
-            componentRepository.save(component);
+        if(componentId!=null){
+            removeOrphanedCollectorItems(dashboard,componentId);
         }
 
     }

@@ -139,28 +139,48 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
 
         List<DashboardRemoteRequest.Entry> entries = request.getAllEntries();
         Map<String, WidgetRequest> allWidgetRequests = generateRequestWidgetList( entries, dashboard);
+        Set<ObjectId> orphanedTypes = new HashSet<>();
+        Component component = componentRepository.findOne(dashboard.getApplication().getComponents().get(0).getId());
+        component.getCollectorItems().forEach((item,val)->{
+            orphanedTypes.addAll(val.stream().map(collectorItem -> collectorItem.getCollectorId()).collect(Collectors.toList()));
+        });
+        Set<ObjectId> newCollectorItems = new HashSet<>();
+
+        // start by assuming all widgets should be removed
+        List<Widget> widgetsToRemove = new ArrayList<>(dashboard.getWidgets());
+
 
         //adds widgets
         for (String key : allWidgetRequests.keySet()) {
             WidgetRequest widgetRequest = allWidgetRequests.get(key);
             Widget newWidget = widgetRequest.widget();
-            List<ObjectId> originalWigetCollectoItemIds=null;
             if (isUpdate) {
                 Widget oldWidget = existingWidgets.get(newWidget.getName());
                 if (oldWidget == null) {
                     dashboardService.addWidget(dashboard, newWidget);
+                    newCollectorItems.addAll(newWidget.getCollectorItemIds());
                 } else {
                     Widget originalWidget = dashboardService.getWidget(dashboard, oldWidget.getId());
-                    originalWigetCollectoItemIds = originalWidget.getCollectorItemIds();
+                    List<ObjectId> objectIdsToKeep = originalWidget.getCollectorItemIds();
+                    orphanedTypes.remove(objectIdsToKeep);
                     Widget widget = widgetRequest.updateWidget(originalWidget);
                     dashboardService.updateWidget(dashboard, widget);
+                    // save this updated widget
+                    widgetsToRemove.remove(widget);
                 }
             } else {
                 dashboardService.addWidget(dashboard, newWidget);
             }
-            dashboardService.associateCollectorToComponent(
-                    dashboard.getApplication().getComponents().get(0).getId(), widgetRequest.getCollectorItemIds(),originalWigetCollectoItemIds);
+
         }
+
+        // remove any widgets that haven;t been saved..
+        for(Widget widgetToRemove: widgetsToRemove) {
+            dashboardService.deleteWidget(dashboard, widgetToRemove, component.getId());
+        }
+
+        dashboardService.associateCollectorToComponent(
+               component.getId(), newCollectorItems, orphanedTypes);
 
         return (dashboard != null) ? dashboardService.get(dashboard.getId()) : null;
     }

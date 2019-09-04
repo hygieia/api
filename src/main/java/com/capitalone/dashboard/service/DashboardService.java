@@ -1,5 +1,6 @@
 package com.capitalone.dashboard.service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -74,7 +75,7 @@ public interface DashboardService {
      * @param collectorItemIdsToRemove List of unique identifier of the CollectorItem to remove
      * @return Component
      */
-    Component associateCollectorToComponent(ObjectId componentId, List<ObjectId> collectorItemIdsToAdd, List<ObjectId> collectorItemIdsToRemove);
+    Component associateCollectorToComponent(ObjectId componentId, Collection<ObjectId> collectorItemIdsToAdd, Collection<ObjectId> collectorItemIdsToRemove);
 
 
     /**
