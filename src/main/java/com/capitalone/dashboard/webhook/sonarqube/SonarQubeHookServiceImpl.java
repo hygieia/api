@@ -1,11 +1,10 @@
 package com.capitalone.dashboard.webhook.sonarqube;
 
 import com.capitalone.dashboard.misc.HygieiaException;
-import com.capitalone.dashboard.model.CodeQuality;
-import com.capitalone.dashboard.model.CodeQualityMetric;
-import com.capitalone.dashboard.model.CodeQualityType;
-import com.capitalone.dashboard.repository.BaseCollectorRepository;
+import com.capitalone.dashboard.model.*;
 import com.capitalone.dashboard.repository.CodeQualityRepository;
+import com.capitalone.dashboard.repository.SonarProjectRepository;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.commons.logging.Log;
@@ -40,19 +39,20 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
     private static final String VALUE = "value";
     private static final String CDT = "conditions";
     private static final String DSHBRD_URL = "url";
+    private static final String TASK_ID = "taskId";
     private static final String STATUS_WARN = "WARN";
     private static final String STATUS_ALERT = "ALERT";
     private static final String DATE = "date";
     private static final String EVENTS = "events";
 
     private final CodeQualityRepository codeQualityRepository;
-    private final SonarQubeWebhookRepository sonarQubeWebhookRepository;
+    private final SonarProjectRepository sonarProjectRepository;
 
     @Autowired
-    SonarQubeHookServiceImpl( CodeQualityRepository codeQualityRepository, SonarQubeWebhookRepository sonarQubeWebhookRepository)
+    SonarQubeHookServiceImpl( CodeQualityRepository codeQualityRepository, SonarProjectRepository sonarProjectRepository)
     {
         this.codeQualityRepository = codeQualityRepository;
-        this.sonarQubeWebhookRepository = sonarQubeWebhookRepository;
+        this.sonarProjectRepository = sonarProjectRepository;
     }
 
     @Override
@@ -61,10 +61,11 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
         JSONParser jsonParser = new JSONParser();
         JSONObject jsonObject = (JSONObject) jsonParser.parse(request.toJSONString());
         JSONObject prjData = (JSONObject) jsonObject.get("project");
+        SonarCollector collector = new SonarCollector();
 
         SonarProject project = new SonarProject();
         project.setInstanceUrl(str(prjData,DSHBRD_URL));
-        project.setProjectId(str(prjData, KEY));
+        project.setProjectId(str(jsonObject, KEY));
         project.setProjectName(str(prjData, NAME));
         refreshData(project, request);
 
@@ -74,29 +75,17 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
     private void refreshData(SonarProject sonarProject, JSONObject request) {
 
         CodeQuality codeQuality = currentCodeQuality(sonarProject, request);
-        if (codeQuality != null && isNewQualityData(sonarProject, codeQuality)) {
+        if (codeQuality != null) {
             sonarProject.setLastUpdated(System.currentTimeMillis());
-//            sonarQubeWebhookRepository.save(sonarProject);
-            //codeQuality.setCollectorItemId(sonarProject.getProjectId());
+            sonarProjectRepository.save(sonarProject);
+            codeQuality.setCollectorItemId(sonarProject.getId());
             codeQualityRepository.save(codeQuality);
         }
     }
 
-    private boolean isNewQualityData(SonarProject project, CodeQuality codeQuality) {
-        return codeQualityRepository.findByCollectorItemIdAndTimestamp(
-                project.getId(), codeQuality.getTimestamp()) == null;
-    }
-
-//    private boolean isNewProject(SonarCollector collector, SonarProject application) {
-//        return sonarQubeWebhookRepository.findSonarProject(
-//                collector.getId(), application.getInstanceUrl(), application.getProjectId()) == null;
-//    }
-
     public CodeQuality currentCodeQuality(SonarProject project, JSONObject request) {
 
         try {
-                //JSONParser jsonParser = new JSONParser();
-                //JSONObject jsonObject = (JSONObject) jsonParser.parse(project);
                 JsonParser jsonParser = new JsonParser();
                 JsonObject gsonObject = (JsonObject)jsonParser.parse(request.toString());
                 JsonObject prjData = gsonObject.getAsJsonObject("project");

@@ -2,7 +2,7 @@ package com.capitalone.dashboard.webhook.sonarqube;
 
 import com.capitalone.dashboard.model.Collector;
 import com.capitalone.dashboard.model.CollectorType;
-import com.capitalone.dashboard.repository.BaseCollectorRepository;
+import com.capitalone.dashboard.model.SonarProject;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
@@ -22,6 +22,7 @@ public class SonarCollector extends Collector {
     public List<String> getSonarServers() {
         return sonarServers;
     }
+
     public List<Double> getSonarVersions() {
         return sonarVersions;
     }
@@ -29,7 +30,6 @@ public class SonarCollector extends Collector {
     public List<String> getSonarMetrics() {
         return sonarMetrics;
     }
-
 
     public List<String> getNiceNames() {
         return niceNames;
@@ -40,37 +40,4 @@ public class SonarCollector extends Collector {
         this.niceNames = niceNames;
     }
 
-    public static SonarCollector prototype(List<String> servers, List<Double> versions, List<String> metrics,List<String> niceNames) {
-        SonarCollector protoType = new SonarCollector();
-        protoType.setName("Sonar");
-        protoType.setCollectorType(CollectorType.CodeQuality);
-        protoType.setOnline(true);
-        protoType.setEnabled(true);
-        if(servers!=null) {
-            protoType.getSonarServers().addAll(servers);
-        }
-        if(versions!=null) {
-            protoType.getSonarVersions().addAll(versions);
-        }
-        if(metrics!=null) {
-            protoType.getSonarMetrics().addAll(metrics);
-        }
-
-        if (!CollectionUtils.isEmpty(niceNames)) {
-            protoType.getNiceNames().addAll(niceNames);
-        }
-
-        Map<String, Object> allOptions = new HashMap<>();
-        allOptions.put(SonarProject.INSTANCE_URL,"");
-        allOptions.put(SonarProject.PROJECT_NAME,"");
-        allOptions.put(SonarProject.PROJECT_ID, "");
-        protoType.setAllFields(allOptions);
-
-        Map<String, Object> uniqueOptions = new HashMap<>();
-        uniqueOptions.put(SonarProject.INSTANCE_URL,"");
-        uniqueOptions.put(SonarProject.PROJECT_NAME,"");
-        protoType.setUniqueFields(uniqueOptions);
-        protoType.setSearchFields(Arrays.asList(PROJECT_NAME,NICE_NAME));
-        return protoType;
-    }
 }
