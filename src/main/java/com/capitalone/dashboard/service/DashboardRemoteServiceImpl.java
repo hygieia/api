@@ -6,7 +6,6 @@ import com.capitalone.dashboard.model.Application;
 import com.capitalone.dashboard.model.Cmdb;
 import com.capitalone.dashboard.model.Collector;
 import com.capitalone.dashboard.model.CollectorItem;
-import com.capitalone.dashboard.model.CollectorType;
 import com.capitalone.dashboard.model.Component;
 import com.capitalone.dashboard.model.Dashboard;
 import com.capitalone.dashboard.model.DashboardType;
@@ -162,14 +161,16 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
                 } else {
                     Widget originalWidget = dashboardService.getWidget(dashboard, oldWidget.getId());
                     List<ObjectId> objectIdsToKeep = originalWidget.getCollectorItemIds();
-                    orphanedTypes.remove(objectIdsToKeep);
+                    orphanedTypes.removeAll(objectIdsToKeep);
                     Widget widget = widgetRequest.updateWidget(originalWidget);
                     dashboardService.updateWidget(dashboard, widget);
                     // save this updated widget
-                    widgetsToRemove.remove(widget);
+                    widgetsToRemove.remove(originalWidget);
+                    newCollectorItems.addAll(widget.getCollectorItemIds());
                 }
             } else {
                 dashboardService.addWidget(dashboard, newWidget);
+                newCollectorItems.addAll(newWidget.getCollectorItemIds());
             }
 
         }
