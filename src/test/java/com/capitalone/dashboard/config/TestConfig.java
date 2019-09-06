@@ -283,5 +283,5 @@ public class TestConfig {
     }
 
     @Bean
-    public AutoDiscoveryService autoDiscoveryServiceService(){return Mockito.mock(AutoDiscoveryService.class);}
+    public AutoDiscoveryService autoDiscoveryService() {return Mockito.mock(AutoDiscoveryService.class);}
 }

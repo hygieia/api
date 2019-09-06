@@ -287,7 +287,7 @@ import org.springframework.context.annotation.ComponentScan;
 	 @Bean
 	 public FeatureFlagService featureFlagService(){return Mockito.mock(FeatureFlagService.class);}
 
-    @Bean
-    public AutoDiscoveryService autoDiscoveryServiceService(){return Mockito.mock(AutoDiscoveryService.class);}
+	 @Bean
+	 public AutoDiscoveryService autoDiscoveryService(){return Mockito.mock(AutoDiscoveryService.class);}
  }
 
