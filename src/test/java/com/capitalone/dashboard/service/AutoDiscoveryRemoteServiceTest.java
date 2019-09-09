@@ -184,7 +184,7 @@ public class AutoDiscoveryRemoteServiceTest {
         ad = autoRepo.findOne(id2);
         assertFalse(ad.getCodeRepoEntries().isEmpty());
         assertFalse(ad.getArtifactEntries().isEmpty());
-        assertTrue(ad.getModifiedTimestamp()-System.currentTimeMillis() < 1 );
+        assertNotNull(ad.getModifiedTimestamp());
 
         artifactEntry = ad.getArtifactEntries().iterator().next();
         assertEquals(artifactEntry.getStatus(), AutoDiscoveryStatusType.AWAITING_USER_RESPONSE);
