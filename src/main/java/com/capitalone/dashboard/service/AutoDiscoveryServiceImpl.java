@@ -37,9 +37,13 @@ public class AutoDiscoveryServiceImpl implements AutoDiscoveryService {
             // update existing AutoDiscovery record with the status from request
             autoDiscovery = autoDiscoveryRepository.findOne(id);
             updateAutoiscovery(autoDiscovery, request);
+            autoDiscovery.setModifiedTimestamp(System.currentTimeMillis());
         } else {
             // create new AutoDiscovery record
             autoDiscovery = requestToAutoiscovery(request);
+            long currTime = System.currentTimeMillis();
+            autoDiscovery.setCreatedTimestamp(currTime);
+            autoDiscovery.setModifiedTimestamp(currTime);
         }
 
         autoDiscoveryRepository.save(autoDiscovery);
