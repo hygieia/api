@@ -212,5 +212,34 @@
     "searchFields" : [
       "description"
     ]
-  }
+  },
+  {
+  "_id" : "5cc622600c879b1e88359e95",
+  "_class" : "com.capitalone.dashboard.model.ArtifactoryCollector",
+  "artifactoryServers" : [
+    "https://testartifactory.com"
+  ],
+  "name" : "Artifactory",
+  "collectorType" : "Artifact",
+  "enabled" : true,
+  "online" : true,
+  "errors" : [],
+  "uniqueFields" : {
+    "path" : "",
+    "repoName" : "",
+    "artifactName" : "",
+    "instanceUrl" : ""
+  },
+  "allFields" : {
+    "path" : "",
+    "repoName" : "",
+    "artifactName" : "",
+    "instanceUrl" : ""
+  },
+  "lastExecuted" : 1567542112648,
+  "searchFields" : [
+    "description"
+  ],
+  "properties" : {}
+}
 ]

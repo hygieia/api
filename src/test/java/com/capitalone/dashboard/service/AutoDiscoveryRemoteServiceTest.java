@@ -8,7 +8,14 @@ import com.capitalone.dashboard.model.AutoDiscovery;
 import com.capitalone.dashboard.model.AutoDiscoveryMetaData;
 import com.capitalone.dashboard.model.AutoDiscoveryStatusType;
 import com.capitalone.dashboard.model.AutoDiscoveryRemoteRequest;
+import com.capitalone.dashboard.model.Collector;
 import com.capitalone.dashboard.repository.AutoDiscoveryRepository;
+import com.capitalone.dashboard.repository.CollectorRepository;
+import com.capitalone.dashboard.testutil.GsonUtil;
+import com.google.common.io.Resources;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,6 +25,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,8 +60,11 @@ public class AutoDiscoveryRemoteServiceTest {
     @Autowired
     private AutoDiscoveryRepository autoRepo;
 
+    @Autowired
+    private CollectorRepository collectorRepository;
+
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
 
         codeRepoEntries = new ArrayList<>();
         buildEntries = new ArrayList<>();
@@ -114,6 +125,8 @@ public class AutoDiscoveryRemoteServiceTest {
 
         ad2 = new AutoDiscoveryRemoteRequest(adMeta2, codeRepoEntries, buildEntries, securityScanEntries, deploymentEntries,
                 libraryScanEntries, functionalTestEntries, artifactEntries, staticCodeEntries, featureEntries, "5d67f7b5066a8b0fe6cbfb99");
+
+        loadCollector(collectorRepository);
     }
 
     @After
@@ -205,6 +218,13 @@ public class AutoDiscoveryRemoteServiceTest {
         } catch (HygieiaException hex) {
             assertEquals(hex.getMessage(), "Invalid Auto Discovery Object ID: [this is a bad object id] received.");
         }
+    }
+
+    public static void loadCollector (CollectorRepository collectorRepository) throws IOException {
+        Gson gson = GsonUtil.getGson();
+        String json = IOUtils.toString(Resources.getResource("./collectors/coll.json"));
+        List<Collector> collector = gson.fromJson(json, new TypeToken<List<Collector>>(){}.getType());
+        collectorRepository.save(collector);
     }
 
 }
