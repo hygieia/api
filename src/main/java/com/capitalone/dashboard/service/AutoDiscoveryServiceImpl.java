@@ -3,8 +3,10 @@ package com.capitalone.dashboard.service;
 import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.AutoDiscoveredEntry;
 import com.capitalone.dashboard.model.AutoDiscovery;
+import com.capitalone.dashboard.model.Collector;
 import com.capitalone.dashboard.repository.AutoDiscoveryRepository;
 import com.capitalone.dashboard.model.AutoDiscoveryRemoteRequest;
+import com.capitalone.dashboard.repository.CollectorRepository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bson.types.ObjectId;
@@ -12,15 +14,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class AutoDiscoveryServiceImpl implements AutoDiscoveryService {
     private static final Log LOG = LogFactory.getLog(AutoDiscoveryServiceImpl.class);
     private final AutoDiscoveryRepository autoDiscoveryRepository;
+    private final CollectorRepository collectorRepository;
 
     @Autowired
-    public AutoDiscoveryServiceImpl(AutoDiscoveryRepository autoDiscoveryRepository) {
+    public AutoDiscoveryServiceImpl(AutoDiscoveryRepository autoDiscoveryRepository,CollectorRepository collectorRepository) {
         this.autoDiscoveryRepository = autoDiscoveryRepository;
+        this.collectorRepository = collectorRepository;
     }
 
     @Override
@@ -85,12 +90,26 @@ public class AutoDiscoveryServiceImpl implements AutoDiscoveryService {
      * @param target
      */
     private void updateEntryStatus(List<AutoDiscoveredEntry> source, List<AutoDiscoveredEntry> target) {
+        boolean optionsMatched = true;
         for (AutoDiscoveredEntry srcEntry : source) {
-            target.stream().forEach(entry -> {
-                if(entry.getOptions().equals(srcEntry.getOptions())){
+            String toolName = srcEntry.getToolName();
+            Collector collector = collectorRepository.findByName(toolName);
+            Map<String, Object> uniqueOptions = collector.getUniqueFields();
+            for (AutoDiscoveredEntry entry : target) {
+                for (String field : uniqueOptions.keySet()) {
+                    try {
+                        if (!((String) entry.getOptions().get(field)).equalsIgnoreCase((String) srcEntry.getOptions().get(field))) {
+                            optionsMatched = false;
+                        }
+                    } catch (Exception e) {
+                        LOG.info("Caught exception in AutoDiscoveryServiceImpl.updateEntryStatus()-- invalid options for collectorItem." + e.getMessage());
+                    }
+                }
+
+                if (optionsMatched) {
                     entry.setStatus(srcEntry.getStatus());
                 }
-            });
+            }
         }
     }
 
