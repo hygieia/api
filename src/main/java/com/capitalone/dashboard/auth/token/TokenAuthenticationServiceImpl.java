@@ -11,6 +11,7 @@ import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import io.jsonwebtoken.SignatureException;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -64,7 +65,7 @@ public class TokenAuthenticationServiceImpl implements TokenAuthenticationServic
 			
 			return authentication;
 			
-		} catch (ExpiredJwtException e) {
+		} catch (ExpiredJwtException | SignatureException e) {
 			return null;
 		}
 	}
