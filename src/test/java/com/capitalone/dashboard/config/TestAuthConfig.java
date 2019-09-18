@@ -9,6 +9,7 @@ import com.capitalone.dashboard.repository.UserInfoRepository;
 import com.capitalone.dashboard.service.ApiTokenService;
 import com.capitalone.dashboard.service.ApiTokenServiceImpl;
 import com.capitalone.dashboard.service.AuthenticationService;
+import com.capitalone.dashboard.service.AutoDiscoveryService;
 import com.capitalone.dashboard.service.BinaryArtifactService;
 import com.capitalone.dashboard.service.BuildService;
 import com.capitalone.dashboard.service.BusCompOwnerService;
@@ -299,5 +300,7 @@ public class TestAuthConfig {
     @Bean
     public FeatureFlagService featureFlagService(){return Mockito.mock(FeatureFlagService.class);}
 
+    @Bean
+    public AutoDiscoveryService autoDiscoveryService() {return Mockito.mock(AutoDiscoveryService.class);}
 }
 

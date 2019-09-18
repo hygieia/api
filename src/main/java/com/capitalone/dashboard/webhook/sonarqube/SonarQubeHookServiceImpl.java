@@ -3,6 +3,7 @@ package com.capitalone.dashboard.webhook.sonarqube;
 import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.*;
 import com.capitalone.dashboard.repository.CodeQualityRepository;
+import com.capitalone.dashboard.repository.CollectorRepository;
 import com.capitalone.dashboard.repository.SonarProjectRepository;
 
 import com.google.gson.JsonObject;
@@ -19,6 +20,7 @@ import org.springframework.web.client.RestClientException;
 
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
+import java.text.SimpleDateFormat;
 
 @Service
 public class SonarQubeHookServiceImpl implements SonarQubeHookService {
@@ -39,6 +41,7 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
     private static final String VALUE = "value";
     private static final String CDT = "conditions";
     private static final String DSHBRD_URL = "url";
+    private static final String ANALYSIS_TIME = "analysedAt";
     private static final String TASK_ID = "taskId";
     private static final String STATUS_WARN = "WARN";
     private static final String STATUS_ALERT = "ALERT";
@@ -47,12 +50,14 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
 
     private final CodeQualityRepository codeQualityRepository;
     private final SonarProjectRepository sonarProjectRepository;
+    private final CollectorRepository collectorRepository;
 
     @Autowired
-    SonarQubeHookServiceImpl( CodeQualityRepository codeQualityRepository, SonarProjectRepository sonarProjectRepository)
+    SonarQubeHookServiceImpl( CodeQualityRepository codeQualityRepository, SonarProjectRepository sonarProjectRepository,CollectorRepository collectorRepository)
     {
         this.codeQualityRepository = codeQualityRepository;
         this.sonarProjectRepository = sonarProjectRepository;
+        this.collectorRepository = collectorRepository;
     }
 
     @Override
@@ -61,13 +66,30 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
         JSONParser jsonParser = new JSONParser();
         JSONObject jsonObject = (JSONObject) jsonParser.parse(request.toJSONString());
         JSONObject prjData = (JSONObject) jsonObject.get("project");
-        SonarCollector collector = new SonarCollector();
 
+        Collector collector = collectorRepository.findByName("Sonar");
+        SonarProject existingProject = new SonarProject();
         SonarProject project = new SonarProject();
+
+        project.setCollectorId(collector.getId());
+        project.setEnabled(false);
+        project.setDescription(project.getProjectName());
+        project.setNiceName("Sonar");
         project.setInstanceUrl(str(prjData,DSHBRD_URL));
-        project.setProjectId(str(jsonObject, KEY));
+        project.setProjectId(str(prjData, KEY));
         project.setProjectName(str(prjData, NAME));
-        refreshData(project, request);
+        project.setDescription(project.getProjectName());
+
+
+        existingProject = sonarProjectRepository.findSonarProject(project.getCollectorId(),project.getInstanceUrl(),project.getProjectId());
+
+        if(existingProject != null)
+        {
+            refreshData(existingProject, request);
+        }else
+        {
+            refreshData(project, request);
+        }
 
         return "Processing Complete for " + project.getProjectName();
     }
@@ -75,7 +97,7 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
     private void refreshData(SonarProject sonarProject, JSONObject request) {
 
         CodeQuality codeQuality = currentCodeQuality(sonarProject, request);
-        if (codeQuality != null) {
+        if (codeQuality != null && isNewQualityData(sonarProject, codeQuality)) {
             sonarProject.setLastUpdated(System.currentTimeMillis());
             sonarProjectRepository.save(sonarProject);
             codeQuality.setCollectorItemId(sonarProject.getId());
@@ -93,6 +115,7 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
                 codeQuality.setType(CodeQualityType.StaticAnalysis);
                 codeQuality.setName(str(prjData, NAME));
                 codeQuality.setUrl(str(prjData, DSHBRD_URL));
+                codeQuality.setTimestamp(getTimestamp(request,ANALYSIS_TIME));
                 JsonObject prjMetrics = gsonObject.getAsJsonObject("qualityGate");
 
 
@@ -122,19 +145,29 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
         return null;
     }
 
+    private boolean isNewQualityData(SonarProject project, CodeQuality codeQuality) {
+        return codeQualityRepository.findByCollectorItemIdAndTimestamp(
+                project.getId(), codeQuality.getTimestamp()) == null;
+    }
+
+    private boolean isNewProject(SonarCollector collector, SonarProject application) {
+        return sonarProjectRepository.findSonarProject(
+                collector.getId(), application.getInstanceUrl(), application.getProjectId()) == null;
+    }
+
     private String str(JsonObject json, String key) {
         Object obj = json.get(key);
-        return obj == null ? null : obj.toString();
+        return obj == null ? null : obj.toString().replaceAll("\"","");
     }
 
     private String str(JSONObject json, String key) {
         Object obj = json.get(key);
-        return obj == null ? null : obj.toString();
+        return obj == null ? null : obj.toString().replaceAll("\"","");
     }
 
     private String strSafe(JsonObject json, String key) {
         Object obj = json.get(key);
-        return obj == null ? "" : obj.toString();
+        return obj == null ? "" : obj.toString().replaceAll("\"","");
     }
 
     private String strSafe(JSONObject json, String key) {
@@ -144,25 +177,25 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
 
     private Integer integer(JsonObject json, String key) {
         Object obj = json.get(key);
-        return obj == null ? null : Integer.valueOf(obj.toString());
+        return obj == null ? null : Integer.valueOf(obj.toString().replaceAll("\"",""));
     }
 
     @SuppressWarnings("unused")
     private Integer integer(JSONObject json, String key) {
         Object obj = json.get(key);
-        return obj == null ? null : Integer.valueOf(obj.toString());
+        return obj == null ? null : Integer.valueOf(obj.toString().replaceAll("\"",""));
     }
 
     @SuppressWarnings("unused")
     private BigDecimal decimal(JSONObject json, String key) {
         Object obj = json.get(key);
-        return obj == null ? null : new BigDecimal(obj.toString());
+        return obj == null ? null : new BigDecimal(obj.toString().replaceAll("\"",""));
     }
 
     @SuppressWarnings("unused")
     private Boolean bool(JSONObject json, String key) {
         Object obj = json.get(key);
-        return obj == null ? null : Boolean.valueOf(obj.toString());
+        return obj == null ? null : Boolean.valueOf(obj.toString().replaceAll("\"",""));
     }
 
     @SuppressWarnings("unused")
@@ -216,5 +249,17 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
 
     private static boolean displayMinutes(int days, int hours, int minutes) {
         return minutes > 0 && hours < 10 && days == 0;
+    }
+
+    private long getTimestamp(JSONObject json, String key) {
+        Object obj = json.get(key);
+        if (obj != null) {
+            try {
+                return new SimpleDateFormat(DATE_FORMAT).parse(obj.toString().replaceAll("\"","")).getTime();
+            } catch (java.text.ParseException e) {
+                LOG.error(obj + " is not in expected format " + DATE_FORMAT, e);
+            }
+        }
+        return 0;
     }
 }
