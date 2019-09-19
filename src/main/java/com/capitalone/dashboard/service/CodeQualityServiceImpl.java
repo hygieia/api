@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class CodeQualityServiceImpl implements CodeQualityService {
@@ -100,12 +101,12 @@ public class CodeQualityServiceImpl implements CodeQualityService {
                     new PageRequest(0, request.getMax(), Sort.Direction.DESC, "timestamp");
             result = codeQualityRepository.findAll(builder.getValue(), pageRequest).getContent();
         }
-        String instanceUrl = (String)item.getOptions().get("instanceUrl");
+        String instanceUrl = (String) item.getOptions().get("instanceUrl");
         String projectId = (String) item.getOptions().get("projectId");
-        String reportUrl = getReportURL(instanceUrl,"dashboard/index/",projectId);
+        String reportUrl = getReportURL(instanceUrl, "dashboard/index/", projectId);
         Collector collector = collectorRepository.findOne(item.getCollectorId());
         long lastExecuted = (collector == null) ? 0 : collector.getLastExecuted();
-        return new DataResponse<>(result, lastExecuted,reportUrl);
+        return new DataResponse<>(result, lastExecuted, reportUrl);
     }
 
 
@@ -116,8 +117,12 @@ public class CodeQualityServiceImpl implements CodeQualityService {
         }
 
         CodeQualityType qualityType = Objects.firstNonNull(request.getType(), CodeQualityType.StaticAnalysis);
+        CollectorItem item = null;
+        List<CollectorItem> allInComponent = component.getCollectorItems(qualityType.collectorType());
+        Optional<CollectorItem> allInWidget = null!=allInComponent? allInComponent.stream().filter(
+                collectorItem -> request.getCollectorItemIds().contains(collectorItem.getId())).findFirst(): Optional.empty();
 
-        return component.getLastUpdatedCollectorItemForType(qualityType.collectorType());
+        return allInWidget.isPresent() ? allInWidget.get() : null;
     }
 
     protected CodeQuality createCodeQuality(CodeQualityCreateRequest request) throws HygieiaException {
@@ -211,9 +216,9 @@ public class CodeQualityServiceImpl implements CodeQualityService {
     }
 
     // get projectUrl and projectId from collectorItem and form reportUrl
-    private String getReportURL(String projectUrl,String path,String projectId) {
+    private String getReportURL(String projectUrl, String path, String projectId) {
         StringBuilder sb = new StringBuilder(projectUrl);
-        if(!projectUrl.endsWith("/")) {
+        if (!projectUrl.endsWith("/")) {
             sb.append("/");
         }
         sb.append(path)

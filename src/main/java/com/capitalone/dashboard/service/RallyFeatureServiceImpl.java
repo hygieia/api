@@ -79,6 +79,9 @@ public class RallyFeatureServiceImpl implements RallyFeatureService {
 		Optional<Collector> collector = collectorRepository.findByCollectorTypeAndName(CollectorType.AgileTool, "Rally")
 															.stream()
 															.findFirst();
+		if (!collector.isPresent()) {
+			return null;
+		}
 		collectorId = collector.get().getId();
 
 		for(CollectorItem collectorItem : collectorItems){

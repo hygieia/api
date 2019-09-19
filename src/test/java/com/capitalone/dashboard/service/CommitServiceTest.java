@@ -49,6 +49,7 @@ public class CommitServiceTest {
 
         CommitRequest request = new CommitRequest();
         request.setComponentId(componentId);
+        request.setCollectorItemId(collectorItemId);
 
         when(componentRepository.findOne(request.getComponentId())).thenReturn(makeComponent(collectorItemId, collectorId, true));
         when(collectorRepository.findOne(collectorId)).thenReturn(collector);

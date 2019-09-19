@@ -23,6 +23,7 @@ public class WidgetRequestTest {
 
         WidgetRequest widgetRequest = new WidgetRequest();
         widgetRequest.setName("AgileTool");
+        widgetRequest.setType("AgileTool");
         widgetRequest.setOptions(allOptions);
         Widget widget = widgetRequest.widget();
 
@@ -48,6 +49,7 @@ public class WidgetRequestTest {
 		
 		WidgetRequest widgetRequest = new WidgetRequest();
         widgetRequest.setName("feature");
+        widgetRequest.setType("feature");
         widgetRequest.setOptions(allOptions);
         Widget widget = widgetRequest.widget();
 
