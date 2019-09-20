@@ -47,6 +47,7 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
     private static final String STATUS_ALERT = "ALERT";
     private static final String DATE = "date";
     private static final String EVENTS = "events";
+    private static final String VERSION = "revision";
 
     private final CodeQualityRepository codeQualityRepository;
     private final SonarProjectRepository sonarProjectRepository;
@@ -68,7 +69,7 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
         JSONObject prjData = (JSONObject) jsonObject.get("project");
 
         Collector collector = collectorRepository.findByName("Sonar");
-        SonarProject existingProject = new SonarProject();
+        SonarProject existingProject;
         SonarProject project = new SonarProject();
 
         project.setCollectorId(collector.getId());
@@ -81,7 +82,7 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
         project.setDescription(project.getProjectName());
 
 
-        existingProject = sonarProjectRepository.findSonarProject(project.getCollectorId(),project.getInstanceUrl(),project.getProjectId());
+H         existingProject = sonarProjectRepository.findSonarProject(project.getCollectorId(),project.getInstanceUrl(),project.getProjectName());
 
         if(existingProject != null)
         {
@@ -116,8 +117,18 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
                 codeQuality.setName(str(prjData, NAME));
                 codeQuality.setUrl(str(prjData, DSHBRD_URL));
                 codeQuality.setTimestamp(getTimestamp(request,ANALYSIS_TIME));
+                codeQuality.setVersion(str(gsonObject,VERSION));
                 JsonObject prjMetrics = gsonObject.getAsJsonObject("qualityGate");
 
+                //Obtain missing metrics not in conditions
+                CodeQualityMetric qualityGateMetric = new CodeQualityMetric();
+                qualityGateMetric.setName("quality_gate_details");
+                qualityGateMetric.setValue(strSafe(gsonObject,"qualityGate"));
+                codeQuality.getMetrics().add(qualityGateMetric);
+
+                qualityGateMetric.setName("alert_status");
+                qualityGateMetric.setValue(str(prjMetrics,"status"));
+                codeQuality.getMetrics().add(qualityGateMetric);
 
             for (Object metricObj : prjMetrics.getAsJsonArray(CDT)) {
                     JsonObject metricJson = (JsonObject) metricObj;
@@ -167,7 +178,7 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
 
     private String strSafe(JsonObject json, String key) {
         Object obj = json.get(key);
-        return obj == null ? "" : obj.toString().replaceAll("\"","");
+        return obj == null ? "" : obj.toString();
     }
 
     private String strSafe(JSONObject json, String key) {
