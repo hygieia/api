@@ -75,14 +75,14 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
         project.setCollectorId(collector.getId());
         project.setEnabled(false);
         project.setDescription(project.getProjectName());
-        project.setNiceName("Sonar");
+        project.setNiceName("SonarWebhook");
         project.setInstanceUrl(str(prjData,DSHBRD_URL));
         project.setProjectId(str(prjData, KEY));
         project.setProjectName(str(prjData, NAME));
         project.setDescription(project.getProjectName());
 
 
-H         existingProject = sonarProjectRepository.findSonarProject(project.getCollectorId(),project.getInstanceUrl(),project.getProjectName());
+        existingProject = sonarProjectRepository.findSonarProject(project.getCollectorId(),project.getInstanceUrl(),project.getProjectName());
 
         if(existingProject != null)
         {
