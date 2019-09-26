@@ -1,0 +1,152 @@
+{
+  "analysedAt": "2019-09-23T13:59:57-0400",
+  "branch": {
+    "isMain": true,
+    "name": "master",
+    "type": "LONG",
+    "url": "http://localhost:9000/dashboard?id=testProject"
+  },
+  "changedAt": "2019-09-23T13:59:57-0400",
+  "project": {
+    "key": "testProject",
+    "name": "testProject",
+    "url": "http://localhost:9000/dashboard?id=testProject"
+  },
+  "properties": {},
+  "qualityGate": {
+    "conditions": [
+      {
+        "errorThreshold": "4",
+        "metric": "new_reliability_rating",
+        "operator": "GREATER_THAN",
+        "status": "OK",
+        "value": "3"
+      },
+      {
+        "errorThreshold": "4",
+        "metric": "new_security_rating",
+        "operator": "GREATER_THAN",
+        "status": "OK",
+        "value": "2"
+      },
+      {
+        "errorThreshold": "4",
+        "metric": "new_maintainability_rating",
+        "operator": "GREATER_THAN",
+        "status": "OK",
+        "value": "1"
+      },
+      {
+        "errorThreshold": "1",
+        "metric": "coverage",
+        "operator": "LESS_THAN",
+        "status": "OK",
+        "value": "32.1"
+      },
+      {
+        "errorThreshold": "0",
+        "metric": "blocker_violations",
+        "operator": "GREATER_THAN",
+        "status": "OK",
+        "value": "0"
+      },
+      {
+        "errorThreshold": "1000",
+        "metric": "complexity",
+        "operator": "GREATER_THAN",
+        "status": "OK",
+        "value": "142"
+      },
+      {
+        "errorThreshold": "110",
+        "metric": "critical_violations",
+        "operator": "GREATER_THAN",
+        "status": "OK",
+        "value": "2"
+      },
+      {
+        "errorThreshold": "0",
+        "metric": "line_coverage",
+        "operator": "LESS_THAN",
+        "status": "OK",
+        "value": "33.2"
+      },
+      {
+        "errorThreshold": "1000",
+        "metric": "major_violations",
+        "operator": "GREATER_THAN",
+        "status": "OK",
+        "value": "8"
+      },
+      {
+        "errorThreshold": "10000000",
+        "metric": "ncloc",
+        "operator": "GREATER_THAN",
+        "status": "OK",
+        "value": "872"
+      },
+      {
+        "errorThreshold": "10000",
+        "metric": "new_vulnerabilities",
+        "operator": "GREATER_THAN",
+        "status": "OK",
+        "value": "1"
+      },
+      {
+        "errorThreshold": "100000",
+        "metric": "sqale_index",
+        "operator": "GREATER_THAN",
+        "status": "OK",
+        "value": "94"
+      },
+      {
+        "errorThreshold": "100",
+        "metric": "test_errors",
+        "operator": "GREATER_THAN",
+        "status": "OK",
+        "value": "0"
+      },
+      {
+        "errorThreshold": "100",
+        "metric": "test_failures",
+        "operator": "GREATER_THAN",
+        "status": "OK",
+        "value": "0"
+      },
+      {
+        "errorThreshold": "0",
+        "metric": "test_success_density",
+        "operator": "LESS_THAN",
+        "status": "OK",
+        "value": "100.0"
+      },
+      {
+        "errorThreshold": "1",
+        "metric": "tests",
+        "operator": "LESS_THAN",
+        "status": "OK",
+        "value": "6"
+      },
+      {
+        "errorThreshold": "1000",
+        "metric": "violations",
+        "operator": "GREATER_THAN",
+        "status": "OK",
+        "value": "16"
+      },
+      {
+        "errorThreshold": "100",
+        "metric": "vulnerabilities",
+        "operator": "GREATER_THAN",
+        "status": "OK",
+        "value": "1"
+      }
+    ],
+    "name": "Sonar way",
+    "status": "OK"
+  },
+  "revision": "6e821c193838c48ed866aaeb3abc3123",
+  "serverUrl": "http://localhost:9000",
+  "status": "SUCCESS",
+  "taskId": "AW2Freao9891"
+}
