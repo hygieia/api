@@ -21,6 +21,9 @@ import org.springframework.web.client.RestClientException;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class SonarQubeHookServiceImpl implements SonarQubeHookService {
@@ -48,6 +51,8 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
     private static final String DATE = "date";
     private static final String EVENTS = "events";
     private static final String VERSION = "revision";
+    private static final String NICE_NAME = "niceName";
+    private static final String PROJECT_NAME = "options.projectName";
 
     private final CodeQualityRepository codeQualityRepository;
     private final SonarProjectRepository sonarProjectRepository;
@@ -68,11 +73,9 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
         JSONObject jsonObject = (JSONObject) jsonParser.parse(request.toJSONString());
         JSONObject prjData = (JSONObject) jsonObject.get("project");
 
-        Collector collector = collectorRepository.findByName("Sonar");
         SonarProject existingProject;
         SonarProject project = new SonarProject();
 
-        project.setCollectorId(collector.getId());
         project.setEnabled(false);
         project.setDescription(project.getProjectName());
         project.setNiceName("SonarWebhook");
@@ -80,6 +83,27 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
         project.setProjectId(str(prjData, KEY));
         project.setProjectName(str(prjData, NAME));
         project.setDescription(project.getProjectName());
+
+        Collector collector = collectorRepository.findByName("Sonar");
+        if(collector == null){
+            collector = new Collector();
+            collector.setName("Sonar");
+            collector.setCollectorType(CollectorType.CodeQuality);
+            collector.setOnline(true);
+            collector.setEnabled(true);
+            collector.setSearchFields(Arrays.asList(PROJECT_NAME,NICE_NAME));
+            Map<String, Object> allOptions = new HashMap<>();
+            allOptions.put(project.getInstanceUrl(),"");
+            allOptions.put(project.getProjectName(),"");
+            allOptions.put(project.getProjectId(), "");
+            collector.setAllFields(allOptions);
+            Map<String, Object> uniqueOptions = new HashMap<>();
+            uniqueOptions.put(project.getInstanceUrl(),"");
+            uniqueOptions.put(project.getProjectName(),"");
+            collector.setUniqueFields(uniqueOptions);
+        }
+
+        project.setCollectorId(collector.getId());
 
 
         existingProject = sonarProjectRepository.findSonarProject(project.getCollectorId(),project.getInstanceUrl(),project.getProjectName());
