@@ -9,7 +9,10 @@ import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
@@ -36,6 +39,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.security.Principal;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -46,93 +50,92 @@ import java.util.Map;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-//import org.springframework.util.MimeType;
+@Component
+@Order(1)
+public class LoggingFilter extends OncePerRequestFilter {
 
-
-public class LoggingFilter implements Filter {
-
-
-    private static final Logger LOGGER = Logger.getLogger(LoggingFilter.class);
+    private static final Logger LOGGER = Logger.getLogger("LoggingFilter");
 
     @Autowired
     private RequestLogRepository requestLogRepository;
+
     @Autowired
     private ApiSettings settings;
 
-
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
+    protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
 
-    }
+        long startTime = System.currentTimeMillis();
+        try {
+            if (httpServletRequest.getMethod().equals(HttpMethod.PUT.toString()) ||
+                    (httpServletRequest.getMethod().equals(HttpMethod.POST.toString())) ||
+                    (httpServletRequest.getMethod().equals(HttpMethod.DELETE.toString()))) {
+                Map<String, String> requestMap = this.getTypesafeRequestMap(httpServletRequest);
+                BufferedRequestWrapper bufferedRequest = new BufferedRequestWrapper(httpServletRequest);
+                BufferedResponseWrapper bufferedResponse = new BufferedResponseWrapper(httpServletResponse);
 
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-            throws IOException, ServletException {
+                RequestLog requestLog = new RequestLog();
+                requestLog.setClient(httpServletRequest.getRemoteAddr());
+                requestLog.setEndpoint(httpServletRequest.getRequestURI());
+                requestLog.setMethod(httpServletRequest.getMethod());
+                requestLog.setParameter(requestMap.toString());
+                requestLog.setRequestSize(httpServletRequest.getContentLengthLong());
+                requestLog.setRequestContentType(httpServletRequest.getContentType());
 
-
-        HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-        HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-        if (httpServletRequest.getMethod().equals(HttpMethod.PUT.toString()) ||
-                (httpServletRequest.getMethod().equals(HttpMethod.POST.toString())) ||
-                (httpServletRequest.getMethod().equals(HttpMethod.DELETE.toString()))) {
-            Map<String, String> requestMap = this.getTypesafeRequestMap(httpServletRequest);
-            BufferedRequestWrapper bufferedRequest = new BufferedRequestWrapper(httpServletRequest);
-            BufferedResponseWrapper bufferedResponse = new BufferedResponseWrapper(httpServletResponse);
-
-            long startTime = System.currentTimeMillis();
-            RequestLog requestLog = new RequestLog();
-            requestLog.setClient(httpServletRequest.getRemoteAddr());
-            requestLog.setEndpoint(httpServletRequest.getRequestURI());
-            requestLog.setMethod(httpServletRequest.getMethod());
-            requestLog.setParameter(requestMap.toString());
-            requestLog.setRequestSize(httpServletRequest.getContentLengthLong());
-            requestLog.setRequestContentType(httpServletRequest.getContentType());
-
-            chain.doFilter(bufferedRequest, bufferedResponse);
-            requestLog.setResponseContentType(httpServletResponse.getContentType());
-            try {
-                if ((httpServletRequest.getContentType() != null) && (new MimeType(httpServletRequest.getContentType()).match(new MimeType(APPLICATION_JSON_VALUE)))) {
-                    requestLog.setRequestBody(JSON.parse(bufferedRequest.getRequestBody()));
-                }
-                if ((bufferedResponse.getContentType() != null) && (new MimeType(bufferedResponse.getContentType()).match(new MimeType(APPLICATION_JSON_VALUE)))){
-                    requestLog.setResponseBody(JSON.parse(bufferedResponse.getContent()));
-                }
-            } catch (MimeTypeParseException e) {
-                LOGGER.error("Invalid MIME Type detected. Request MIME type=" + httpServletRequest.getContentType() + ". Response MIME Type=" + bufferedResponse.getContentType());
-            }
-            requestLog.setResponseSize(bufferedResponse.getContent().length());
-
-            requestLog.setResponseCode(bufferedResponse.getStatus());
-            long endTime = System.currentTimeMillis();
-            requestLog.setResponseTime(endTime - startTime);
-            requestLog.setTimestamp(endTime);
-            try {
-                requestLogRepository.save(requestLog);
-            } catch (RuntimeException re) {
-                LOGGER.info(requestLog.toString());
-            }
-
-        } else {
-            if (settings.isCorsEnabled()) {
-
-                String clientOrigin = httpServletRequest.getHeader("Origin");
-
-                String corsWhitelist = settings.getCorsWhitelist();
-                if (!StringUtils.isEmpty(corsWhitelist)) {
-                    List<String> incomingURLs = Arrays.asList(corsWhitelist.trim().split(","));
-
-                    if (incomingURLs.contains(clientOrigin)) {
-                        //adds headers to response to allow CORS
-                        httpServletResponse.addHeader("Access-Control-Allow-Origin", clientOrigin);
-                        httpServletResponse.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-                        httpServletResponse.addHeader("Access-Control-Allow-Headers", "Content-Type");
-                        httpServletResponse.addHeader("Access-Control-Max-Age", "1");
+                filterChain.doFilter(bufferedRequest, bufferedResponse);
+                requestLog.setResponseContentType(httpServletResponse.getContentType());
+                try {
+                    if ((httpServletRequest.getContentType() != null) && (new MimeType(httpServletRequest.getContentType()).match(new MimeType(APPLICATION_JSON_VALUE)))) {
+                        requestLog.setRequestBody(JSON.parse(bufferedRequest.getRequestBody()));
                     }
+                    if ((bufferedResponse.getContentType() != null) && (new MimeType(bufferedResponse.getContentType()).match(new MimeType(APPLICATION_JSON_VALUE)))) {
+                        requestLog.setResponseBody(JSON.parse(bufferedResponse.getContent()));
+                    }
+                } catch (MimeTypeParseException e) {
+                    LOGGER.error("Invalid MIME Type detected. Request MIME type=" + httpServletRequest.getContentType() + ". Response MIME Type=" + bufferedResponse.getContentType());
+                }
+                requestLog.setResponseSize(bufferedResponse.getContent().length());
+
+                requestLog.setResponseCode(bufferedResponse.getStatus());
+                long endTime = System.currentTimeMillis();
+                requestLog.setResponseTime(endTime - startTime);
+                requestLog.setTimestamp(endTime);
+                try {
+                    requestLogRepository.save(requestLog);
+                } catch (RuntimeException re) {
+                    LOGGER.error("Encountered exception while saving request log - " + requestLog.toString(), re);
                 }
 
+            } else {
+                if (settings.isCorsEnabled()) {
+
+                    String clientOrigin = httpServletRequest.getHeader("Origin");
+
+                    String corsWhitelist = settings.getCorsWhitelist();
+                    if (!StringUtils.isEmpty(corsWhitelist)) {
+                        List<String> incomingURLs = Arrays.asList(corsWhitelist.trim().split(","));
+
+                        if (incomingURLs.contains(clientOrigin)) {
+                            //adds headers to response to allow CORS
+                            httpServletResponse.addHeader("Access-Control-Allow-Origin", clientOrigin);
+                            httpServletResponse.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+                            httpServletResponse.addHeader("Access-Control-Allow-Headers", "Content-Type");
+                            httpServletResponse.addHeader("Access-Control-Max-Age", "1");
+                        }
+                    }
+
+                }
+                filterChain.doFilter(httpServletRequest, httpServletResponse);
             }
-            chain.doFilter(request, response);
+        } finally {
+            Principal userPrincipal = httpServletRequest.getUserPrincipal();
+            LOGGER.info("requester=" + ( userPrincipal == null? userPrincipal : userPrincipal.getName() )
+                    + ", timeTaken=" + (System.currentTimeMillis() - startTime)
+                    + ", endPoint=" + httpServletRequest.getRequestURI()
+                    + ", URL=" + httpServletRequest.getRequestURL()
+                    + ", clientIp=" + httpServletRequest.getRemoteAddr() );
         }
+
     }
 
 
