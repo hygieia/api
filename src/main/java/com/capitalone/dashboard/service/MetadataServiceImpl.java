@@ -57,9 +57,11 @@ public class MetadataServiceImpl implements MetadataService {
     }
 
     @Override
-    public DataResponse<Iterable<Metadata>> search(String searchKey, String value) throws HygieiaException {
-         LOGGER.info("MetdataService.search() :  Enter");
+    public DataResponse<Iterable<Metadata>> search(String searchKey, String value) {
+        long start = System.currentTimeMillis();
         Iterable<Metadata> mts = customRepositoryQuery.findAllMetaDataBySearchQuery(searchKey,value);
+        long end = System.currentTimeMillis();
+        LOGGER.info("MetadataService.search::"+ "searchkey >> "+searchKey+"="+value+" Duration: "+(end-start)+" millis");
         return new DataResponse(mts, System.currentTimeMillis());
 
     }
