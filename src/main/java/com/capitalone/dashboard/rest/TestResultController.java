@@ -9,6 +9,7 @@ import com.capitalone.dashboard.request.PerfTestDataCreateRequest;
 import com.capitalone.dashboard.request.TestDataCreateRequest;
 import com.capitalone.dashboard.request.TestResultRequest;
 import com.capitalone.dashboard.service.TestResultService;
+import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.json.simple.JSONObject;
 
 import javax.validation.Valid;
 
@@ -80,4 +82,14 @@ public class TestResultController {
                 .body(response);
     }
 
+    @RequestMapping(value = "/v3/quality/testresult", method = POST,
+            consumes = APPLICATION_JSON_VALUE,   produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> createPerfTestV3(@Valid @RequestBody JSONObject request) throws HygieiaException {
+        request.get("type");
+        request.get("perfTool");
+        String response = "Success";
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
+    }
 }
