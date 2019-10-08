@@ -16,15 +16,11 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
-import javax.servlet.Filter;
 import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
 import javax.servlet.ReadListener;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.WriteListener;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -39,7 +35,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.security.Principal;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -66,74 +61,65 @@ public class LoggingFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
 
         long startTime = System.currentTimeMillis();
-        try {
-            if (httpServletRequest.getMethod().equals(HttpMethod.PUT.toString()) ||
-                    (httpServletRequest.getMethod().equals(HttpMethod.POST.toString())) ||
-                    (httpServletRequest.getMethod().equals(HttpMethod.DELETE.toString()))) {
-                Map<String, String> requestMap = this.getTypesafeRequestMap(httpServletRequest);
-                BufferedRequestWrapper bufferedRequest = new BufferedRequestWrapper(httpServletRequest);
-                BufferedResponseWrapper bufferedResponse = new BufferedResponseWrapper(httpServletResponse);
+        if (httpServletRequest.getMethod().equals(HttpMethod.PUT.toString()) ||
+                (httpServletRequest.getMethod().equals(HttpMethod.POST.toString())) ||
+                (httpServletRequest.getMethod().equals(HttpMethod.DELETE.toString()))) {
+            Map<String, String> requestMap = this.getTypesafeRequestMap(httpServletRequest);
+            BufferedRequestWrapper bufferedRequest = new BufferedRequestWrapper(httpServletRequest);
+            BufferedResponseWrapper bufferedResponse = new BufferedResponseWrapper(httpServletResponse);
 
-                RequestLog requestLog = new RequestLog();
-                requestLog.setClient(httpServletRequest.getRemoteAddr());
-                requestLog.setEndpoint(httpServletRequest.getRequestURI());
-                requestLog.setMethod(httpServletRequest.getMethod());
-                requestLog.setParameter(requestMap.toString());
-                requestLog.setRequestSize(httpServletRequest.getContentLengthLong());
-                requestLog.setRequestContentType(httpServletRequest.getContentType());
+            RequestLog requestLog = new RequestLog();
+            requestLog.setClient(httpServletRequest.getRemoteAddr());
+            requestLog.setEndpoint(httpServletRequest.getRequestURI());
+            requestLog.setMethod(httpServletRequest.getMethod());
+            requestLog.setParameter(requestMap.toString());
+            requestLog.setRequestSize(httpServletRequest.getContentLengthLong());
+            requestLog.setRequestContentType(httpServletRequest.getContentType());
 
-                filterChain.doFilter(bufferedRequest, bufferedResponse);
-                requestLog.setResponseContentType(httpServletResponse.getContentType());
-                try {
-                    if ((httpServletRequest.getContentType() != null) && (new MimeType(httpServletRequest.getContentType()).match(new MimeType(APPLICATION_JSON_VALUE)))) {
-                        requestLog.setRequestBody(JSON.parse(bufferedRequest.getRequestBody()));
-                    }
-                    if ((bufferedResponse.getContentType() != null) && (new MimeType(bufferedResponse.getContentType()).match(new MimeType(APPLICATION_JSON_VALUE)))) {
-                        requestLog.setResponseBody(JSON.parse(bufferedResponse.getContent()));
-                    }
-                } catch (MimeTypeParseException e) {
-                    LOGGER.error("Invalid MIME Type detected. Request MIME type=" + httpServletRequest.getContentType() + ". Response MIME Type=" + bufferedResponse.getContentType());
+            filterChain.doFilter(bufferedRequest, bufferedResponse);
+            requestLog.setResponseContentType(httpServletResponse.getContentType());
+            try {
+                if ((httpServletRequest.getContentType() != null) && (new MimeType(httpServletRequest.getContentType()).match(new MimeType(APPLICATION_JSON_VALUE)))) {
+                    requestLog.setRequestBody(JSON.parse(bufferedRequest.getRequestBody()));
                 }
-                requestLog.setResponseSize(bufferedResponse.getContent().length());
-
-                requestLog.setResponseCode(bufferedResponse.getStatus());
-                long endTime = System.currentTimeMillis();
-                requestLog.setResponseTime(endTime - startTime);
-                requestLog.setTimestamp(endTime);
-                try {
-                    requestLogRepository.save(requestLog);
-                } catch (RuntimeException re) {
-                    LOGGER.error("Encountered exception while saving request log - " + requestLog.toString(), re);
+                if ((bufferedResponse.getContentType() != null) && (new MimeType(bufferedResponse.getContentType()).match(new MimeType(APPLICATION_JSON_VALUE)))) {
+                    requestLog.setResponseBody(JSON.parse(bufferedResponse.getContent()));
                 }
-
-            } else {
-                if (settings.isCorsEnabled()) {
-
-                    String clientOrigin = httpServletRequest.getHeader("Origin");
-
-                    String corsWhitelist = settings.getCorsWhitelist();
-                    if (!StringUtils.isEmpty(corsWhitelist)) {
-                        List<String> incomingURLs = Arrays.asList(corsWhitelist.trim().split(","));
-
-                        if (incomingURLs.contains(clientOrigin)) {
-                            //adds headers to response to allow CORS
-                            httpServletResponse.addHeader("Access-Control-Allow-Origin", clientOrigin);
-                            httpServletResponse.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-                            httpServletResponse.addHeader("Access-Control-Allow-Headers", "Content-Type");
-                            httpServletResponse.addHeader("Access-Control-Max-Age", "1");
-                        }
-                    }
-
-                }
-                filterChain.doFilter(httpServletRequest, httpServletResponse);
+            } catch (MimeTypeParseException e) {
+                LOGGER.error("Invalid MIME Type detected. Request MIME type=" + httpServletRequest.getContentType() + ". Response MIME Type=" + bufferedResponse.getContentType());
             }
-        } finally {
-            Principal userPrincipal = httpServletRequest.getUserPrincipal();
-            LOGGER.info("requester=" + ( userPrincipal == null? userPrincipal : userPrincipal.getName() )
-                    + ", timeTaken=" + (System.currentTimeMillis() - startTime)
-                    + ", endPoint=" + httpServletRequest.getRequestURI()
-                    + ", URL=" + httpServletRequest.getRequestURL()
-                    + ", clientIp=" + httpServletRequest.getRemoteAddr() );
+            requestLog.setResponseSize(bufferedResponse.getContent().length());
+
+            requestLog.setResponseCode(bufferedResponse.getStatus());
+            long endTime = System.currentTimeMillis();
+            requestLog.setResponseTime(endTime - startTime);
+            requestLog.setTimestamp(endTime);
+            try {
+                requestLogRepository.save(requestLog);
+            } catch (RuntimeException re) {
+                LOGGER.error("Encountered exception while saving request log - " + requestLog.toString(), re);
+            }
+
+        } else {
+            if (settings.isCorsEnabled()) {
+
+                String clientOrigin = httpServletRequest.getHeader("Origin");
+
+                String corsWhitelist = settings.getCorsWhitelist();
+                if (!StringUtils.isEmpty(corsWhitelist)) {
+                    List<String> incomingURLs = Arrays.asList(corsWhitelist.trim().split(","));
+
+                    if (incomingURLs.contains(clientOrigin)) {
+                        //adds headers to response to allow CORS
+                        httpServletResponse.addHeader("Access-Control-Allow-Origin", clientOrigin);
+                        httpServletResponse.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+                        httpServletResponse.addHeader("Access-Control-Allow-Headers", "Content-Type");
+                        httpServletResponse.addHeader("Access-Control-Max-Age", "1");
+                    }
+                }
+
+            }
+            filterChain.doFilter(httpServletRequest, httpServletResponse);
         }
 
     }

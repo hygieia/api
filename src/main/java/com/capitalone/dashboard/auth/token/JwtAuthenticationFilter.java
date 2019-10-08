@@ -1,5 +1,6 @@
 package com.capitalone.dashboard.auth.token;
 import java.io.IOException;
+import java.security.Principal;
 import java.util.Objects;
 
 import javax.servlet.FilterChain;
@@ -33,26 +34,45 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
 
+        long startTime = System.currentTimeMillis();
         if (request != null) {
             String authHeader = request.getHeader("Authorization");
             if (authHeader == null || authHeader.startsWith("apiToken ")) {
-                filterChain.doFilter(request, response);
+                try {
+                    filterChain.doFilter(request, response);
+                } finally {
+                    LOGGER.info("requester=" + ( authHeader == null? "READ_ONLY" : "API_USER" )
+                            + ", timeTaken=" + (System.currentTimeMillis() - startTime)
+                            + ", endPoint=" + request.getRequestURI()
+                            + ", URL=" + request.getRequestURL()
+                            + ", clientIp=" + request.getRemoteAddr() );
+                }
                 return;
             }
         }
 
         Authentication authentication = tokenAuthenticationService.getAuthentication(request);
 
-        if (Objects.isNull(authentication)) {
-            //Handle Expired or bad JWT tokens
-            LOGGER.info("doFilter - Expired or bad JWT tokens, set response to SC_UNAUTHORIZED");
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            filterChain.doFilter(request, response); // TODO: should we remove this?
-        } else {
-            // process properly authenticated requests
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            filterChain.doFilter(request, response);
-            tokenAuthenticationService.addAuthentication(response, authentication);
+        try {
+            if (Objects.isNull(authentication)) {
+                //Handle Expired or bad JWT tokens
+                LOGGER.info("Expired or bad JWT tokens, set response status to HttpServletResponse.SC_UNAUTHORIZED");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                if (request.getMethod().equalsIgnoreCase("GET")) {
+                    filterChain.doFilter(request, response);
+                }
+            } else {
+                // process properly authenticated requests
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                filterChain.doFilter(request, response);
+                tokenAuthenticationService.addAuthentication(response, authentication);
+            }
+        } finally {
+            LOGGER.info("requester=" + ( authentication == null || authentication.getPrincipal() == null ? "READ_ONLY" : authentication.getPrincipal() )
+                    + ", timeTaken=" + (System.currentTimeMillis() - startTime)
+                    + ", endPoint=" + request.getRequestURI()
+                    + ", URL=" + request.getRequestURL()
+                    + ", clientIp=" + request.getRemoteAddr() );
         }
     }
 }

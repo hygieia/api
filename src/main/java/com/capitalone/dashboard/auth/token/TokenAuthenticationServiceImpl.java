@@ -5,7 +5,6 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
-import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Date;
 
@@ -57,7 +56,7 @@ public class TokenAuthenticationServiceImpl implements TokenAuthenticationServic
 		
 		String token = StringUtils.removeStart(authHeader, AUTH_PREFIX_W_SPACE);
 		try {
-			Claims claims = Jwts.parser().setSigningKey(tokenAuthProperties.getSecret().getBytes(Charset.forName("UTF-8"))).parseClaimsJws(token).getBody();
+			Claims claims = Jwts.parser().setSigningKey(tokenAuthProperties.getSecret()).parseClaimsJws(token).getBody();
 			String username = claims.getSubject();
 			Collection<? extends GrantedAuthority> authorities = getAuthorities(claims.get(ROLES_CLAIM, Collection.class));
 			PreAuthenticatedAuthenticationToken authentication = new PreAuthenticatedAuthenticationToken(username, null, authorities);
