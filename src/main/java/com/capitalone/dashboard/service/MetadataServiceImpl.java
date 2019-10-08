@@ -1,7 +1,10 @@
 package com.capitalone.dashboard.service;
 
 import com.capitalone.dashboard.misc.HygieiaException;
+import com.capitalone.dashboard.model.Dashboard;
+import com.capitalone.dashboard.model.DataResponse;
 import com.capitalone.dashboard.model.Metadata;
+import com.capitalone.dashboard.repository.CustomRepositoryQuery;
 import com.capitalone.dashboard.repository.MetadataRepository;
 import com.capitalone.dashboard.request.MetadataCreateRequest;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -13,6 +16,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class MetadataServiceImpl implements MetadataService {
 
@@ -20,9 +25,12 @@ public class MetadataServiceImpl implements MetadataService {
 
     private final MetadataRepository metadataRepository;
 
+    private final CustomRepositoryQuery customRepositoryQuery;
+
     @Autowired
-    public MetadataServiceImpl(MetadataRepository metadataRepository) {
+    public MetadataServiceImpl(MetadataRepository metadataRepository, CustomRepositoryQuery customRepositoryQuery) {
         this.metadataRepository = metadataRepository;
+        this.customRepositoryQuery = customRepositoryQuery;
     }
 
     @Override
@@ -46,6 +54,16 @@ public class MetadataServiceImpl implements MetadataService {
         entity = metadataRepository.save(entity);
         LOGGER.info(METHOD_NAME + " Exit");
         return entity.getId().toString();
+    }
+
+    @Override
+    public DataResponse<Iterable<Metadata>> search(String searchKey, String value) {
+        long start = System.currentTimeMillis();
+        Iterable<Metadata> mts = customRepositoryQuery.findAllMetaDataBySearchQuery(searchKey,value);
+        long end = System.currentTimeMillis();
+        LOGGER.info("MetadataService.search::"+ "searchkey >> "+searchKey+"="+value+" Duration: "+(end-start)+" millis");
+        return new DataResponse(mts, System.currentTimeMillis());
+
     }
 
 }

@@ -331,6 +331,7 @@ public class TestResultServiceImpl implements TestResultService {
         testResult.setUrl(request.getTestJobUrl());
         testResult.getTestCapabilities().addAll(request.getTestCapabilities());
         testResult.setBuildId(new ObjectId(request.getTestJobId()));
+        testResult.setBuildArtifact(request.getBuildArtifact());
 
         return testResultRepository.save(testResult);
     }
@@ -361,6 +362,8 @@ public class TestResultServiceImpl implements TestResultService {
         testResult.getTestCapabilities().addAll(request.getTestCapabilities());
         testResult.setDescription(request.getDescription());
         testResult.setResultStatus(request.getResultStatus());
+        testResult.setBuildArtifact(request.getBuildArtifact());
+        testResult.setPerfRisk(request.getPerfRisk());
         return testResultRepository.save(testResult);
     }
 
