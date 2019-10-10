@@ -185,8 +185,8 @@ public class AuthProperties {
 		}
 
 		if (getExpirationTime() == null) {
-			LOGGER.info("No JWT expiration time found in configuration, setting to one day.");
-			setExpirationTime((long) 1000 * 60 * 60 * 24);
+			LOGGER.info("No JWT expiration time found in configuration, setting to 30 minutes.");
+			setExpirationTime((long) 1000 * 60 * 30);
 		}
 
 		if (CollectionUtils.isEmpty(authenticationProviders)) {

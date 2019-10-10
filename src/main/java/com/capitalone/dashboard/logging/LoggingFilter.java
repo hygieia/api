@@ -12,15 +12,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
+import javax.servlet.Filter;
 import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
 import javax.servlet.ReadListener;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.WriteListener;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -47,7 +50,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Component
 @Order(1)
-public class LoggingFilter extends OncePerRequestFilter {
+public class LoggingFilter implements Filter {
 
     private static final Logger LOGGER = Logger.getLogger("LoggingFilter");
 
@@ -58,9 +61,16 @@ public class LoggingFilter extends OncePerRequestFilter {
     private ApiSettings settings;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
+    public void init(FilterConfig filterConfig) throws ServletException {
+    }
 
-        long startTime = System.currentTimeMillis();
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+
+        HttpServletRequest httpServletRequest = (HttpServletRequest) request;
+        HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+
         if (httpServletRequest.getMethod().equals(HttpMethod.PUT.toString()) ||
                 (httpServletRequest.getMethod().equals(HttpMethod.POST.toString())) ||
                 (httpServletRequest.getMethod().equals(HttpMethod.DELETE.toString()))) {
@@ -68,6 +78,7 @@ public class LoggingFilter extends OncePerRequestFilter {
             BufferedRequestWrapper bufferedRequest = new BufferedRequestWrapper(httpServletRequest);
             BufferedResponseWrapper bufferedResponse = new BufferedResponseWrapper(httpServletResponse);
 
+            long startTime = System.currentTimeMillis();
             RequestLog requestLog = new RequestLog();
             requestLog.setClient(httpServletRequest.getRemoteAddr());
             requestLog.setEndpoint(httpServletRequest.getRequestURI());
@@ -76,7 +87,7 @@ public class LoggingFilter extends OncePerRequestFilter {
             requestLog.setRequestSize(httpServletRequest.getContentLengthLong());
             requestLog.setRequestContentType(httpServletRequest.getContentType());
 
-            filterChain.doFilter(bufferedRequest, bufferedResponse);
+            chain.doFilter(bufferedRequest, bufferedResponse);
             requestLog.setResponseContentType(httpServletResponse.getContentType());
             try {
                 if ((httpServletRequest.getContentType() != null) && (new MimeType(httpServletRequest.getContentType()).match(new MimeType(APPLICATION_JSON_VALUE)))) {
@@ -119,9 +130,8 @@ public class LoggingFilter extends OncePerRequestFilter {
                 }
 
             }
-            filterChain.doFilter(httpServletRequest, httpServletResponse);
+            chain.doFilter(httpServletRequest, httpServletResponse);
         }
-
     }
 
 
