@@ -58,9 +58,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 //Handle Expired or bad JWT tokens
                 LOGGER.info("Expired or bad JWT tokens, set response status to HttpServletResponse.SC_UNAUTHORIZED");
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                if (request.getMethod().equalsIgnoreCase("GET")) {
-                    filterChain.doFilter(request, response);
-                }
+                filterChain.doFilter(request, response);
             } else {
                 // process properly authenticated requests
                 SecurityContextHolder.getContext().setAuthentication(authentication);
