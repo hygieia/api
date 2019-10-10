@@ -363,6 +363,7 @@ public class TestResultServiceImpl implements TestResultService {
         testResult.setDescription(request.getDescription());
         testResult.setResultStatus(request.getResultStatus());
         testResult.setBuildArtifact(request.getBuildArtifact());
+        testResult.setPerfRisk(request.getPerfRisk());
         return testResultRepository.save(testResult);
     }
 

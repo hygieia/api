@@ -240,12 +240,14 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
     private List< Dashboard > findExistingDashboardsFromRequest( DashboardRemoteRequest request ) {
         String businessService = request.getMetaData().getBusinessService();
         String businessApplication = request.getMetaData().getBusinessApplication();
-
+        String title = request.getMetaData().getTitle();
+        List<Dashboard> existing = new ArrayList<>();
         if( !StringUtils.isEmpty( businessService ) && !StringUtils.isEmpty( businessApplication ) ){
-           return dashboardRepository.findAllByConfigurationItemBusServNameContainingIgnoreCaseAndConfigurationItemBusAppNameContainingIgnoreCase( businessService, businessApplication );
-        }else {
-           return dashboardRepository.findByTitle( request.getMetaData().getTitle() );
+           existing.addAll(dashboardRepository.findAllByConfigurationItemBusServNameContainingIgnoreCaseAndConfigurationItemBusAppNameContainingIgnoreCase( businessService, businessApplication ));
+        }if(StringUtils.isNotEmpty(title)) {
+           existing.addAll(dashboardRepository.findByTitle( request.getMetaData().getTitle() ));
         }
+        return existing;
     }
 
 

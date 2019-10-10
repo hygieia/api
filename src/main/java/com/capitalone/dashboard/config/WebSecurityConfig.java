@@ -75,6 +75,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
                 // Temporary solution to allow jenkins plugin to send data to the api
                 //TODO: Secure with API Key
+                .antMatchers(HttpMethod.POST, "/webhook/sonarqube/v1").permitAll()
                 .antMatchers(HttpMethod.POST, "/build").permitAll()
                 .antMatchers(HttpMethod.POST, "/deploy").permitAll()
                 .antMatchers(HttpMethod.POST, "/v2/build").permitAll()

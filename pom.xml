@@ -118,12 +118,6 @@
         <dependency>
             <groupId>com.capitalone.dashboard</groupId>
             <artifactId>core</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.mockito</groupId>
-                    <artifactId>mockito-all</artifactId>
-                </exclusion>
-            </exclusions>
             <version>${com.capitalone.dashboard.core.version}</version>
         </dependency>
 
