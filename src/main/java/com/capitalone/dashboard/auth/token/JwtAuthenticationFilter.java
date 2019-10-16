@@ -1,5 +1,6 @@
 package com.capitalone.dashboard.auth.token;
 import java.io.IOException;
+import java.security.Principal;
 import java.util.Objects;
 
 import javax.servlet.FilterChain;
@@ -9,15 +10,20 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.GenericFilterBean;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
-public class JwtAuthenticationFilter extends GenericFilterBean {
-	
+@Order(2)
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private static final Logger LOGGER = Logger.getLogger(JwtAuthenticationFilter.class);
 	private TokenAuthenticationService tokenAuthenticationService;
 	
 	@Autowired
@@ -26,24 +32,43 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
 	}
 	
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
+        if (request == null) return;
 
-        if (request != null) {
-            String authHeader = ((HttpServletRequest) request).getHeader("Authorization");
-            if (authHeader == null || authHeader.startsWith("apiToken ")) {
+        long startTime = System.currentTimeMillis();
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || authHeader.startsWith("apiToken ")) {
+            try {
                 filterChain.doFilter(request, response);
-                return;
+            } finally {
+                LOGGER.info("requester=" + (authHeader == null ? "READ_ONLY" : "API_USER")
+                        + ", timeTaken=" + (System.currentTimeMillis() - startTime)
+                        + ", endPoint=" + request.getRequestURI()
+                        + ", URL=" + request.getRequestURL()
+                        + ", clientIp=" + request.getRemoteAddr());
             }
+            return;
         }
 
-        Authentication authentication = tokenAuthenticationService.getAuthentication((HttpServletRequest)request);
-        //Handle Expired or bad JWT tokens
-        if (Objects.isNull(authentication)) {
-            ((HttpServletResponse) response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            filterChain.doFilter(request, response);
+        Authentication authentication = tokenAuthenticationService.getAuthentication(request);
+        try {
+            if (authentication == null) {
+                //Handle Expired or bad JWT tokens
+                LOGGER.info("Expired or bad JWT tokens, set response status to HttpServletResponse.SC_UNAUTHORIZED");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                filterChain.doFilter(request, response);
+            } else {
+                // process properly authenticated requests
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                filterChain.doFilter(request, response);
+                tokenAuthenticationService.addAuthentication(response, authentication);
+            }
+        } finally {
+            LOGGER.info("requester=" + ( authentication == null || authentication.getPrincipal() == null ? "READ_ONLY" : authentication.getPrincipal() )
+                    + ", timeTaken=" + (System.currentTimeMillis() - startTime)
+                    + ", endPoint=" + request.getRequestURI()
+                    + ", URL=" + request.getRequestURL()
+                    + ", clientIp=" + request.getRemoteAddr() );
         }
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        filterChain.doFilter(request,response);
     }
 }

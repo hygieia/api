@@ -9,7 +9,9 @@ import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
+import org.springframework.stereotype.Component;
 
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
@@ -46,32 +48,29 @@ import java.util.Map;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-//import org.springframework.util.MimeType;
-
-
+@Component
+@Order(1)
 public class LoggingFilter implements Filter {
 
-
-    private static final Logger LOGGER = Logger.getLogger(LoggingFilter.class);
+    private static final Logger LOGGER = Logger.getLogger("LoggingFilter");
 
     @Autowired
     private RequestLogRepository requestLogRepository;
+
     @Autowired
     private ApiSettings settings;
 
-
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-
     }
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
 
-
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+
         if (httpServletRequest.getMethod().equals(HttpMethod.PUT.toString()) ||
                 (httpServletRequest.getMethod().equals(HttpMethod.POST.toString())) ||
                 (httpServletRequest.getMethod().equals(HttpMethod.DELETE.toString()))) {
@@ -94,7 +93,7 @@ public class LoggingFilter implements Filter {
                 if ((httpServletRequest.getContentType() != null) && (new MimeType(httpServletRequest.getContentType()).match(new MimeType(APPLICATION_JSON_VALUE)))) {
                     requestLog.setRequestBody(JSON.parse(bufferedRequest.getRequestBody()));
                 }
-                if ((bufferedResponse.getContentType() != null) && (new MimeType(bufferedResponse.getContentType()).match(new MimeType(APPLICATION_JSON_VALUE)))){
+                if ((bufferedResponse.getContentType() != null) && (new MimeType(bufferedResponse.getContentType()).match(new MimeType(APPLICATION_JSON_VALUE)))) {
                     requestLog.setResponseBody(JSON.parse(bufferedResponse.getContent()));
                 }
             } catch (MimeTypeParseException e) {
@@ -109,7 +108,7 @@ public class LoggingFilter implements Filter {
             try {
                 requestLogRepository.save(requestLog);
             } catch (RuntimeException re) {
-                LOGGER.info(requestLog.toString());
+                LOGGER.error("Encountered exception while saving request log - " + requestLog.toString(), re);
             }
 
         } else {
@@ -131,7 +130,7 @@ public class LoggingFilter implements Filter {
                 }
 
             }
-            chain.doFilter(request, response);
+            chain.doFilter(httpServletRequest, httpServletResponse);
         }
     }
 
