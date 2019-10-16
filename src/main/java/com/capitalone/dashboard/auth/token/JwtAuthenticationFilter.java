@@ -33,28 +33,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
+        if (request == null) return;
 
         long startTime = System.currentTimeMillis();
-        if (request != null) {
-            String authHeader = request.getHeader("Authorization");
-            if (authHeader == null || authHeader.startsWith("apiToken ")) {
-                try {
-                    filterChain.doFilter(request, response);
-                } finally {
-                    LOGGER.info("requester=" + ( authHeader == null? "READ_ONLY" : "API_USER" )
-                            + ", timeTaken=" + (System.currentTimeMillis() - startTime)
-                            + ", endPoint=" + request.getRequestURI()
-                            + ", URL=" + request.getRequestURL()
-                            + ", clientIp=" + request.getRemoteAddr() );
-                }
-                return;
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || authHeader.startsWith("apiToken ")) {
+            try {
+                filterChain.doFilter(request, response);
+            } finally {
+                LOGGER.info("requester=" + (authHeader == null ? "READ_ONLY" : "API_USER")
+                        + ", timeTaken=" + (System.currentTimeMillis() - startTime)
+                        + ", endPoint=" + request.getRequestURI()
+                        + ", URL=" + request.getRequestURL()
+                        + ", clientIp=" + request.getRemoteAddr());
             }
+            return;
         }
 
         Authentication authentication = tokenAuthenticationService.getAuthentication(request);
-
         try {
-            if (Objects.isNull(authentication)) {
+            if (authentication == null) {
                 //Handle Expired or bad JWT tokens
                 LOGGER.info("Expired or bad JWT tokens, set response status to HttpServletResponse.SC_UNAUTHORIZED");
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
