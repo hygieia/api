@@ -9,14 +9,17 @@ import com.capitalone.dashboard.request.PerfTestDataCreateRequest;
 import com.capitalone.dashboard.request.TestDataCreateRequest;
 import com.capitalone.dashboard.request.TestResultRequest;
 import com.capitalone.dashboard.service.TestResultService;
-import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.*;
 import org.json.simple.JSONObject;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
