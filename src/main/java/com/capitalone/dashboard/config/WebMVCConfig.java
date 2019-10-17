@@ -6,7 +6,9 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -35,6 +37,10 @@ public class WebMVCConfig extends WebMvcConfigurerAdapter {
                 .disable(SerializationFeature.WRITE_NULL_MAP_VALUES)
                 .enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING)
                 .setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        converters.add(jackson);
+        Jackson2ObjectMapperBuilder builder = new Jackson2ObjectMapperBuilder()
+                .indentOutput(true);
+        converters.add(new MappingJackson2XmlHttpMessageConverter(builder.xml().build()));
 
         converters.add(jackson);
     }
