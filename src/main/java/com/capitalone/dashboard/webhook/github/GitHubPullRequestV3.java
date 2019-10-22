@@ -110,7 +110,7 @@ public class GitHubPullRequestV3 extends GitHubV3 {
 
         ResponseEntity<String> response = null;
         try {
-            response = restClient.makeRestCallPost(gitHubParsed.getGraphQLUrl(), "token", token, postBody);
+            response = restClient.makeRestCallPostGraphQL(gitHubParsed.getGraphQLUrl(), "token", token, postBody);
         } catch (Exception e) {
             throw new HygieiaException(e);
         }
