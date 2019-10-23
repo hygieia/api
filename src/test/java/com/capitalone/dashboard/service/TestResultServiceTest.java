@@ -18,6 +18,9 @@ import com.capitalone.dashboard.repository.TestResultRepository;
 import com.capitalone.dashboard.request.TestDataCreateRequest;
 import com.capitalone.dashboard.request.TestResultRequest;
 import org.bson.types.ObjectId;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -217,6 +220,41 @@ public class TestResultServiceTest {
         suite.getTestCases().add(testCase);
 
         return result;
+    }
+
+    @Test
+    public void createV3WithGoodRequest() throws HygieiaException {
+        ObjectId collectorId = ObjectId.get();
+
+        JSONObject request = createTestResultPerformance();
+
+        when(collectorRepository.findOne(collectorId)).thenReturn(new Collector());
+        when(collectorService.createCollector(any(Collector.class))).thenReturn(new Collector());
+        when(collectorService.createCollectorItem(any(CollectorItem.class))).thenReturn(new CollectorItem());
+
+        TestResult testResult = makeTestResult();
+
+        when(testResultRepository.save(any(TestResult.class))).thenReturn(testResult);
+        String response = testResultService.createPerfV3(request, null, "7ps", "performance");
+        String expected = testResult.getId().toString() + "," + testResult.getCollectorItemId();
+        assertEquals(response, expected);
+        System.out.println(response + expected);
+    }
+
+    private JSONObject createTestResultPerformance(){
+
+        String jsonStr = "{\"performanceMetrics\":{\"startTime\":\"test\",\"endTime\":\"test\",\"message\":\"test1\",\"testSetName\":\"testdata\",\"testDuration\":\"1m\",\"actualResults\":{\"throughPut\":11,\"errorPercent\":1,\"responseTime\":4,\"maxResponseTime\":55,\"minResponseTime\":0},\"benchmarkUsed\":{\"throughPut\":0,\"errorPercent\":0,\"responseTime\":1,\"maxResponseTime\":0,\"minResponseTime\":8},\"testRunStatus\":\"PASS\"},\"testType\":\"performance\",\"testId\":\"test\",\"testAgentType\":\"test\",\"componentName\":\"test\",\"status\":\"COMPLETED\",\"testRequestId\":\"test\"}";
+
+        JSONParser parser = new JSONParser();
+        JSONObject json = null;
+        try {
+            json = (JSONObject) parser.parse(jsonStr);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+
+        return json;
     }
 
 
