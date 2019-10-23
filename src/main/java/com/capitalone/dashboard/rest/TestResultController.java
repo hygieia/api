@@ -4,6 +4,7 @@ import com.capitalone.dashboard.editors.CaseInsensitiveTestSuiteTypeEditor;
 import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.CodeQualityType;
 import com.capitalone.dashboard.model.DataResponse;
+import com.capitalone.dashboard.model.TestJunit;
 import com.capitalone.dashboard.model.TestResult;
 import com.capitalone.dashboard.request.PerfTestDataCreateRequest;
 import com.capitalone.dashboard.request.TestDataCreateRequest;
@@ -84,11 +85,13 @@ public class TestResultController {
     }
 
     @RequestMapping(value = "/v3/quality/testresult", method = POST,
-            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE} )
-    public ResponseEntity<String> createPerfTestV3(@Valid @RequestParam(value = "type" ) String type,
-                                                   @RequestParam(value="perfTool") String perfTool,
-                                                   @RequestBody JSONObject request) throws HygieiaException {
-        String response = "Success";
+            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public ResponseEntity<String> createPerfTestV3(@Valid @RequestParam(value = "type") String type,
+                                                   @RequestParam(value = "perfTool") String perfTool,
+                                                   @RequestBody JSONObject request, @RequestBody TestJunit xmlrequest)
+            throws HygieiaException {
+        System.out.println(request.toString());
+        String response = testResultService.createPerfV3(request, xmlrequest, perfTool, type);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
