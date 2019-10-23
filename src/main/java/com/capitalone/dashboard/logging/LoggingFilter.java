@@ -390,6 +390,7 @@ public class LoggingFilter implements Filter {
 
         @Override
         public void addCookie(Cookie cookie) {
+            if(cookie != null) {cookie.setSecure(Boolean.TRUE);}
             original.addCookie(cookie);
         }
 
