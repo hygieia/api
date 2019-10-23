@@ -38,11 +38,10 @@ public class WebMVCConfig extends WebMvcConfigurerAdapter {
                 .enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING)
                 .setSerializationInclusion(JsonInclude.Include.NON_NULL);
         converters.add(jackson);
-        Jackson2ObjectMapperBuilder builder = new Jackson2ObjectMapperBuilder()
-                .indentOutput(true);
-        converters.add(new MappingJackson2XmlHttpMessageConverter(builder.xml().build()));
-
-        converters.add(jackson);
+        Jackson2ObjectMapperBuilder builder = new Jackson2ObjectMapperBuilder();
+        builder.indentOutput(true);
+        converters.add(new MappingJackson2HttpMessageConverter(builder.build()));
+        converters.add(new MappingJackson2XmlHttpMessageConverter(builder.createXmlMapper(true).build()));
     }
 
     @Override

@@ -1,13 +1,7 @@
 package com.capitalone.dashboard.service;
 
 import com.capitalone.dashboard.misc.HygieiaException;
-import com.capitalone.dashboard.model.Collector;
-import com.capitalone.dashboard.model.CollectorItem;
-import com.capitalone.dashboard.model.CollectorType;
-import com.capitalone.dashboard.model.Component;
-import com.capitalone.dashboard.model.DataResponse;
-import com.capitalone.dashboard.model.QTestResult;
-import com.capitalone.dashboard.model.TestResult;
+import com.capitalone.dashboard.model.*;
 import com.capitalone.dashboard.repository.CollectorRepository;
 import com.capitalone.dashboard.repository.ComponentRepository;
 import com.capitalone.dashboard.repository.TestResultRepository;
@@ -15,10 +9,13 @@ import com.capitalone.dashboard.request.CollectorRequest;
 import com.capitalone.dashboard.request.PerfTestDataCreateRequest;
 import com.capitalone.dashboard.request.TestDataCreateRequest;
 import com.capitalone.dashboard.request.TestResultRequest;
+import com.capitalone.dashboard.util.TestResultConstant;
 import com.google.common.collect.Lists;
+import com.google.gson.Gson;
 import com.mysema.query.BooleanBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.bson.types.ObjectId;
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -221,6 +218,90 @@ public class TestResultServiceImpl implements TestResultService {
 
     }
 
+
+    protected TestResult createPerfTestv3(TestCucumber jsonRequest, TestSuiteType type, String prefTool) throws HygieiaException {
+        /**
+         * Step 1: create performance Collector if not there
+         * Step 2: create Perfomance Collector item if not there
+         * Step 3: Insert performance test data if new. If existing, update it
+         */
+        Collector collector = createGenericCollector(prefTool);
+        if (collector == null) {
+            throw new HygieiaException("Failed creating Test collector.", HygieiaException.COLLECTOR_CREATE_ERROR);
+        }
+        CollectorItem collectorItem = createGenericCollectorItemV3(collector, jsonRequest, prefTool);
+        if (collectorItem == null) {
+            throw new HygieiaException("Failed creating Test collector item.", HygieiaException.COLLECTOR_ITEM_CREATE_ERROR);
+        }
+        TestResult testResult = createPerfTestv3(collectorItem, jsonRequest, type);
+        if (testResult == null) {
+            throw new HygieiaException("Failed inserting/updating Test information.", HygieiaException.ERROR_INSERTING_DATA);
+        }
+        return testResult;
+
+    }
+
+    protected TestResult createPerfTestv3(TestPerformance jsonRequest, TestSuiteType type, String prefTool) throws HygieiaException {
+        /**
+         * Step 1: create performance Collector if not there
+         * Step 2: create Perfomance Collector item if not there
+         * Step 3: Insert performance test data if new. If existing, update it
+         */
+        Collector collector = createGenericCollector(prefTool);
+        if (collector == null) {
+            throw new HygieiaException("Failed creating Test collector.", HygieiaException.COLLECTOR_CREATE_ERROR);
+        }
+        CollectorItem collectorItem = createGenericCollectorItemV3(collector, jsonRequest, prefTool);
+        if (collectorItem == null) {
+            throw new HygieiaException("Failed creating Test collector item.", HygieiaException.COLLECTOR_ITEM_CREATE_ERROR);
+        }
+        TestResult testResult = createPerfTestv3(collectorItem, jsonRequest, type);
+        if (testResult == null) {
+            throw new HygieiaException("Failed inserting/updating Test information.", HygieiaException.ERROR_INSERTING_DATA);
+        }
+        return testResult;
+
+    }
+
+    protected TestResult createPerfTestv3(TestJunit jsonRequest, TestSuiteType type, String prefTool) throws HygieiaException {
+
+        Collector collector = createGenericCollector(prefTool);
+        if (collector == null) {
+            throw new HygieiaException("Failed creating Test collector.", HygieiaException.COLLECTOR_CREATE_ERROR);
+        }
+        CollectorItem collectorItem = createGenericCollectorItemV3(collector, jsonRequest, prefTool);
+        if (collectorItem == null) {
+            throw new HygieiaException("Failed creating Test collector item.", HygieiaException.COLLECTOR_ITEM_CREATE_ERROR);
+        }
+        TestResult testResult = createPerfTestv3(collectorItem, jsonRequest, type);
+        if (testResult == null) {
+            throw new HygieiaException("Failed inserting/updating Test information.", HygieiaException.ERROR_INSERTING_DATA);
+        }
+        return testResult;
+
+    }
+
+    @Override
+    public String createPerfV3(JSONObject jsonRequest, TestJunit xmlRequest, String prefTool, String type) throws HygieiaException {
+        TestResult testResult = null;
+        if (TestResultConstant.CUCUMBER.equals(type)) {
+            Gson gson = new Gson();
+            TestCucumber cucumberRequest = gson.fromJson(jsonRequest.toJSONString(), TestCucumber.class);
+            testResult = createPerfTestv3(cucumberRequest, TestSuiteType.Functional, prefTool);
+        } else if (TestResultConstant.JUNIT.equals(type)) {
+            testResult = createPerfTestv3(xmlRequest, TestSuiteType.Unit, prefTool);
+        } else if (TestResultConstant.PERFORMANCE.equals(type) && TestResultConstant.perftool.equals(prefTool)) {
+            Gson gson = new Gson();
+            TestPerformance performanceRequest = gson.fromJson(jsonRequest.toJSONString(), TestPerformance.class);
+            testResult = createPerfTestv3(performanceRequest, TestSuiteType.Unit, prefTool);
+        }else if (TestResultConstant.PERFORMANCE.equals(type)) {
+            Gson gson = new Gson();
+            PerfTestDataCreateRequest perfRequest = gson.fromJson(jsonRequest.toJSONString(), PerfTestDataCreateRequest.class);
+            testResult = createPerfTest(perfRequest);
+        }
+        return testResult.getId() + "," + testResult.getCollectorItemId();
+    }
+
     @Override
     public String createPerf(PerfTestDataCreateRequest request) throws HygieiaException {
         TestResult testResult = createPerfTest(request);
@@ -305,6 +386,46 @@ public class TestResultServiceImpl implements TestResultService {
     }
 
 
+    private CollectorItem createGenericCollectorItemV3(Collector collector, TestCucumber jsonRequest, String perfTool) {
+        CollectorItem tempCi = new CollectorItem();
+        tempCi.setCollectorId(collector.getId());
+        tempCi.setDescription(perfTool + " : " + jsonRequest.getName());
+        tempCi.setPushed(true);
+        tempCi.setLastUpdated(System.currentTimeMillis());
+        Map<String, Object> option = new HashMap<>();
+        option.put("jobName", jsonRequest.getName());
+        tempCi.getOptions().putAll(option);
+        tempCi.setNiceName(perfTool);
+        return collectorService.createCollectorItem(tempCi);
+    }
+
+    private CollectorItem createGenericCollectorItemV3(Collector collector, TestPerformance jsonRequest, String perfTool) {
+        CollectorItem tempCi = new CollectorItem();
+        tempCi.setCollectorId(collector.getId());
+        tempCi.setDescription(perfTool + " : " + jsonRequest.getComponentName());
+        tempCi.setPushed(true);
+        tempCi.setLastUpdated(System.currentTimeMillis());
+        Map<String, Object> option = new HashMap<>();
+        option.put("jobName", jsonRequest.getComponentName());
+        tempCi.getOptions().putAll(option);
+        tempCi.setNiceName(perfTool);
+        return collectorService.createCollectorItem(tempCi);
+    }
+
+    private CollectorItem createGenericCollectorItemV3(Collector collector, TestJunit request, String perfTool) {
+        CollectorItem tempCi = new CollectorItem();
+        tempCi.setCollectorId(collector.getId());
+        tempCi.setDescription(perfTool + " : " + request.getName());
+        tempCi.setPushed(true);
+        tempCi.setLastUpdated(System.currentTimeMillis());
+        Map<String, Object> option = new HashMap<>();
+        option.put("jobName", request.getName());
+        tempCi.getOptions().putAll(option);
+        tempCi.setNiceName(perfTool);
+        return collectorService.createCollectorItem(tempCi);
+    }
+
+
     private TestResult createTest(CollectorItem collectorItem, TestDataCreateRequest request) {
         TestResult testResult = testResultRepository.findByCollectorItemIdAndExecutionId(collectorItem.getId(),
                 request.getExecutionId());
@@ -365,6 +486,79 @@ public class TestResultServiceImpl implements TestResultService {
         testResult.setBuildArtifact(request.getBuildArtifact());
         testResult.setPerfRisk(request.getPerfRisk());
         return testResultRepository.save(testResult);
+    }
+
+
+    private TestResult createPerfTestv3(CollectorItem collectorItem, TestCucumber request, TestSuiteType type) {
+        TestResultCucumber testResult = (TestResultCucumber) testResultRepository.findByCollectorItemIdAndExecutionId(collectorItem.getId(),
+                request.getName());
+
+        if (testResult == null) {
+            testResult = new TestResultCucumber();
+        }
+        testResult.setTimestamp(System.currentTimeMillis());
+        testResult.setType(type);
+        testResult.setLine(request.getLine());
+        testResult.setExecutionId(request.getName());
+        testResult.setCollectorItemId(collectorItem.getId());
+        testResult.setLine(request.getLine());
+        testResult.setKeyword(request.getKeyword());
+        testResult.setUrl(request.getUri());
+        testResult.setElements(request.getElements());
+        testResult.setName(request.getName());
+        testResult.setDescription(request.getDescription());
+        testResult.setKeyword(request.getKeyword());
+        TestResult result = testResultRepository.save(testResult);
+        return result;
+    }
+
+
+    private TestResult createPerfTestv3(CollectorItem collectorItem, TestJunit request, TestSuiteType type) {
+        TestResultJunit testResult = (TestResultJunit) testResultRepository.findByCollectorItemIdAndExecutionId(collectorItem.getId(), request.getName());
+
+        if (testResult == null) {
+            testResult = new TestResultJunit();
+        }
+
+        testResult.setTimestamp(System.currentTimeMillis());
+        testResult.setSkipped(request.getSkipped());
+        testResult.setName(request.getName());
+        testResult.setTime(request.getTime());
+        testResult.setErrors(request.getErrors());
+        testResult.setTestcase(request.getTestcase());
+        testResult.setCollectorItemId(collectorItem.getId());
+        testResult.setExecutionId(request.getName());
+        testResult.setType(type);
+        testResult.setFailures(request.getFailures());
+        testResult.setTests(request.getTests());
+        testResult.setProperties(request.getProperties());
+        TestResult result = testResultRepository.save(testResult);
+        return result;
+
+    }
+
+
+    private TestResult createPerfTestv3(CollectorItem collectorItem, TestPerformance request, TestSuiteType type) {
+        TestResultPerformance testResult = (TestResultPerformance) testResultRepository.findByCollectorItemIdAndExecutionId(collectorItem.getId(),
+                request.getComponentName());
+
+        if (testResult == null) {
+            testResult = new TestResultPerformance();
+        }
+
+        testResult.setType(type);
+        testResult.setExecutionId(request.getComponentName());
+        testResult.setCollectorItemId(collectorItem.getId());
+        testResult.setStatus(request.getStatus());
+        testResult.setPerformanceMetrics(request.getPerformanceMetrics());
+        testResult.setTestId(request.getTestId());
+        testResult.setTestAgentType(request.getTestAgentType());
+        testResult.setComponentName(request.getComponentName());
+        testResult.setTestRequestId(request.getTestRequestId());
+        testResult.setTestType(request.getTestType());
+        testResult.setTimestamp(System.currentTimeMillis());
+        TestResult result = testResultRepository.save(testResult);
+        return result;
     }
 
 }
