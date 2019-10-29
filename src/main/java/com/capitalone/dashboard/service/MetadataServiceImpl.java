@@ -7,6 +7,8 @@ import com.capitalone.dashboard.model.Metadata;
 import com.capitalone.dashboard.repository.CustomRepositoryQuery;
 import com.capitalone.dashboard.repository.MetadataRepository;
 import com.capitalone.dashboard.request.MetadataCreateRequest;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -16,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @Service
@@ -44,10 +47,12 @@ public class MetadataServiceImpl implements MetadataService {
         // check if the raw data is a valid
         JSONObject jsonObject;
         try {
-            jsonObject = (JSONObject) new JSONParser().parse(String.valueOf(request.getRawData()));
-        } catch (ParseException e) {
+            jsonObject = (JSONObject) new JSONParser().parse(new ObjectMapper().writeValueAsString(request.getRawData()));
+
+
+        } catch (ParseException | JsonProcessingException e) {
             LOGGER.error(METHOD_NAME + ExceptionUtils.getStackTrace(e));
-            throw new HygieiaException("rawData is malformed JSON", HygieiaException.JSON_FORMAT_ERROR);
+            throw new HygieiaException("rawData is malformed JSON. Error is : "+ e.getMessage(), HygieiaException.JSON_FORMAT_ERROR);
         }
 
         entity.setRawData(jsonObject);
@@ -55,6 +60,9 @@ public class MetadataServiceImpl implements MetadataService {
         LOGGER.info(METHOD_NAME + " Exit");
         return entity.getId().toString();
     }
+
+
+
 
     @Override
     public DataResponse<Iterable<Metadata>> search(String searchKey, String value) {
