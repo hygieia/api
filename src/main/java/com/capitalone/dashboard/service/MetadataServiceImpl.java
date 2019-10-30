@@ -50,7 +50,7 @@ public class MetadataServiceImpl implements MetadataService {
             jsonObject = (JSONObject) new JSONParser().parse(new ObjectMapper().writeValueAsString(request.getRawData()));
 
 
-        } catch (ParseException | JsonProcessingException e) {
+        } catch (Exception e) {
             LOGGER.error(METHOD_NAME + ExceptionUtils.getStackTrace(e));
             throw new HygieiaException("rawData is malformed JSON. Error is : "+ e.getMessage(), HygieiaException.JSON_FORMAT_ERROR);
         }

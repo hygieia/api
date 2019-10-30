@@ -5,14 +5,16 @@ import com.capitalone.dashboard.model.Metadata;
 import com.capitalone.dashboard.repository.MetadataRepository;
 import com.capitalone.dashboard.request.MetadataCreateRequest;
 import org.bson.types.ObjectId;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -61,9 +63,7 @@ public class MetadataServiceTest {
         when(metadataRepository.save(expectedResult)).thenReturn(expectedResult);
         MetadataCreateRequest request = buildRequest();
         request.setRawData("some bad json data");
-        metadataServiceImpl
-
-                .create(request);
+        metadataServiceImpl.create(request);
     }
 
 
@@ -72,7 +72,12 @@ public class MetadataServiceTest {
         request.setKey(KEY);
         request.setType(TYPE);
         request.setSource(SOURCE);
-        request.setRawData(RAWDATA);
+        JSONParser parser = new JSONParser();
+        try {
+            request.setRawData(parser.parse(RAWDATA));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
         return request;
     }
 
@@ -81,8 +86,12 @@ public class MetadataServiceTest {
         metadata.setType(TYPE);
         metadata.setSource(SOURCE);
         metadata.setKey(KEY);
-        metadata.setRawData(RAWDATA);
-        metadata.setId(ObjectId.get());
+        JSONParser parser = new JSONParser();
+        try {
+            metadata.setRawData(parser.parse(RAWDATA));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }        metadata.setId(ObjectId.get());
         return metadata;
     }
 
