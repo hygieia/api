@@ -44,7 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 LOGGER.info("requester=" + (authHeader == null ? "READ_ONLY" : "API_USER")
                         + ", timeTaken=" + (System.currentTimeMillis() - startTime)
                         + ", endPoint=" + request.getRequestURI()
-                        + ", URL=" + request.getRequestURL()
+                        + ", status=" + (response == null ? 0 : response.getStatus())
                         + ", clientIp=" + request.getRemoteAddr());
             }
             return;
@@ -55,7 +55,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (authentication == null) {
                 //Handle Expired or bad JWT tokens
                 LOGGER.info("Expired or bad JWT tokens, set response status to HttpServletResponse.SC_UNAUTHORIZED");
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                if (response != null)
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 filterChain.doFilter(request, response);
             } else {
                 // process properly authenticated requests
@@ -67,7 +68,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             LOGGER.info("requester=" + ( authentication == null || authentication.getPrincipal() == null ? "READ_ONLY" : authentication.getPrincipal() )
                     + ", timeTaken=" + (System.currentTimeMillis() - startTime)
                     + ", endPoint=" + request.getRequestURI()
-                    + ", URL=" + request.getRequestURL()
+                    + ", status=" + (response == null ? 0 : response.getStatus())
                     + ", clientIp=" + request.getRemoteAddr() );
         }
     }
