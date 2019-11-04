@@ -32,9 +32,17 @@ public class TestResultPerformance extends TestResult {
 
     private String testRequestId;
 
+
+    private String buildJobId;
+
+    private String serviceNowApplication;
+
+    private String bapComponentName;
+
     public TestPerformance.PerformanceMetrics getPerformanceMetrics() {
         return performanceMetrics;
     }
+
 
     public void setPerformanceMetrics(TestPerformance.PerformanceMetrics performanceMetrics) {
         this.performanceMetrics = performanceMetrics;
@@ -88,9 +96,33 @@ public class TestResultPerformance extends TestResult {
         this.testRequestId = testRequestId;
     }
 
+    public String getBuildJobId() {
+        return buildJobId;
+    }
+
+    public void setBuildJobId(String buildJobId) {
+        this.buildJobId = buildJobId;
+    }
+
+    public String getServiceNowApplication() {
+        return serviceNowApplication;
+    }
+
+    public void setServiceNowApplication(String serviceNowApplication) {
+        this.serviceNowApplication = serviceNowApplication;
+    }
+
+    public String getBapComponentName() {
+        return bapComponentName;
+    }
+
+    public void setBapComponentName(String bapComponentName) {
+        this.bapComponentName = bapComponentName;
+    }
+
     @Override
     public String toString() {
-        return "TesstResultPerformance{" +
+        return "TestResultPerformance{" +
                 "performanceMetrics=" + performanceMetrics +
                 ", testType='" + testType + '\'' +
                 ", testId='" + testId + '\'' +
@@ -98,6 +130,9 @@ public class TestResultPerformance extends TestResult {
                 ", componentName='" + componentName + '\'' +
                 ", status='" + status + '\'' +
                 ", testRequestId='" + testRequestId + '\'' +
+                ", buildJobId='" + buildJobId + '\'' +
+                ", serviceNowApplication='" + serviceNowApplication + '\'' +
+                ", bapComponentName='" + bapComponentName + '\'' +
                 '}';
     }
 }

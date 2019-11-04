@@ -27,6 +27,12 @@ public class TestResultCucumber extends TestResult {
 
     private String keyword;
 
+    private String buildJobId;
+
+    private String serviceNowApplication;
+
+    private String bapComponentName;
+
 
     public String getLine() {
         return line;
@@ -61,6 +67,29 @@ public class TestResultCucumber extends TestResult {
         this.keyword = keyword;
     }
 
+    public String getBuildJobId() {
+        return buildJobId;
+    }
+
+    public void setBuildJobId(String buildJobId) {
+        this.buildJobId = buildJobId;
+    }
+
+    public String getServiceNowApplication() {
+        return serviceNowApplication;
+    }
+
+    public void setServiceNowApplication(String serviceNowApplication) {
+        this.serviceNowApplication = serviceNowApplication;
+    }
+
+    public String getBapComponentName() {
+        return bapComponentName;
+    }
+
+    public void setBapComponentName(String bapComponentName) {
+        this.bapComponentName = bapComponentName;
+    }
 
     @Override
     public String toString() {
@@ -69,6 +98,9 @@ public class TestResultCucumber extends TestResult {
                 ", elements=" + Arrays.toString(elements) +
                 ", name='" + name + '\'' +
                 ", keyword='" + keyword + '\'' +
+                ", buildJobId='" + buildJobId + '\'' +
+                ", serviceNowApplication='" + serviceNowApplication + '\'' +
+                ", bapComponentName='" + bapComponentName + '\'' +
                 '}';
     }
 }

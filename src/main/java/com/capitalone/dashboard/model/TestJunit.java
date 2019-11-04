@@ -24,6 +24,15 @@ public class TestJunit {
 
     private Properties properties;
 
+    private long timestamp;
+
+    private String buildJobId;
+
+    private String serviceNowApplication;
+
+    private String bapComponentName;
+
+
     @JacksonXmlElementWrapper(localName = "testcase", useWrapping = false)
     private List<Testcase> testcase;
 
@@ -93,6 +102,38 @@ public class TestJunit {
         this.skipped = skipped;
     }
 
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public String getBuildJobId() {
+        return buildJobId;
+    }
+
+    public void setBuildJobId(String buildJobId) {
+        this.buildJobId = buildJobId;
+    }
+
+    public String getServiceNowApplication() {
+        return serviceNowApplication;
+    }
+
+    public void setServiceNowApplication(String serviceNowApplication) {
+        this.serviceNowApplication = serviceNowApplication;
+    }
+
+    public String getBapComponentName() {
+        return bapComponentName;
+    }
+
+    public void setBapComponentName(String bapComponentName) {
+        this.bapComponentName = bapComponentName;
+    }
+
     @Override
     public String toString() {
         return "TestJunit{" +
@@ -102,6 +143,10 @@ public class TestJunit {
                 ", time='" + time + '\'' +
                 ", errors='" + errors + '\'' +
                 ", properties=" + properties +
+                ", timestamp=" + timestamp +
+                ", buildJobId='" + buildJobId + '\'' +
+                ", serviceNowApplication='" + serviceNowApplication + '\'' +
+                ", bapComponentName='" + bapComponentName + '\'' +
                 ", testcase=" + testcase +
                 ", skipped='" + skipped + '\'' +
                 '}';

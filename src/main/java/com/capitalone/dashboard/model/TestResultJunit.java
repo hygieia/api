@@ -35,6 +35,12 @@ public class TestResultJunit extends TestResult {
 
     private String skipped;
 
+    private String buildJobId;
+
+    private String serviceNowApplication;
+
+    private String bapComponentName;
+
     public String getTests() {
         return tests;
     }
@@ -99,6 +105,30 @@ public class TestResultJunit extends TestResult {
         this.skipped = skipped;
     }
 
+    public String getBuildJobId() {
+        return buildJobId;
+    }
+
+    public void setBuildJobId(String buildJobId) {
+        this.buildJobId = buildJobId;
+    }
+
+    public String getServiceNowApplication() {
+        return serviceNowApplication;
+    }
+
+    public void setServiceNowApplication(String serviceNowApplication) {
+        this.serviceNowApplication = serviceNowApplication;
+    }
+
+    public String getBapComponentName() {
+        return bapComponentName;
+    }
+
+    public void setBapComponentName(String bapComponentName) {
+        this.bapComponentName = bapComponentName;
+    }
+
     @Override
     public String toString() {
         return "TestResultJunit{" +
@@ -110,6 +140,9 @@ public class TestResultJunit extends TestResult {
                 ", properties=" + properties +
                 ", testcase=" + testcase +
                 ", skipped='" + skipped + '\'' +
+                ", buildJobId='" + buildJobId + '\'' +
+                ", serviceNowApplication='" + serviceNowApplication + '\'' +
+                ", bapComponentName='" + bapComponentName + '\'' +
                 '}';
     }
 }

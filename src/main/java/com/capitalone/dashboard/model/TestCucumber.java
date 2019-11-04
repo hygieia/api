@@ -1,5 +1,7 @@
 package com.capitalone.dashboard.model;
 
+import java.util.Arrays;
+
 public class TestCucumber {
 
 
@@ -16,6 +18,15 @@ public class TestCucumber {
     private String keyword;
 
     private String uri;
+
+    private long timestamp;
+
+    private String buildJobId;
+
+    private String serviceNowApplication;
+
+    private String bapComponentName;
+
 
     public String getLine() {
         return line;
@@ -73,9 +84,53 @@ public class TestCucumber {
         this.uri = uri;
     }
 
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public String getBuildJobId() {
+        return buildJobId;
+    }
+
+    public void setBuildJobId(String buildJobId) {
+        this.buildJobId = buildJobId;
+    }
+
+    public String getServiceNowApplication() {
+        return serviceNowApplication;
+    }
+
+    public void setServiceNowApplication(String serviceNowApplication) {
+        this.serviceNowApplication = serviceNowApplication;
+    }
+
+    public String getBapComponentName() {
+        return bapComponentName;
+    }
+
+    public void setBapComponentName(String bapComponentName) {
+        this.bapComponentName = bapComponentName;
+    }
+
     @Override
     public String toString() {
-        return "Features [line = " + line + ", elements = " + elements + ", name = " + name + ", description = " + description + ", id = " + id + ", keyword = " + keyword + ", uri = " + uri + "]";
+        return "TestCucumber{" +
+                "line='" + line + '\'' +
+                ", elements=" + Arrays.toString(elements) +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", id='" + id + '\'' +
+                ", keyword='" + keyword + '\'' +
+                ", uri='" + uri + '\'' +
+                ", timestamp=" + timestamp +
+                ", buildJobId='" + buildJobId + '\'' +
+                ", serviceNowApplication='" + serviceNowApplication + '\'' +
+                ", bapComponentName='" + bapComponentName + '\'' +
+                '}';
     }
 
 

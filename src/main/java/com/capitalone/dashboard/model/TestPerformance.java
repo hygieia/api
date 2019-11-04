@@ -21,6 +21,15 @@ public class TestPerformance {
         return performanceMetrics;
     }
 
+    private long timestamp;
+
+    private String buildJobId;
+
+    private String serviceNowApplication;
+
+    private String bapComponentName;
+
+
     public void setPerformanceMetrics(PerformanceMetrics performanceMetrics) {
         this.performanceMetrics = performanceMetrics;
     }
@@ -73,9 +82,53 @@ public class TestPerformance {
         this.testRequestId = testRequestId;
     }
 
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public String getBuildJobId() {
+        return buildJobId;
+    }
+
+    public void setBuildJobId(String buildJobId) {
+        this.buildJobId = buildJobId;
+    }
+
+    public String getServiceNowApplication() {
+        return serviceNowApplication;
+    }
+
+    public void setServiceNowApplication(String serviceNowApplication) {
+        this.serviceNowApplication = serviceNowApplication;
+    }
+
+    public String getBapComponentName() {
+        return bapComponentName;
+    }
+
+    public void setBapComponentName(String bapComponentName) {
+        this.bapComponentName = bapComponentName;
+    }
+
     @Override
     public String toString() {
-        return "TestPerformance [performanceMetrics = " + performanceMetrics + ", testType = " + testType + ", testId = " + testId + ", testAgentType = " + testAgentType + ", componentName = " + componentName + ", status = " + status + ", testRequestId = " + testRequestId + "]";
+        return "TestPerformance{" +
+                "performanceMetrics=" + performanceMetrics +
+                ", testType='" + testType + '\'' +
+                ", testId='" + testId + '\'' +
+                ", testAgentType='" + testAgentType + '\'' +
+                ", componentName='" + componentName + '\'' +
+                ", status='" + status + '\'' +
+                ", testRequestId='" + testRequestId + '\'' +
+                ", timestamp=" + timestamp +
+                ", buildJobId='" + buildJobId + '\'' +
+                ", serviceNowApplication='" + serviceNowApplication + '\'' +
+                ", bapComponentName='" + bapComponentName + '\'' +
+                '}';
     }
 
 
