@@ -29,7 +29,7 @@ public class TestResultCucumber extends TestResult {
 
     private String buildJobId;
 
-    private String serviceNowApplication;
+    private String applicationName;
 
     private String bapComponentName;
 
@@ -75,12 +75,12 @@ public class TestResultCucumber extends TestResult {
         this.buildJobId = buildJobId;
     }
 
-    public String getServiceNowApplication() {
-        return serviceNowApplication;
+    public String getApplicationName() {
+        return applicationName;
     }
 
-    public void setServiceNowApplication(String serviceNowApplication) {
-        this.serviceNowApplication = serviceNowApplication;
+    public void setApplicationName(String applicationName) {
+        this.applicationName = applicationName;
     }
 
     public String getBapComponentName() {
@@ -99,7 +99,7 @@ public class TestResultCucumber extends TestResult {
                 ", name='" + name + '\'' +
                 ", keyword='" + keyword + '\'' +
                 ", buildJobId='" + buildJobId + '\'' +
-                ", serviceNowApplication='" + serviceNowApplication + '\'' +
+                ", applicationName='" + applicationName + '\'' +
                 ", bapComponentName='" + bapComponentName + '\'' +
                 '}';
     }

@@ -25,7 +25,7 @@ public class TestPerformance {
 
     private String buildJobId;
 
-    private String serviceNowApplication;
+    private String applicationName;
 
     private String bapComponentName;
 
@@ -98,12 +98,12 @@ public class TestPerformance {
         this.buildJobId = buildJobId;
     }
 
-    public String getServiceNowApplication() {
-        return serviceNowApplication;
+    public String getApplicationName() {
+        return applicationName;
     }
 
-    public void setServiceNowApplication(String serviceNowApplication) {
-        this.serviceNowApplication = serviceNowApplication;
+    public void setApplicationName(String applicationName) {
+        this.applicationName = applicationName;
     }
 
     public String getBapComponentName() {
@@ -126,7 +126,7 @@ public class TestPerformance {
                 ", testRequestId='" + testRequestId + '\'' +
                 ", timestamp=" + timestamp +
                 ", buildJobId='" + buildJobId + '\'' +
-                ", serviceNowApplication='" + serviceNowApplication + '\'' +
+                ", applicationName='" + applicationName + '\'' +
                 ", bapComponentName='" + bapComponentName + '\'' +
                 '}';
     }

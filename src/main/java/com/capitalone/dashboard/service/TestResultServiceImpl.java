@@ -393,7 +393,7 @@ public class TestResultServiceImpl implements TestResultService {
         tempCi.setPushed(true);
         tempCi.setLastUpdated(System.currentTimeMillis());
         Map<String, Object> option = new HashMap<>();
-        option.put("jobName", jsonRequest.getBuildJobId()+jsonRequest.getServiceNowApplication()+jsonRequest.getBapComponentName());
+        option.put("jobName", jsonRequest.getBuildJobId()+jsonRequest.getApplicationName()+jsonRequest.getBapComponentName());
         tempCi.getOptions().putAll(option);
         tempCi.setNiceName(perfTool);
         return collectorService.createCollectorItem(tempCi);
@@ -406,7 +406,7 @@ public class TestResultServiceImpl implements TestResultService {
         tempCi.setPushed(true);
         tempCi.setLastUpdated(System.currentTimeMillis());
         Map<String, Object> option = new HashMap<>();
-        option.put("jobName", jsonRequest.getBuildJobId()+jsonRequest.getServiceNowApplication()+jsonRequest.getBapComponentName());
+        option.put("jobName", jsonRequest.getBuildJobId()+jsonRequest.getApplicationName()+jsonRequest.getBapComponentName());
         tempCi.getOptions().putAll(option);
         tempCi.setNiceName(perfTool);
         return collectorService.createCollectorItem(tempCi);
@@ -419,7 +419,7 @@ public class TestResultServiceImpl implements TestResultService {
         tempCi.setPushed(true);
         tempCi.setLastUpdated(System.currentTimeMillis());
         Map<String, Object> option = new HashMap<>();
-        option.put("jobName", request.getBuildJobId()+request.getServiceNowApplication()+request.getBapComponentName());
+        option.put("jobName", request.getBuildJobId()+request.getApplicationName()+request.getBapComponentName());
         tempCi.getOptions().putAll(option);
         tempCi.setNiceName(perfTool);
         return collectorService.createCollectorItem(tempCi);
@@ -490,7 +490,7 @@ public class TestResultServiceImpl implements TestResultService {
 
 
     private TestResult createPerfTestv3(CollectorItem collectorItem, TestCucumber request, TestSuiteType type) {
-        String executionId = request.getBuildJobId()+request.getBapComponentName()+request.getServiceNowApplication();
+        String executionId = request.getBuildJobId()+request.getBapComponentName()+request.getApplicationName();
         TestResultCucumber testResult = (TestResultCucumber) testResultRepository.findByCollectorItemIdAndExecutionId(collectorItem.getId(),
                 executionId);
 
@@ -499,7 +499,7 @@ public class TestResultServiceImpl implements TestResultService {
         }
         testResult.setBuildJobId(request.getBuildJobId());
         testResult.setBapComponentName(request.getBapComponentName());
-        testResult.setServiceNowApplication(request.getServiceNowApplication());
+        testResult.setApplicationName(request.getApplicationName());
         testResult.setTimestamp(System.currentTimeMillis());
         testResult.setType(type);
         testResult.setLine(request.getLine());
@@ -520,7 +520,7 @@ public class TestResultServiceImpl implements TestResultService {
 
 
     private TestResult createPerfTestv3(CollectorItem collectorItem, TestJunit request, TestSuiteType type) {
-        String executionId = request.getBuildJobId()+request.getBapComponentName()+request.getServiceNowApplication();
+        String executionId = request.getBuildJobId()+request.getBapComponentName()+request.getApplicationName();
         TestResultJunit testResult = (TestResultJunit) testResultRepository.findByCollectorItemIdAndExecutionId(collectorItem.getId(), executionId);
 
         if (testResult == null) {
@@ -528,7 +528,7 @@ public class TestResultServiceImpl implements TestResultService {
         }
         testResult.setBuildJobId(request.getBuildJobId());
         testResult.setBapComponentName(request.getBapComponentName());
-        testResult.setServiceNowApplication(request.getServiceNowApplication());
+        testResult.setApplication(request.getApplicationName());
         testResult.setTimestamp(System.currentTimeMillis());
         testResult.setSkipped(request.getSkipped());
         testResult.setName(request.getName());
@@ -550,7 +550,7 @@ public class TestResultServiceImpl implements TestResultService {
 
 
     private TestResult createPerfTestv3(CollectorItem collectorItem, TestPerformance request, TestSuiteType type) {
-        String executionId = request.getBuildJobId()+request.getBapComponentName()+request.getServiceNowApplication();
+        String executionId = request.getBuildJobId()+request.getBapComponentName()+request.getApplicationName();
         TestResultPerformance testResult = (TestResultPerformance) testResultRepository.findByCollectorItemIdAndExecutionId(collectorItem.getId(),
                 executionId);
 
@@ -559,7 +559,7 @@ public class TestResultServiceImpl implements TestResultService {
         }
         testResult.setBuildJobId(request.getBuildJobId());
         testResult.setBapComponentName(request.getBapComponentName());
-        testResult.setServiceNowApplication(request.getServiceNowApplication());testResult.setType(type);
+        testResult.setApplicationName(request.getApplicationName());testResult.setType(type);
         testResult.setType(type);
         testResult.setCollectorItemId(collectorItem.getId());
         testResult.setStatus(request.getStatus());

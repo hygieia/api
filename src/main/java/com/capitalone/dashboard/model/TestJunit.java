@@ -28,7 +28,7 @@ public class TestJunit {
 
     private String buildJobId;
 
-    private String serviceNowApplication;
+    private String applicationName;
 
     private String bapComponentName;
 
@@ -118,12 +118,12 @@ public class TestJunit {
         this.buildJobId = buildJobId;
     }
 
-    public String getServiceNowApplication() {
-        return serviceNowApplication;
+    public String getApplicationName() {
+        return applicationName;
     }
 
-    public void setServiceNowApplication(String serviceNowApplication) {
-        this.serviceNowApplication = serviceNowApplication;
+    public void setApplicationName(String applicationName) {
+        this.applicationName = applicationName;
     }
 
     public String getBapComponentName() {
@@ -145,7 +145,7 @@ public class TestJunit {
                 ", properties=" + properties +
                 ", timestamp=" + timestamp +
                 ", buildJobId='" + buildJobId + '\'' +
-                ", serviceNowApplication='" + serviceNowApplication + '\'' +
+                ", applicationName='" + applicationName + '\'' +
                 ", bapComponentName='" + bapComponentName + '\'' +
                 ", testcase=" + testcase +
                 ", skipped='" + skipped + '\'' +

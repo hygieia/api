@@ -23,7 +23,7 @@ public class TestCucumber {
 
     private String buildJobId;
 
-    private String serviceNowApplication;
+    private String applicationName;
 
     private String bapComponentName;
 
@@ -100,12 +100,12 @@ public class TestCucumber {
         this.buildJobId = buildJobId;
     }
 
-    public String getServiceNowApplication() {
-        return serviceNowApplication;
+    public String getApplicationName() {
+        return applicationName;
     }
 
-    public void setServiceNowApplication(String serviceNowApplication) {
-        this.serviceNowApplication = serviceNowApplication;
+    public void setApplicationName(String applicationName) {
+        this.applicationName = applicationName;
     }
 
     public String getBapComponentName() {
@@ -128,7 +128,7 @@ public class TestCucumber {
                 ", uri='" + uri + '\'' +
                 ", timestamp=" + timestamp +
                 ", buildJobId='" + buildJobId + '\'' +
-                ", serviceNowApplication='" + serviceNowApplication + '\'' +
+                ", applicationName='" + applicationName + '\'' +
                 ", bapComponentName='" + bapComponentName + '\'' +
                 '}';
     }

@@ -37,7 +37,7 @@ public class TestResultJunit extends TestResult {
 
     private String buildJobId;
 
-    private String serviceNowApplication;
+    private String application;
 
     private String bapComponentName;
 
@@ -113,12 +113,12 @@ public class TestResultJunit extends TestResult {
         this.buildJobId = buildJobId;
     }
 
-    public String getServiceNowApplication() {
-        return serviceNowApplication;
+    public String getApplication() {
+        return application;
     }
 
-    public void setServiceNowApplication(String serviceNowApplication) {
-        this.serviceNowApplication = serviceNowApplication;
+    public void setApplication(String application) {
+        this.application = application;
     }
 
     public String getBapComponentName() {
@@ -141,7 +141,7 @@ public class TestResultJunit extends TestResult {
                 ", testcase=" + testcase +
                 ", skipped='" + skipped + '\'' +
                 ", buildJobId='" + buildJobId + '\'' +
-                ", serviceNowApplication='" + serviceNowApplication + '\'' +
+                ", application='" + application + '\'' +
                 ", bapComponentName='" + bapComponentName + '\'' +
                 '}';
     }
