@@ -1,5 +1,7 @@
 package com.capitalone.dashboard.model;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+
 import java.util.Arrays;
 
 public class TestCucumber {
@@ -116,23 +118,6 @@ public class TestCucumber {
         this.bapComponentName = bapComponentName;
     }
 
-    @Override
-    public String toString() {
-        return "TestCucumber{" +
-                "line='" + line + '\'' +
-                ", elements=" + Arrays.toString(elements) +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", id='" + id + '\'' +
-                ", keyword='" + keyword + '\'' +
-                ", uri='" + uri + '\'' +
-                ", timestamp=" + timestamp +
-                ", buildJobId='" + buildJobId + '\'' +
-                ", applicationName='" + applicationName + '\'' +
-                ", bapComponentName='" + bapComponentName + '\'' +
-                '}';
-    }
-
 
     public static class Elements {
         private Comments[] comments;
@@ -245,10 +230,7 @@ public class TestCucumber {
             this.tags = tags;
         }
 
-        @Override
-        public String toString() {
-            return "Elements [comments = " + comments + ", before = " + before + ", line = " + line + ", name = " + name + ", description = " + description + ", id = " + id + ", after = " + after + ", keyword = " + keyword + ", type = " + type + ", steps = " + steps + ", tags = " + tags + "]";
-        }
+
     }
 
     public static class After {
@@ -272,10 +254,7 @@ public class TestCucumber {
             this.match = match;
         }
 
-        @Override
-        public String toString() {
-            return "After [result = " + result + ", match = " + match + "]";
-        }
+
     }
 
 
@@ -330,10 +309,7 @@ public class TestCucumber {
             this.keyword = keyword;
         }
 
-        @Override
-        public String toString() {
-            return "Steps [result = " + result + ", line = " + line + ", name = " + name + ", match = " + match + ", keyword = " + keyword + "]";
-        }
+
     }
 
     public static class Match {
@@ -375,11 +351,26 @@ public class TestCucumber {
             this.match = match;
         }
 
-        @Override
-        public String toString() {
-            return "Before [result = " + result + ", match = " + match + "]";
-        }
+
     }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("line", line)
+                .append("elements", elements)
+                .append("name", name)
+                .append("description", description)
+                .append("id", id)
+                .append("keyword", keyword)
+                .append("uri", uri)
+                .append("timestamp", timestamp)
+                .append("buildJobId", buildJobId)
+                .append("applicationName", applicationName)
+                .append("bapComponentName", bapComponentName)
+                .toString();
+    }
+
 
     public static class Result {
         private String duration;
@@ -404,7 +395,10 @@ public class TestCucumber {
 
         @Override
         public String toString() {
-            return "Result [duration = " + duration + ", status = " + status + "]";
+            return new ToStringBuilder(this)
+                    .append("duration", duration)
+                    .append("status", status)
+                    .toString();
         }
     }
 
@@ -432,7 +426,10 @@ public class TestCucumber {
 
         @Override
         public String toString() {
-            return "Comments [line = " + line + ", value = " + value + "]";
+            return new ToStringBuilder(this)
+                    .append("line", line)
+                    .append("value", value)
+                    .toString();
         }
     }
 
@@ -459,7 +456,10 @@ public class TestCucumber {
 
         @Override
         public String toString() {
-            return "Tags [line = " + line + ", name = " + name + "]";
+            return new ToStringBuilder(this)
+                    .append("line", line)
+                    .append("name", name)
+                    .toString();
         }
     }
 

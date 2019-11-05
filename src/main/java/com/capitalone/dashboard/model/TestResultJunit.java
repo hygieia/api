@@ -1,5 +1,6 @@
 package com.capitalone.dashboard.model;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -131,18 +132,18 @@ public class TestResultJunit extends TestResult {
 
     @Override
     public String toString() {
-        return "TestResultJunit{" +
-                "tests='" + tests + '\'' +
-                ", failures='" + failures + '\'' +
-                ", name='" + name + '\'' +
-                ", time='" + time + '\'' +
-                ", errors='" + errors + '\'' +
-                ", properties=" + properties +
-                ", testcase=" + testcase +
-                ", skipped='" + skipped + '\'' +
-                ", buildJobId='" + buildJobId + '\'' +
-                ", application='" + application + '\'' +
-                ", bapComponentName='" + bapComponentName + '\'' +
-                '}';
+        return new ToStringBuilder(this)
+                .append("tests", tests)
+                .append("failures", failures)
+                .append("name", name)
+                .append("time", time)
+                .append("errors", errors)
+                .append("properties", properties)
+                .append("testcase", testcase)
+                .append("skipped", skipped)
+                .append("buildJobId", buildJobId)
+                .append("application", application)
+                .append("bapComponentName", bapComponentName)
+                .toString();
     }
 }

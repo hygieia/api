@@ -393,7 +393,7 @@ public class TestResultServiceImpl implements TestResultService {
         tempCi.setPushed(true);
         tempCi.setLastUpdated(System.currentTimeMillis());
         Map<String, Object> option = new HashMap<>();
-        option.put("jobName", jsonRequest.getBuildJobId()+jsonRequest.getApplicationName()+jsonRequest.getBapComponentName());
+        option.put("jobName", jsonRequest.getBuildJobId()+"/"+jsonRequest.getApplicationName()+"/"+jsonRequest.getBapComponentName());
         tempCi.getOptions().putAll(option);
         tempCi.setNiceName(perfTool);
         return collectorService.createCollectorItem(tempCi);
@@ -406,7 +406,7 @@ public class TestResultServiceImpl implements TestResultService {
         tempCi.setPushed(true);
         tempCi.setLastUpdated(System.currentTimeMillis());
         Map<String, Object> option = new HashMap<>();
-        option.put("jobName", jsonRequest.getBuildJobId()+jsonRequest.getApplicationName()+jsonRequest.getBapComponentName());
+        option.put("jobName", jsonRequest.getBuildJobId()+"/"+jsonRequest.getApplicationName()+"/"+jsonRequest.getBapComponentName());
         tempCi.getOptions().putAll(option);
         tempCi.setNiceName(perfTool);
         return collectorService.createCollectorItem(tempCi);
@@ -419,7 +419,7 @@ public class TestResultServiceImpl implements TestResultService {
         tempCi.setPushed(true);
         tempCi.setLastUpdated(System.currentTimeMillis());
         Map<String, Object> option = new HashMap<>();
-        option.put("jobName", request.getBuildJobId()+request.getApplicationName()+request.getBapComponentName());
+        option.put("jobName", request.getBuildJobId()+"/"+request.getApplicationName()+ "/"+request.getBapComponentName());
         tempCi.getOptions().putAll(option);
         tempCi.setNiceName(perfTool);
         return collectorService.createCollectorItem(tempCi);

@@ -1,5 +1,7 @@
 package com.capitalone.dashboard.model;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+
 public class TestPerformance {
 
 
@@ -116,21 +118,20 @@ public class TestPerformance {
 
     @Override
     public String toString() {
-        return "TestPerformance{" +
-                "performanceMetrics=" + performanceMetrics +
-                ", testType='" + testType + '\'' +
-                ", testId='" + testId + '\'' +
-                ", testAgentType='" + testAgentType + '\'' +
-                ", componentName='" + componentName + '\'' +
-                ", status='" + status + '\'' +
-                ", testRequestId='" + testRequestId + '\'' +
-                ", timestamp=" + timestamp +
-                ", buildJobId='" + buildJobId + '\'' +
-                ", applicationName='" + applicationName + '\'' +
-                ", bapComponentName='" + bapComponentName + '\'' +
-                '}';
+        return new ToStringBuilder(this)
+                .append("performanceMetrics", performanceMetrics)
+                .append("testType", testType)
+                .append("testId", testId)
+                .append("testAgentType", testAgentType)
+                .append("componentName", componentName)
+                .append("status", status)
+                .append("testRequestId", testRequestId)
+                .append("timestamp", timestamp)
+                .append("buildJobId", buildJobId)
+                .append("applicationName", applicationName)
+                .append("bapComponentName", bapComponentName)
+                .toString();
     }
-
 
     public static class PerformanceMetrics {
         private ActualResults actualResults;
@@ -215,7 +216,16 @@ public class TestPerformance {
 
         @Override
         public String toString() {
-            return "PerformanceMetrics [actualResults = " + actualResults + ", benchmarkUsed = " + benchmarkUsed + ", testRunStatus = " + testRunStatus + ", startTime = " + startTime + ", endTime = " + endTime + ", message = " + message + ", testSetName = " + testSetName + ", testDuration = " + testDuration + "]";
+            return new ToStringBuilder(this)
+                    .append("actualResults", actualResults)
+                    .append("benchmarkUsed", benchmarkUsed)
+                    .append("testRunStatus", testRunStatus)
+                    .append("startTime", startTime)
+                    .append("endTime", endTime)
+                    .append("message", message)
+                    .append("testSetName", testSetName)
+                    .append("testDuration", testDuration)
+                    .toString();
         }
     }
 
@@ -272,7 +282,13 @@ public class TestPerformance {
 
         @Override
         public String toString() {
-            return "BenchmarkUsed [minResponseTime = " + minResponseTime + ", responseTime = " + responseTime + ", maxResponseTime = " + maxResponseTime + ", errorPercent = " + errorPercent + ", throughPut = " + throughPut + "]";
+            return new ToStringBuilder(this)
+                    .append("minResponseTime", minResponseTime)
+                    .append("responseTime", responseTime)
+                    .append("maxResponseTime", maxResponseTime)
+                    .append("errorPercent", errorPercent)
+                    .append("throughPut", throughPut)
+                    .toString();
         }
     }
 
@@ -329,7 +345,13 @@ public class TestPerformance {
 
         @Override
         public String toString() {
-            return "ActualResults [minResponseTime = " + minResponseTime + ", responseTime = " + responseTime + ", maxResponseTime = " + maxResponseTime + ", errorPercent = " + errorPercent + ", throughPut = " + throughPut + "]";
+            return new ToStringBuilder(this)
+                    .append("minResponseTime", minResponseTime)
+                    .append("responseTime", responseTime)
+                    .append("maxResponseTime", maxResponseTime)
+                    .append("errorPercent", errorPercent)
+                    .append("throughPut", throughPut)
+                    .toString();
         }
     }
 

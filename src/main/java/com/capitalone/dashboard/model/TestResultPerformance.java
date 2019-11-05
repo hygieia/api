@@ -1,6 +1,7 @@
 package com.capitalone.dashboard.model;
 
 
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -122,17 +123,17 @@ public class TestResultPerformance extends TestResult {
 
     @Override
     public String toString() {
-        return "TestResultPerformance{" +
-                "performanceMetrics=" + performanceMetrics +
-                ", testType='" + testType + '\'' +
-                ", testId='" + testId + '\'' +
-                ", testAgentType='" + testAgentType + '\'' +
-                ", componentName='" + componentName + '\'' +
-                ", status='" + status + '\'' +
-                ", testRequestId='" + testRequestId + '\'' +
-                ", buildJobId='" + buildJobId + '\'' +
-                ", applicationName='" + applicationName + '\'' +
-                ", bapComponentName='" + bapComponentName + '\'' +
-                '}';
+        return new ToStringBuilder(this)
+                .append("performanceMetrics", performanceMetrics)
+                .append("testType", testType)
+                .append("testId", testId)
+                .append("testAgentType", testAgentType)
+                .append("componentName", componentName)
+                .append("status", status)
+                .append("testRequestId", testRequestId)
+                .append("buildJobId", buildJobId)
+                .append("applicationName", applicationName)
+                .append("bapComponentName", bapComponentName)
+                .toString();
     }
 }

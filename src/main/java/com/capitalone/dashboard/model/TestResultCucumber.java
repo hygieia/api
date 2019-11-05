@@ -1,5 +1,6 @@
 package com.capitalone.dashboard.model;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -93,14 +94,14 @@ public class TestResultCucumber extends TestResult {
 
     @Override
     public String toString() {
-        return "TestResultCucumber{" +
-                "line='" + line + '\'' +
-                ", elements=" + Arrays.toString(elements) +
-                ", name='" + name + '\'' +
-                ", keyword='" + keyword + '\'' +
-                ", buildJobId='" + buildJobId + '\'' +
-                ", applicationName='" + applicationName + '\'' +
-                ", bapComponentName='" + bapComponentName + '\'' +
-                '}';
+        return new ToStringBuilder(this)
+                .append("line", line)
+                .append("elements", elements)
+                .append("name", name)
+                .append("keyword", keyword)
+                .append("buildJobId", buildJobId)
+                .append("applicationName", applicationName)
+                .append("bapComponentName", bapComponentName)
+                .toString();
     }
 }
