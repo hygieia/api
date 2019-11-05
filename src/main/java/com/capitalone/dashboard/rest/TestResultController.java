@@ -87,10 +87,9 @@ public class TestResultController {
     @RequestMapping(value = "/v3/quality/testresult", method = POST,
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<String> createPerfTestV3(@Valid @RequestParam(value = "type") String type,
-                                                   @RequestParam(value = "perfTool") String perfTool,
+                                                   @RequestParam(value = "Tool") String perfTool,
                                                    @RequestBody JSONObject request, @RequestBody TestJunit xmlrequest)
             throws HygieiaException {
-        System.out.println(request.toString());
         String response = testResultService.createPerfV3(request, xmlrequest, perfTool, type);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
