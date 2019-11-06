@@ -44,6 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 LOGGER.info("requester=" + (authHeader == null ? "READ_ONLY" : "API_USER")
                         + ", timeTaken=" + (System.currentTimeMillis() - startTime)
                         + ", endPoint=" + request.getRequestURI()
+                        + ", reqMethod=" + request.getMethod()
                         + ", status=" + (response == null ? 0 : response.getStatus())
                         + ", clientIp=" + request.getRemoteAddr());
             }
@@ -68,6 +69,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             LOGGER.info("requester=" + ( authentication == null || authentication.getPrincipal() == null ? "READ_ONLY" : authentication.getPrincipal() )
                     + ", timeTaken=" + (System.currentTimeMillis() - startTime)
                     + ", endPoint=" + request.getRequestURI()
+                    + ", reqMethod=" + request.getMethod()
                     + ", status=" + (response == null ? 0 : response.getStatus())
                     + ", clientIp=" + request.getRemoteAddr() );
         }
