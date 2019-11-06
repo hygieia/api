@@ -1,5 +1,6 @@
 package com.capitalone.dashboard.model;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -34,6 +35,12 @@ public class TestResultJunit extends TestResult {
     private List<TestJunit.Testcase> testcase;
 
     private String skipped;
+
+    private String buildJobId;
+
+    private String application;
+
+    private String bapComponentName;
 
     public String getTests() {
         return tests;
@@ -99,17 +106,44 @@ public class TestResultJunit extends TestResult {
         this.skipped = skipped;
     }
 
+    public String getBuildJobId() {
+        return buildJobId;
+    }
+
+    public void setBuildJobId(String buildJobId) {
+        this.buildJobId = buildJobId;
+    }
+
+    public String getApplication() {
+        return application;
+    }
+
+    public void setApplication(String application) {
+        this.application = application;
+    }
+
+    public String getBapComponentName() {
+        return bapComponentName;
+    }
+
+    public void setBapComponentName(String bapComponentName) {
+        this.bapComponentName = bapComponentName;
+    }
+
     @Override
     public String toString() {
-        return "TestResultJunit{" +
-                "tests='" + tests + '\'' +
-                ", failures='" + failures + '\'' +
-                ", name='" + name + '\'' +
-                ", time='" + time + '\'' +
-                ", errors='" + errors + '\'' +
-                ", properties=" + properties +
-                ", testcase=" + testcase +
-                ", skipped='" + skipped + '\'' +
-                '}';
+        return new ToStringBuilder(this)
+                .append("tests", tests)
+                .append("failures", failures)
+                .append("name", name)
+                .append("time", time)
+                .append("errors", errors)
+                .append("properties", properties)
+                .append("testcase", testcase)
+                .append("skipped", skipped)
+                .append("buildJobId", buildJobId)
+                .append("application", application)
+                .append("bapComponentName", bapComponentName)
+                .toString();
     }
 }

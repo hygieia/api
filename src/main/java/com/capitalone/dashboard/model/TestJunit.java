@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
 import java.util.List;
 
@@ -23,6 +24,15 @@ public class TestJunit {
 
 
     private Properties properties;
+
+    private long timestamp;
+
+    private String buildJobId;
+
+    private String applicationName;
+
+    private String bapComponentName;
+
 
     @JacksonXmlElementWrapper(localName = "testcase", useWrapping = false)
     private List<Testcase> testcase;
@@ -93,20 +103,55 @@ public class TestJunit {
         this.skipped = skipped;
     }
 
-    @Override
-    public String toString() {
-        return "TestJunit{" +
-                "tests='" + tests + '\'' +
-                ", failures='" + failures + '\'' +
-                ", name='" + name + '\'' +
-                ", time='" + time + '\'' +
-                ", errors='" + errors + '\'' +
-                ", properties=" + properties +
-                ", testcase=" + testcase +
-                ", skipped='" + skipped + '\'' +
-                '}';
+    public long getTimestamp() {
+        return timestamp;
     }
 
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public String getBuildJobId() {
+        return buildJobId;
+    }
+
+    public void setBuildJobId(String buildJobId) {
+        this.buildJobId = buildJobId;
+    }
+
+    public String getApplicationName() {
+        return applicationName;
+    }
+
+    public void setApplicationName(String applicationName) {
+        this.applicationName = applicationName;
+    }
+
+    public String getBapComponentName() {
+        return bapComponentName;
+    }
+
+    public void setBapComponentName(String bapComponentName) {
+        this.bapComponentName = bapComponentName;
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("tests", tests)
+                .append("failures", failures)
+                .append("name", name)
+                .append("time", time)
+                .append("errors", errors)
+                .append("properties", properties)
+                .append("timestamp", timestamp)
+                .append("buildJobId", buildJobId)
+                .append("applicationName", applicationName)
+                .append("bapComponentName", bapComponentName)
+                .append("testcase", testcase)
+                .append("skipped", skipped)
+                .toString();
+    }
 
     public static class Error {
         private String message;
@@ -141,11 +186,11 @@ public class TestJunit {
 
         @Override
         public String toString() {
-            return "Error{" +
-                    "message='" + message + '\'' +
-                    ", type='" + type + '\'' +
-                    ", content='" + content + '\'' +
-                    '}';
+            return new ToStringBuilder(this)
+                    .append("message", message)
+                    .append("type", type)
+                    .append("content", content)
+                    .toString();
         }
     }
 
@@ -187,11 +232,11 @@ public class TestJunit {
 
         @Override
         public String toString() {
-            return "Testcase{" +
-                    "classname='" + classname + '\'' +
-                    ", name='" + name + '\'' +
-                    ", time='" + time + '\'' +
-                    '}';
+            return new ToStringBuilder(this)
+                    .append("classname", classname)
+                    .append("name", name)
+                    .append("time", time)
+                    .toString();
         }
     }
 
@@ -212,9 +257,9 @@ public class TestJunit {
 
         @Override
         public String toString() {
-            return "Properties{" +
-                    "property=" + property +
-                    '}';
+            return new ToStringBuilder(this)
+                    .append("property", property)
+                    .toString();
         }
     }
 
@@ -244,10 +289,10 @@ public class TestJunit {
 
         @Override
         public String toString() {
-            return "Property{" +
-                    "name='" + name + '\'' +
-                    ", value='" + value + '\'' +
-                    '}';
+            return new ToStringBuilder(this)
+                    .append("name", name)
+                    .append("value", value)
+                    .toString();
         }
     }
 
