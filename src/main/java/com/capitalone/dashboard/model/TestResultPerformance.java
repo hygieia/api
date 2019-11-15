@@ -1,6 +1,7 @@
 package com.capitalone.dashboard.model;
 
 
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -32,9 +33,17 @@ public class TestResultPerformance extends TestResult {
 
     private String testRequestId;
 
+
+    private String buildJobId;
+
+    private String applicationName;
+
+    private String bapComponentName;
+
     public TestPerformance.PerformanceMetrics getPerformanceMetrics() {
         return performanceMetrics;
     }
+
 
     public void setPerformanceMetrics(TestPerformance.PerformanceMetrics performanceMetrics) {
         this.performanceMetrics = performanceMetrics;
@@ -88,16 +97,43 @@ public class TestResultPerformance extends TestResult {
         this.testRequestId = testRequestId;
     }
 
+    public String getBuildJobId() {
+        return buildJobId;
+    }
+
+    public void setBuildJobId(String buildJobId) {
+        this.buildJobId = buildJobId;
+    }
+
+    public String getApplicationName() {
+        return applicationName;
+    }
+
+    public void setApplicationName(String applicationName) {
+        this.applicationName = applicationName;
+    }
+
+    public String getBapComponentName() {
+        return bapComponentName;
+    }
+
+    public void setBapComponentName(String bapComponentName) {
+        this.bapComponentName = bapComponentName;
+    }
+
     @Override
     public String toString() {
-        return "TesstResultPerformance{" +
-                "performanceMetrics=" + performanceMetrics +
-                ", testType='" + testType + '\'' +
-                ", testId='" + testId + '\'' +
-                ", testAgentType='" + testAgentType + '\'' +
-                ", componentName='" + componentName + '\'' +
-                ", status='" + status + '\'' +
-                ", testRequestId='" + testRequestId + '\'' +
-                '}';
+        return new ToStringBuilder(this)
+                .append("performanceMetrics", performanceMetrics)
+                .append("testType", testType)
+                .append("testId", testId)
+                .append("testAgentType", testAgentType)
+                .append("componentName", componentName)
+                .append("status", status)
+                .append("testRequestId", testRequestId)
+                .append("buildJobId", buildJobId)
+                .append("applicationName", applicationName)
+                .append("bapComponentName", bapComponentName)
+                .toString();
     }
 }

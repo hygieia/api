@@ -1,5 +1,9 @@
 package com.capitalone.dashboard.model;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+
+import java.util.Arrays;
+
 public class TestCucumber {
 
 
@@ -16,6 +20,15 @@ public class TestCucumber {
     private String keyword;
 
     private String uri;
+
+    private long timestamp;
+
+    private String buildJobId;
+
+    private String applicationName;
+
+    private String bapComponentName;
+
 
     public String getLine() {
         return line;
@@ -73,9 +86,36 @@ public class TestCucumber {
         this.uri = uri;
     }
 
-    @Override
-    public String toString() {
-        return "Features [line = " + line + ", elements = " + elements + ", name = " + name + ", description = " + description + ", id = " + id + ", keyword = " + keyword + ", uri = " + uri + "]";
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public String getBuildJobId() {
+        return buildJobId;
+    }
+
+    public void setBuildJobId(String buildJobId) {
+        this.buildJobId = buildJobId;
+    }
+
+    public String getApplicationName() {
+        return applicationName;
+    }
+
+    public void setApplicationName(String applicationName) {
+        this.applicationName = applicationName;
+    }
+
+    public String getBapComponentName() {
+        return bapComponentName;
+    }
+
+    public void setBapComponentName(String bapComponentName) {
+        this.bapComponentName = bapComponentName;
     }
 
 
@@ -190,10 +230,7 @@ public class TestCucumber {
             this.tags = tags;
         }
 
-        @Override
-        public String toString() {
-            return "Elements [comments = " + comments + ", before = " + before + ", line = " + line + ", name = " + name + ", description = " + description + ", id = " + id + ", after = " + after + ", keyword = " + keyword + ", type = " + type + ", steps = " + steps + ", tags = " + tags + "]";
-        }
+
     }
 
     public static class After {
@@ -217,10 +254,7 @@ public class TestCucumber {
             this.match = match;
         }
 
-        @Override
-        public String toString() {
-            return "After [result = " + result + ", match = " + match + "]";
-        }
+
     }
 
 
@@ -275,10 +309,7 @@ public class TestCucumber {
             this.keyword = keyword;
         }
 
-        @Override
-        public String toString() {
-            return "Steps [result = " + result + ", line = " + line + ", name = " + name + ", match = " + match + ", keyword = " + keyword + "]";
-        }
+
     }
 
     public static class Match {
@@ -320,11 +351,26 @@ public class TestCucumber {
             this.match = match;
         }
 
-        @Override
-        public String toString() {
-            return "Before [result = " + result + ", match = " + match + "]";
-        }
+
     }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("line", line)
+                .append("elements", elements)
+                .append("name", name)
+                .append("description", description)
+                .append("id", id)
+                .append("keyword", keyword)
+                .append("uri", uri)
+                .append("timestamp", timestamp)
+                .append("buildJobId", buildJobId)
+                .append("applicationName", applicationName)
+                .append("bapComponentName", bapComponentName)
+                .toString();
+    }
+
 
     public static class Result {
         private String duration;
@@ -349,7 +395,10 @@ public class TestCucumber {
 
         @Override
         public String toString() {
-            return "Result [duration = " + duration + ", status = " + status + "]";
+            return new ToStringBuilder(this)
+                    .append("duration", duration)
+                    .append("status", status)
+                    .toString();
         }
     }
 
@@ -377,7 +426,10 @@ public class TestCucumber {
 
         @Override
         public String toString() {
-            return "Comments [line = " + line + ", value = " + value + "]";
+            return new ToStringBuilder(this)
+                    .append("line", line)
+                    .append("value", value)
+                    .toString();
         }
     }
 
@@ -404,7 +456,10 @@ public class TestCucumber {
 
         @Override
         public String toString() {
-            return "Tags [line = " + line + ", name = " + name + "]";
+            return new ToStringBuilder(this)
+                    .append("line", line)
+                    .append("name", name)
+                    .toString();
         }
     }
 
