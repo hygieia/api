@@ -33,17 +33,17 @@ public class ScopeController {
 	private PaginationHeaderUtility paginationHeaderUtility;
 
 	@Autowired
-	public ScopeController(ScopeService featureService,PaginationHeaderUtility paginationHeaderUtility) {
-		this.scopeService = featureService;
+	public ScopeController(ScopeService scopeService,PaginationHeaderUtility paginationHeaderUtility) {
+		this.scopeService = scopeService;
 		this.paginationHeaderUtility = paginationHeaderUtility;
 	}
 
 	/**
 	 * REST endpoint for retrieving all features for a given sprint and team
-	 * (the sprint is derived)
+	 * (the sprint is derived) A given scope-owner's source-system ID
 	 *
+	 * @param cId
 	 * @param scopeId
-	 *            A given scope-owner's source-system ID
 	 * @return A data response list of type Feature containing all features for
 	 *         the given team and current sprint
 	 */
@@ -56,6 +56,7 @@ public class ScopeController {
 	}
 
 	/**
+	 * Return list of Teams
 	 *
 	 * @param collectorId
 	 *
@@ -80,8 +81,11 @@ public class ScopeController {
 	}
 
 	/**
+	 * Return list of teams with pagination
 	 *
-	 * @param collectorId, search criteria, pageable
+	 * @param collectorId
+	 * @param descriptionFilter
+	 * @param pageable
 	 *
 	 * @return List of scope
 	 */

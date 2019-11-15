@@ -67,7 +67,7 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
     }
 
     @Override
-    public String createFromSonarQubeV1(JSONObject request) throws ParseException, HygieiaException, MalformedURLException {
+    public String createFromSonarQubeV1(JSONObject request) throws ParseException {
 
         JSONParser jsonParser = new JSONParser();
         JSONObject jsonObject = (JSONObject) jsonParser.parse(request.toJSONString());
@@ -130,7 +130,7 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
         }
     }
 
-    public CodeQuality currentCodeQuality(SonarProject project, JSONObject request) {
+    private CodeQuality currentCodeQuality(SonarProject project, JSONObject request) {
 
         try {
                 JsonParser jsonParser = new JsonParser();
@@ -205,37 +205,13 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
         return obj == null ? "" : obj.toString();
     }
 
-    private String strSafe(JSONObject json, String key) {
-        Object obj = json.get(key);
-        return obj == null ? "" : obj.toString();
-    }
-
     private Integer integer(JsonObject json, String key) {
         Object obj = json.get(key);
         return obj == null ? null : Integer.valueOf(obj.toString().replaceAll("\"",""));
     }
 
-    @SuppressWarnings("unused")
-    private Integer integer(JSONObject json, String key) {
-        Object obj = json.get(key);
-        return obj == null ? null : Integer.valueOf(obj.toString().replaceAll("\"",""));
-    }
-
-    @SuppressWarnings("unused")
-    private BigDecimal decimal(JSONObject json, String key) {
-        Object obj = json.get(key);
-        return obj == null ? null : new BigDecimal(obj.toString().replaceAll("\"",""));
-    }
-
-    @SuppressWarnings("unused")
-    private Boolean bool(JSONObject json, String key) {
-        Object obj = json.get(key);
-        return obj == null ? null : Boolean.valueOf(obj.toString().replaceAll("\"",""));
-    }
-
-    @SuppressWarnings("unused")
     private String format(String duration) {
-        Long durationInMinutes = Long.valueOf(duration);
+        long durationInMinutes = Long.parseLong(duration);
         if (durationInMinutes == 0) {
             return "0";
         }
@@ -243,7 +219,7 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
         Long absDuration = Math.abs(durationInMinutes);
 
         int days = ((Double) ((double) absDuration / HOURS_IN_DAY / 60)).intValue();
-        Long remainingDuration = absDuration - (days * HOURS_IN_DAY * 60);
+        Long remainingDuration =  absDuration - (days * HOURS_IN_DAY * 60);
         int hours = ((Double) (remainingDuration.doubleValue() / 60)).intValue();
         remainingDuration = remainingDuration - (hours * 60);
         int minutes = remainingDuration.intValue();
@@ -272,10 +248,6 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
         if (message.length() > 0) {
             message.append(" ");
         }
-    }
-
-    private JSONArray parseAsArray(JSONObject jsonObject, String key) throws ParseException {
-        return (JSONArray) jsonObject.get(key);
     }
 
     private static boolean displayHours(int days, int hours) {

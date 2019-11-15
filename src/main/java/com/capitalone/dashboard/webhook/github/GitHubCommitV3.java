@@ -247,16 +247,12 @@ public class GitHubCommitV3 extends GitHubV3 {
     }
 
     private boolean checkCommitsWithPullNumber(List<Commit> commitsWithPullNumber) {
-        if (!CollectionUtils.isEmpty(commitsWithPullNumber)
-                && (commitsWithPullNumber.size() == 1)) { return true; }
-
-        return false;
+        return !CollectionUtils.isEmpty(commitsWithPullNumber)
+                && (commitsWithPullNumber.size() == 1);
     }
 
     private boolean checkCommitsListForSettingPullNumber(List<Commit> commitsList) {
-        if (!CollectionUtils.isEmpty(commitsList) && (commitsList.size() > 1)) { return true; }
-
-        return false;
+        return !CollectionUtils.isEmpty(commitsList) && (commitsList.size() > 1);
     }
 
     protected void setCommitPullNumber (Commit commit) {
@@ -294,7 +290,7 @@ public class GitHubCommitV3 extends GitHubV3 {
 
         ResponseEntity<String> response = null;
         try {
-            response = restClient.makeRestCallPostGraphQL(gitHubParsed.getGraphQLUrl(), "token", token, postBody);
+            response = restClient.makeRestCallPost(gitHubParsed.getGraphQLUrl(), "token", token, postBody);
         } catch (Exception e) {
             throw new HygieiaException(e);
         }
