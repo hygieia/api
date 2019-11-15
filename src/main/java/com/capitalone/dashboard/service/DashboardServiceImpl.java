@@ -778,8 +778,10 @@ public class DashboardServiceImpl implements DashboardService {
     /**
      * Get all dashboards filtered by title and Pageable ( default page size = 10)
      *
-     * @param title, pageable
-     * @return Page<Dashboard>
+     * @param title Title of Dashboard
+     * @param type Type of Dashboard
+     * @param pageable Pagination Object
+     * @return Page<Dashboard> Page of Dashboards
      */
     @Override
     public Page<Dashboard> getDashboardByTitleWithFilter(String title, String type, Pageable pageable) {
@@ -796,8 +798,9 @@ public class DashboardServiceImpl implements DashboardService {
     /**
      * Get count of all dashboards filtered by title
      *
-     * @param title
-     * @return Integer
+     * @param title Title of Dashboard
+     * @param type Type of Dashboard
+     * @return Integer Count of Dashboards
      */
     @Override
     public Integer getAllDashboardsByTitleCount(String title, String type) {
@@ -813,7 +816,7 @@ public class DashboardServiceImpl implements DashboardService {
     /**
      * Get count of all dashboards, use dashboard type if supplied
      *
-     * @param
+     * @param type Type of the Dashboard
      * @return long
      */
     @Override
@@ -828,6 +831,7 @@ public class DashboardServiceImpl implements DashboardService {
     /**
      * Get all dashboards with page size (default = 10)
      *
+     * @param type Type of Dashboard
      * @param page size
      * @return List of dashboards
      */
@@ -842,7 +846,6 @@ public class DashboardServiceImpl implements DashboardService {
     /**
      * Get page size
      *
-     * @param
      * @return Integer
      */
     @Override
