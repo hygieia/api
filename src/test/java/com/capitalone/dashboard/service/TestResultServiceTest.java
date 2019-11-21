@@ -1,17 +1,7 @@
 package com.capitalone.dashboard.service;
 
 import com.capitalone.dashboard.misc.HygieiaException;
-import com.capitalone.dashboard.model.Collector;
-import com.capitalone.dashboard.model.CollectorItem;
-import com.capitalone.dashboard.model.TestCapability;
-import com.capitalone.dashboard.model.TestCase;
-import com.capitalone.dashboard.model.TestCaseStatus;
-import com.capitalone.dashboard.model.TestResult;
-import com.capitalone.dashboard.model.TestSuite;
-import com.capitalone.dashboard.model.TestSuiteType;
-import com.capitalone.dashboard.model.DataResponse;
-import com.capitalone.dashboard.model.Component;
-import com.capitalone.dashboard.model.CollectorType;
+import com.capitalone.dashboard.model.*;
 import com.capitalone.dashboard.repository.CollectorRepository;
 import com.capitalone.dashboard.repository.ComponentRepository;
 import com.capitalone.dashboard.repository.TestResultRepository;
@@ -225,9 +215,6 @@ public class TestResultServiceTest {
     @Test
     public void createV3WithGoodRequest() throws HygieiaException {
         ObjectId collectorId = ObjectId.get();
-
-        JSONObject request = createTestResultPerformance();
-
         when(collectorRepository.findOne(collectorId)).thenReturn(new Collector());
         when(collectorService.createCollector(any(Collector.class))).thenReturn(new Collector());
         when(collectorService.createCollectorItem(any(CollectorItem.class))).thenReturn(new CollectorItem());
@@ -235,27 +222,64 @@ public class TestResultServiceTest {
         TestResult testResult = makeTestResult();
 
         when(testResultRepository.save(any(TestResult.class))).thenReturn(testResult);
-        String response = testResultService.createPerfV3(request, null, "7ps", "performance");
+        String response = testResultService.createPerfV3(makeTestDateCreateRequestV3(), null, "7ps", "performance");
         String expected = testResult.getId().toString() + "," + testResult.getCollectorItemId();
         assertEquals(response, expected);
         System.out.println(response + expected);
     }
 
-    private JSONObject createTestResultPerformance(){
 
-        String jsonStr = "{\"performanceMetrics\":{\"startTime\":\"test\",\"endTime\":\"test\",\"message\":\"test1\",\"testSetName\":\"testdata\",\"testDuration\":\"1m\",\"actualResults\":{\"throughPut\":11,\"errorPercent\":1,\"responseTime\":4,\"maxResponseTime\":55,\"minResponseTime\":0},\"benchmarkUsed\":{\"throughPut\":0,\"errorPercent\":0,\"responseTime\":1,\"maxResponseTime\":0,\"minResponseTime\":8},\"testRunStatus\":\"PASS\"},\"testType\":\"performance\",\"testId\":\"test\",\"testAgentType\":\"test\",\"componentName\":\"test\",\"status\":\"COMPLETED\",\"testRequestId\":\"test\"}";
+    private PrefTestCreateRequest makeTestDateCreateRequestV3() {
+        PrefTestCreateRequest data = new PrefTestCreateRequest();
+        TestPerformance perf = new TestPerformance();
+        perf.setApplicationName("appName");
+        perf.setBapComponentName("CompName");
+        perf.setBuildJobId("1");
+        data.setTestPerformance(perf);
+        data.setDescription("description");
+        data.setDuration(1L);
+        data.setStartTime(2L);
+        data.setEndTime(3L);
+        data.setFailureCount(1);
+        data.setSuccessCount(2);
+        data.setSkippedCount(0);
+        data.setTotalCount(3);
 
-        JSONParser parser = new JSONParser();
-        JSONObject json = null;
-        try {
-            json = (JSONObject) parser.parse(jsonStr);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
+        TestCapability capability = new TestCapability();
+        capability.setDescription("description");
+        capability.setDuration(1L);
+        capability.setStartTime(2L);
+        capability.setEndTime(3L);
+        capability.setFailedTestSuiteCount(1);
+        capability.setSkippedTestSuiteCount(2);
+        capability.setSuccessTestSuiteCount(3);
+        capability.setTotalTestSuiteCount(6);
 
+        TestSuite suite = new TestSuite();
+        suite.setDescription("description");
+        suite.setDuration(1L);
+        suite.setStartTime(2L);
+        suite.setEndTime(3L);
+        suite.setType(TestSuiteType.Functional);
+        suite.setFailedTestCaseCount(1);
+        suite.setSuccessTestCaseCount(2);
+        suite.setSkippedTestCaseCount(0);
+        suite.setTotalTestCaseCount(3);
 
-        return json;
+        capability.getTestSuites().add(suite);
+        data.getTestCapabilities().add(capability);
+
+        TestCase testCase = new TestCase();
+        testCase.setId("id");
+        testCase.setDescription("description");
+        testCase.setStatus(TestCaseStatus.Failure);
+        testCase.setDuration(20l);
+
+        suite.getTestCases().add(testCase);
+
+        return data;
     }
+
 
 
 }
