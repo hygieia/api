@@ -2,9 +2,6 @@ name: Release Snapshot
 
 on:
   push:
-    paths:
-      - '!README.md'
-      - '!AuditRules.md'
     branches: 
       - master
 
