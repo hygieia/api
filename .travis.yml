@@ -1,11 +1,11 @@
 language: java
 jdk:
   - openjdk8
+services:
+  - docker
 
 branches:
   only:
-    - master
-    - gerrit-integration
     - "/^v[0-9]+\\.[0-9]+\\.[0-9]+.*$/"
 
 install: true
@@ -14,9 +14,15 @@ before_script:
   - sudo chown -R $USER:$GROUP $TRAVIS_BUILD_DIR
 
 script:
-  - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then mvn clean install -q; fi
-  - if [ "$TRAVIS_PULL_REQUEST" = "false" ] && [ "$TRAVIS_BRANCH" = "master" ]; then cp ./src/devops/deploy-snapshot.sh . && ./deploy-snapshot.sh; fi
   - if [ "$TRAVIS_PULL_REQUEST" = "false" ] && [[ "$TRAVIS_BRANCH" =~ ^v[0-9]+\.[0-9]+\.[0-9]+.*$ ]]; then cp ./src/devops/release.sh . && ./release.sh; fi
+  - export TAG=$TRAVIS_BRANCH
+  - export IMAGE_NAME='hygieiadoc/api'
+  - echo $IMAGE_NAME
+  - echo $TAG
+  - docker build -t $IMAGE_NAME .
+  - docker tag $IMAGE_NAME $IMAGE_NAME:$TAG
+  - docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASS
+  - docker push $IMAGE_NAME
 
 notifications:
   webhooks:

@@ -282,25 +282,30 @@ public class TestResultServiceImpl implements TestResultService {
     }
 
     @Override
-    public String createPerfV3(JSONObject jsonRequest, TestJunit xmlRequest, String prefTool, String type) throws HygieiaException {
+    public String createPerfV3(PrefTestCreateRequest jsonRequest, TestJunit xmlRequest, String prefTool, String type) throws HygieiaException  {
         TestResult testResult = null;
         if (TestResultConstant.CUCUMBER.equals(type)) {
             Gson gson = new Gson();
-            TestCucumber cucumberRequest = gson.fromJson(jsonRequest.toJSONString(), TestCucumber.class);
+            String tmp = gson.toJson(jsonRequest);
+            TestCucumber cucumberRequest = gson.fromJson(tmp , TestCucumber.class);
             testResult = createPerfTestv3(cucumberRequest, TestSuiteType.Functional, prefTool);
         } else if (TestResultConstant.JUNIT.equals(type)) {
             testResult = createPerfTestv3(xmlRequest, TestSuiteType.Unit, prefTool);
         } else if (TestResultConstant.PERFORMANCE.equals(type) && TestResultConstant.perftool.equals(prefTool)) {
             Gson gson = new Gson();
-            TestPerformance performanceRequest = gson.fromJson(jsonRequest.toJSONString(), TestPerformance.class);
+            String tmp = gson.toJson(jsonRequest);
+            TestPerformance performanceRequest = gson.fromJson(tmp, TestPerformance.class);
             testResult = createPerfTestv3(performanceRequest, TestSuiteType.Unit, prefTool);
         }else if (TestResultConstant.PERFORMANCE.equals(type)) {
             Gson gson = new Gson();
-            PerfTestDataCreateRequest perfRequest = gson.fromJson(jsonRequest.toJSONString(), PerfTestDataCreateRequest.class);
+            String tmp = gson.toJson(jsonRequest);
+            PerfTestDataCreateRequest perfRequest = gson.fromJson(tmp, PerfTestDataCreateRequest.class);
             testResult = createPerfTest(perfRequest);
         }
         return testResult.getId() + "," + testResult.getCollectorItemId();
     }
+
+
 
     @Override
     public String createPerf(PerfTestDataCreateRequest request) throws HygieiaException {
