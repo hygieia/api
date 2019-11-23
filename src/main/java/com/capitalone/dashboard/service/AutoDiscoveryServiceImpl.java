@@ -12,6 +12,8 @@ import com.capitalone.dashboard.repository.CollectorRepository;
 import com.capitalone.dashboard.repository.FeatureFlagRepository;
 import com.capitalone.dashboard.util.FeatureFlagsEnum;
 import com.capitalone.dashboard.util.HygieiaUtils;
+import com.google.common.collect.Iterables;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bson.types.ObjectId;
@@ -22,6 +24,8 @@ import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class AutoDiscoveryServiceImpl implements AutoDiscoveryService {
@@ -45,7 +49,7 @@ public class AutoDiscoveryServiceImpl implements AutoDiscoveryService {
         }
 
         ObjectId id = new ObjectId(autoDiscoveryId);
-        AutoDiscovery autoDiscovery = null;
+        AutoDiscovery autoDiscovery;
         FeatureFlag featureFlag = featureFlagRepository.findByName(FeatureFlagsEnum.auto_discover.toString());
 
         if (autoDiscoveryRepository.exists(id)) {
@@ -73,6 +77,7 @@ public class AutoDiscoveryServiceImpl implements AutoDiscoveryService {
     private AutoDiscovery requestToAutoiscovery(AutoDiscoveryRemoteRequest request, FeatureFlag featureFlag) {
 
         cleanAutoDiscoveryRequestByFeatureFlag(request, featureFlag);
+        removeDuplicatesNull(request);
         return new AutoDiscovery(request.getMetaData(), request.getCodeRepoEntries(), request.getBuildEntries(), request.getSecurityScanEntries(),
                 request.getDeploymentEntries(), request.getLibraryScanEntries(), request.getFunctionalTestEntries(), request.getArtifactEntries(),
                 request.getStaticCodeEntries(), request.getFeatureEntries());
@@ -95,6 +100,7 @@ public class AutoDiscoveryServiceImpl implements AutoDiscoveryService {
         updateEntryStatus(request.getArtifactEntries(), autoDiscovery.getArtifactEntries());
         updateEntryStatus(request.getStaticCodeEntries(), autoDiscovery.getStaticCodeEntries());
         updateEntryStatus(request.getFeatureEntries(), autoDiscovery.getFeatureEntries());
+        removeDuplicatesNull(autoDiscovery);
         removeEntriesByFeatureFlag(autoDiscovery, featureFlag);
     }
 
@@ -149,6 +155,51 @@ public class AutoDiscoveryServiceImpl implements AutoDiscoveryService {
                 }
             }
         }
+    }
+
+    /**
+     * Remove Nulls and Duplicates from {@link AutoDiscovery}
+     *
+     * @param autoDiscovery
+     */
+    private void removeDuplicatesNull(@NotNull AutoDiscovery autoDiscovery) {
+        autoDiscovery.setCodeRepoEntries(filterDuplicatesNull(autoDiscovery.getCodeRepoEntries()));
+        autoDiscovery.setBuildEntries(filterDuplicatesNull(autoDiscovery.getBuildEntries()));
+        autoDiscovery.setSecurityScanEntries(filterDuplicatesNull(autoDiscovery.getSecurityScanEntries()));
+        autoDiscovery.setDeploymentEntries(filterDuplicatesNull(autoDiscovery.getDeploymentEntries()));
+        autoDiscovery.setLibraryScanEntries(filterDuplicatesNull(autoDiscovery.getLibraryScanEntries()));
+        autoDiscovery.setFunctionalTestEntries(filterDuplicatesNull(autoDiscovery.getFunctionalTestEntries()));
+        autoDiscovery.setArtifactEntries(filterDuplicatesNull(autoDiscovery.getArtifactEntries()));
+        autoDiscovery.setStaticCodeEntries(filterDuplicatesNull(autoDiscovery.getStaticCodeEntries()));
+        autoDiscovery.setFeatureEntries(filterDuplicatesNull(autoDiscovery.getFeatureEntries()));
+    }
+
+    /**
+     * Remove nulls and Duplicates from {@link AutoDiscoveryRemoteRequest}
+     *
+     * @param request
+     */
+    private void removeDuplicatesNull(@NotNull AutoDiscoveryRemoteRequest request) {
+        request.setCodeRepoEntries(filterDuplicatesNull(request.getCodeRepoEntries()));
+        request.setBuildEntries(filterDuplicatesNull(request.getBuildEntries()));
+        request.setSecurityScanEntries(filterDuplicatesNull(request.getSecurityScanEntries()));
+        request.setDeploymentEntries(filterDuplicatesNull(request.getDeploymentEntries()));
+        request.setLibraryScanEntries(filterDuplicatesNull(request.getLibraryScanEntries()));
+        request.setFunctionalTestEntries(filterDuplicatesNull(request.getFunctionalTestEntries()));
+        request.setArtifactEntries(filterDuplicatesNull(request.getArtifactEntries()));
+        request.setStaticCodeEntries(filterDuplicatesNull(request.getStaticCodeEntries()));
+        request.setFeatureEntries(filterDuplicatesNull(request.getFeatureEntries()));
+    }
+
+    /**
+     * Filter nulls and duplicates from List of {@link AutoDiscoveredEntry}
+     *
+     * @param entry
+     */
+    private List<AutoDiscoveredEntry> filterDuplicatesNull( List<AutoDiscoveredEntry> entry) {
+        if(CollectionUtils.isEmpty(entry)) return entry;
+        Iterables.removeIf(entry, Objects::isNull);
+        return entry.stream().distinct().collect(Collectors.toList());
     }
 
 }
