@@ -38,4 +38,6 @@ public interface CmdbService {
      */
     List<Cmdb> getAllBusServices();
 
+    List<Cmdb> commonNameByConfigurationItem(String commonName);
+
 }

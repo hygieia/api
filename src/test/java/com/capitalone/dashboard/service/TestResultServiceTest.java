@@ -221,22 +221,6 @@ public class TestResultServiceTest {
         return result;
     }
 
-    @Test
-    public void createV3WithGoodRequest() throws HygieiaException {
-        ObjectId collectorId = ObjectId.get();
-        when(collectorRepository.findOne(collectorId)).thenReturn(new Collector());
-        when(collectorService.createCollector(any(Collector.class))).thenReturn(new Collector());
-        when(collectorService.createCollectorItem(any(CollectorItem.class))).thenReturn(new CollectorItem());
-
-        TestResult testResult = makeTestResult();
-
-        when(testResultRepository.save(any(TestResult.class))).thenReturn(testResult);
-        String response = testResultService.createPerfV3(makeTestDateCreateRequestV3(), null, "7ps", "performance");
-        String expected = testResult.getId().toString() + "," + testResult.getCollectorItemId();
-        assertEquals(response, expected);
-        System.out.println(response + expected);
-    }
-
 
     private PrefTestCreateRequest makeTestDateCreateRequestV3() {
         PrefTestCreateRequest data = new PrefTestCreateRequest();

@@ -15,7 +15,6 @@ import com.google.gson.Gson;
 import com.mysema.query.BooleanBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.bson.types.ObjectId;
-import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -34,16 +33,18 @@ public class TestResultServiceImpl implements TestResultService {
     private final ComponentRepository componentRepository;
     private final CollectorRepository collectorRepository;
     private final CollectorService collectorService;
+    private final CmdbService cmdbService;
 
     @Autowired
     public TestResultServiceImpl(TestResultRepository testResultRepository,
                                  ComponentRepository componentRepository,
                                  CollectorRepository collectorRepository,
-                                 CollectorService collectorService) {
+                                 CollectorService collectorService, CmdbService cmdbService) {
         this.testResultRepository = testResultRepository;
         this.componentRepository = componentRepository;
         this.collectorRepository = collectorRepository;
         this.collectorService = collectorService;
+        this.cmdbService = cmdbService;
     }
 
     @Override
@@ -495,15 +496,11 @@ public class TestResultServiceImpl implements TestResultService {
 
 
     private TestResult createPerfTestv3(CollectorItem collectorItem, TestCucumber request, TestSuiteType type) {
-        String executionId = request.getBuildJobId()+request.getBapComponentName()+request.getApplicationName();
-        TestResultCucumber testResult = (TestResultCucumber) testResultRepository.findByCollectorItemIdAndExecutionId(collectorItem.getId(),
-                executionId);
 
-        if (testResult == null) {
-            testResult = new TestResultCucumber();
-        }
+        TestResultCucumber  testResult = new TestResultCucumber();
+        Cmdb cmdb = cmdbService.commonNameByConfigurationItem(request.getBapComponentName()).get(0);
         testResult.setBuildJobId(request.getBuildJobId());
-        testResult.setBapComponentName(request.getBapComponentName());
+        testResult.setTargetAppName(request.getBapComponentName());
         testResult.setApplicationName(request.getApplicationName());
         testResult.setTimestamp(System.currentTimeMillis());
         testResult.setType(type);
@@ -514,7 +511,7 @@ public class TestResultServiceImpl implements TestResultService {
         testResult.setUrl(request.getUri());
         testResult.setElements(request.getElements());
         testResult.setName(request.getName());
-        testResult.setExecutionId(executionId);
+        testResult.setTargetEnvName(cmdb.getConfigurationItem());
         testResult.setDescription(request.getDescription());
         testResult.setKeyword(request.getKeyword());
         if (request.getTimestamp() == 0) request.setTimestamp(System.currentTimeMillis());
@@ -525,14 +522,11 @@ public class TestResultServiceImpl implements TestResultService {
 
 
     private TestResult createPerfTestv3(CollectorItem collectorItem, TestJunit request, TestSuiteType type) {
-        String executionId = request.getBuildJobId()+request.getBapComponentName()+request.getApplicationName();
-        TestResultJunit testResult = (TestResultJunit) testResultRepository.findByCollectorItemIdAndExecutionId(collectorItem.getId(), executionId);
 
-        if (testResult == null) {
-            testResult = new TestResultJunit();
-        }
+        TestResultJunit  testResult = new TestResultJunit();
+        Cmdb cmdb = cmdbService.commonNameByConfigurationItem(request.getBapComponentName()).get(0);
         testResult.setBuildJobId(request.getBuildJobId());
-        testResult.setBapComponentName(request.getBapComponentName());
+        testResult.setTargetAppName(request.getBapComponentName());
         testResult.setApplication(request.getApplicationName());
         testResult.setTimestamp(System.currentTimeMillis());
         testResult.setSkipped(request.getSkipped());
@@ -541,7 +535,7 @@ public class TestResultServiceImpl implements TestResultService {
         testResult.setErrors(request.getErrors());
         testResult.setTestcase(request.getTestcase());
         testResult.setCollectorItemId(collectorItem.getId());
-        testResult.setExecutionId(executionId);
+        testResult.setTargetEnvName(cmdb.getConfigurationItem());
         testResult.setType(type);
         testResult.setFailures(request.getFailures());
         testResult.setTests(request.getTests());
@@ -555,22 +549,18 @@ public class TestResultServiceImpl implements TestResultService {
 
 
     private TestResult createPerfTestv3(CollectorItem collectorItem, TestPerformance request, TestSuiteType type) {
-        String executionId = request.getBuildJobId()+request.getBapComponentName()+request.getApplicationName();
-        TestResultPerformance testResult = (TestResultPerformance) testResultRepository.findByCollectorItemIdAndExecutionId(collectorItem.getId(),
-                executionId);
 
-        if (testResult == null) {
-            testResult = new TestResultPerformance();
-        }
+        TestResultPerformance   testResult = new TestResultPerformance();
+        Cmdb cmdb = cmdbService.commonNameByConfigurationItem(request.getBapComponentName()).get(0);
         testResult.setBuildJobId(request.getBuildJobId());
-        testResult.setBapComponentName(request.getBapComponentName());
+        testResult.setTargetAppName(request.getBapComponentName());
         testResult.setApplicationName(request.getApplicationName());testResult.setType(type);
         testResult.setType(type);
         testResult.setCollectorItemId(collectorItem.getId());
         testResult.setStatus(request.getStatus());
         testResult.setPerformanceMetrics(request.getPerformanceMetrics());
         testResult.setTestId(request.getTestId());
-        testResult.setExecutionId(executionId);
+        testResult.setTargetEnvName(cmdb.getConfigurationItem());
         testResult.setTestAgentType(request.getTestAgentType());
         testResult.setComponentName(request.getComponentName());
         testResult.setTestRequestId(request.getTestRequestId());
