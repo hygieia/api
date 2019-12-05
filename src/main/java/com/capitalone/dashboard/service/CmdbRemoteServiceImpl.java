@@ -134,10 +134,6 @@ public class CmdbRemoteServiceImpl implements CmdbRemoteService {
         collectorItem.setLastUpdated( System.currentTimeMillis() );
         collectorItem.getOptions().put( CONFIGURATION_ITEM, request.getConfigurationItem() );
         collectorItem.getOptions().put( COMMON_NAME, request.getCommonName() );
-
         return  collectorService.createCollectorItem( collectorItem );
     }
-
-
-
 }
