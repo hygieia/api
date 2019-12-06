@@ -58,7 +58,7 @@
     </parent>
 
     <properties>
-        <com.capitalone.dashboard.core.version>3.1.16</com.capitalone.dashboard.core.version>
+        <com.capitalone.dashboard.core.version>3.1.18</com.capitalone.dashboard.core.version>
         <apache.rat.plugin.version>0.13</apache.rat.plugin.version>
         <coveralls.maven.plugin.version>4.3.0</coveralls.maven.plugin.version>
         <guava.version>18.0</guava.version>
