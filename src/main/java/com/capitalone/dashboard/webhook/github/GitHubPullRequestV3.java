@@ -525,12 +525,12 @@ public class GitHubPullRequestV3 extends GitHubV3 {
     }
 
     private boolean isValidEvent(String action) {
-        return Arrays.asList(PullRequestEvent.Opened,
-                PullRequestEvent.Edited,
-                PullRequestEvent.Closed,
+        List<PullRequestEvent> validPullRequestEvents = new ArrayList<>();
+        Collections.addAll(validPullRequestEvents,PullRequestEvent.Opened,PullRequestEvent.Edited,PullRequestEvent.Closed,
                 PullRequestEvent.Reopened,
                 PullRequestEvent.Merged,
-                PullRequestEvent.Synchronize).contains(PullRequestEvent.fromString(action));
+                PullRequestEvent.Synchronize);
+        return validPullRequestEvents.contains(PullRequestEvent.fromString(action));
     }
 
 }
