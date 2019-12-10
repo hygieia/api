@@ -37,6 +37,8 @@ dbpassword=${SPRING_DATA_MONGODB_PASSWORD:-dbpassword}
 #This is ensure if you are keeping DB outside docker compose.
 dbhostport=${SPRING_DATA_MONGODB_HOST}:${SPRING_DATA_MONGODB_PORT}
 
+# api port
+server.port=${API_PORT:-8081}
 
 #API encryption key. Optional. See https://hygieia.github.io/Hygieia/setup.html#encryption-for-private-repos	
 key=${KEY:-}

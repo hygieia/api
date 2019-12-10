@@ -1,5 +1,6 @@
 package com.capitalone.dashboard.service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -70,19 +71,12 @@ public interface DashboardService {
      * Associate a CollectorItem to a Component
      *
      * @param componentId unique identifier of the Component
-     * @param collectorItemIds List of unique identifier of the CollectorItem
+     * @param collectorItemIdsToAdd List of unique identifier of the CollectorItem to add
+     * @param collectorItemIdsToRemove List of unique identifier of the CollectorItem to remove
      * @return Component
      */
-    Component associateCollectorToComponent(ObjectId componentId, List<ObjectId> collectorItemIds);
+    Component associateCollectorToComponent(ObjectId componentId, Collection<ObjectId> collectorItemIdsToAdd, Collection<ObjectId> collectorItemIdsToRemove);
 
-    /**
-     * Associate a CollectorItem to a Component
-     *
-     * @param componentId unique identifier of the Component
-     * @param collectorItemIds List of unique identifier of the CollectorItem
-     * @return Component
-     */
-    Component associateCollectorToComponent(ObjectId componentId, List<ObjectId> collectorItemIds,Component component);
 
     /**
      * Creates a new Widget and adds it to the Dashboard indicated by the dashboardId parameter.

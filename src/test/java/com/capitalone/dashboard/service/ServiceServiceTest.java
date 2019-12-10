@@ -68,7 +68,7 @@ public class ServiceServiceTest {
         final ObjectId id = ObjectId.get();
         final String name = "service";
         final String url = "https://abc123456.com";
-        List<String> activeWidgets = new ArrayList<>();
+        List<ActiveWidget> activeWidgets = new ArrayList<>();
         List<Owner> owners = new ArrayList<>();
         owners.add(new Owner("amit", AuthType.STANDARD));
         final Dashboard dashboard = new Dashboard("template", "title", new Application("app"), owners, DashboardType.Team, "ASVTEST","BAPTEST",activeWidgets, false, ScoreDisplayType.HEADER);

@@ -22,7 +22,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 @Service
-public class MetadataServiceImpl implements MetadataService {
+public class
+MetadataServiceImpl implements MetadataService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MetadataServiceImpl.class);
 

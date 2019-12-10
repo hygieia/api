@@ -11,6 +11,7 @@ public class WidgetRequest {
     private ObjectId componentId;
     private List<ObjectId> collectorItemIds;
     private Map<String, Object> options;
+    private String type;
 
     public String getName() {
         return name;
@@ -44,29 +45,41 @@ public class WidgetRequest {
         this.options = options;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
     public Widget widget() {
         Widget widget = new Widget();
         widget.setName(name);
+        widget.setType(type);
         widget.setComponentId(componentId);
         if ((options != null) && !options.isEmpty()) {
             widget.getOptions().put("id",options.get("id"));
-            if("build".equalsIgnoreCase(name)){
+            if("build".equalsIgnoreCase(type)){
                 widget.getOptions().put("buildDurationThreshold",3);
                 widget.getOptions().put("consecutiveFailureThreshold",5);
-            } else if ("AgileTool".equalsIgnoreCase(name) || "feature".equalsIgnoreCase(name)) {
+            } else if ("AgileTool".equalsIgnoreCase(type) || "feature".equalsIgnoreCase(type)) {
                 widget.getOptions().putAll(options);
             }
         }
+        widget.setCollectorItemIds(this.collectorItemIds);
         return widget;
     }
 
     public Widget updateWidget(Widget widget) {
         widget.setComponentId(componentId);
         widget.setName(name);
+        widget.setType(type);
         widget.getOptions().clear();
         if ((options != null) && !options.isEmpty()) {
             widget.getOptions().putAll(options);
         }
+        widget.setCollectorItemIds(this.collectorItemIds);
         return widget;
     }
 }
