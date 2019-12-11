@@ -20,6 +20,8 @@ public class TestResultJunit extends TestResult {
 
     }
 
+
+
     private String tests;
 
     private String failures;

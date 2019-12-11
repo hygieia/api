@@ -33,7 +33,6 @@ public class TestResultServiceImpl implements TestResultService {
     private final ComponentRepository componentRepository;
     private final CollectorRepository collectorRepository;
     private final CollectorService collectorService;
-    private final CmdbService cmdbService;
 
     @Autowired
     public TestResultServiceImpl(TestResultRepository testResultRepository,
@@ -44,7 +43,6 @@ public class TestResultServiceImpl implements TestResultService {
         this.componentRepository = componentRepository;
         this.collectorRepository = collectorRepository;
         this.collectorService = collectorService;
-        this.cmdbService = cmdbService;
     }
 
     @Override
@@ -283,21 +281,25 @@ public class TestResultServiceImpl implements TestResultService {
     }
 
     @Override
-    public String createPerfV3(PrefTestCreateRequest jsonRequest, TestJunit xmlRequest, String prefTool, String type) throws HygieiaException  {
+    public String createPerfV3(PrefTestCreateRequest jsonRequest) throws HygieiaException  {
         TestResult testResult = null;
-        if (TestResultConstant.CUCUMBER.equals(type)) {
+        if (TestResultConstant.CUCUMBER.equals(jsonRequest.getType())) {
             Gson gson = new Gson();
             String tmp = gson.toJson(jsonRequest);
             TestCucumber cucumberRequest = gson.fromJson(tmp , TestCucumber.class);
-            testResult = createPerfTestv3(cucumberRequest, TestSuiteType.Functional, prefTool);
-        } else if (TestResultConstant.JUNIT.equals(type)) {
-            testResult = createPerfTestv3(xmlRequest, TestSuiteType.Unit, prefTool);
-        } else if (TestResultConstant.PERFORMANCE.equals(type) && TestResultConstant.perftool.equals(prefTool)) {
+            testResult = createPerfTestv3(cucumberRequest, TestSuiteType.Functional, jsonRequest.getPerfTool());
+        }  else if (TestResultConstant.PERFORMANCE.equals(jsonRequest.getType()) && TestResultConstant.perftool.equals(jsonRequest.getPerfTool())) {
             Gson gson = new Gson();
             String tmp = gson.toJson(jsonRequest);
             TestPerformance performanceRequest = gson.fromJson(tmp, TestPerformance.class);
-            testResult = createPerfTestv3(performanceRequest, TestSuiteType.Unit, prefTool);
-        }else if (TestResultConstant.PERFORMANCE.equals(type)) {
+            testResult = createPerfTestv3(performanceRequest, TestSuiteType.Performance, jsonRequest.getPerfTool());
+        }else if (TestResultConstant.PERFORMANCE.equals(jsonRequest.getType())) {
+            if(jsonRequest.getRunId() == null){
+                throw new HygieiaException("'runId' may not be null" , HygieiaException.JSON_FORMAT_ERROR);
+            }
+            if(jsonRequest.getTestName() == null){
+                throw new HygieiaException("'testName' may not be null" , HygieiaException.JSON_FORMAT_ERROR);
+            }
             Gson gson = new Gson();
             String tmp = gson.toJson(jsonRequest);
             PerfTestDataCreateRequest perfRequest = gson.fromJson(tmp, PerfTestDataCreateRequest.class);
@@ -306,6 +308,13 @@ public class TestResultServiceImpl implements TestResultService {
         return testResult.getId() + "," + testResult.getCollectorItemId();
     }
 
+    @Override
+    public String createPerfV3( TestJunit xmlRequest) throws HygieiaException  {
+
+        TestResult testResult = createPerfTestv3(xmlRequest, TestSuiteType.Unit, xmlRequest.getPerfTool());
+
+        return testResult.getId() + "," + testResult.getCollectorItemId();
+    }
 
 
     @Override
@@ -464,6 +473,7 @@ public class TestResultServiceImpl implements TestResultService {
     }
 
     private TestResult createPerfTest(CollectorItem collectorItem, PerfTestDataCreateRequest request) {
+
         TestResult testResult = testResultRepository.findByCollectorItemIdAndExecutionId(collectorItem.getId(),
                 request.getRunId());
         if (testResult == null) {
@@ -498,9 +508,9 @@ public class TestResultServiceImpl implements TestResultService {
     private TestResult createPerfTestv3(CollectorItem collectorItem, TestCucumber request, TestSuiteType type) {
 
         TestResultCucumber  testResult = new TestResultCucumber();
-        Cmdb cmdb = cmdbService.commonNameByConfigurationItem(request.getBapComponentName()).get(0);
         testResult.setBuildJobId(request.getBuildJobId());
         testResult.setTargetAppName(request.getBapComponentName());
+        testResult.setTargetEnvName(request.getTargetEnvName());
         testResult.setApplicationName(request.getApplicationName());
         testResult.setTimestamp(System.currentTimeMillis());
         testResult.setType(type);
@@ -511,7 +521,6 @@ public class TestResultServiceImpl implements TestResultService {
         testResult.setUrl(request.getUri());
         testResult.setElements(request.getElements());
         testResult.setName(request.getName());
-        testResult.setTargetEnvName(cmdb.getConfigurationItem());
         testResult.setDescription(request.getDescription());
         testResult.setKeyword(request.getKeyword());
         if (request.getTimestamp() == 0) request.setTimestamp(System.currentTimeMillis());
@@ -524,9 +533,9 @@ public class TestResultServiceImpl implements TestResultService {
     private TestResult createPerfTestv3(CollectorItem collectorItem, TestJunit request, TestSuiteType type) {
 
         TestResultJunit  testResult = new TestResultJunit();
-        Cmdb cmdb = cmdbService.commonNameByConfigurationItem(request.getBapComponentName()).get(0);
         testResult.setBuildJobId(request.getBuildJobId());
         testResult.setTargetAppName(request.getBapComponentName());
+        testResult.setTargetEnvName(request.getTargetEnvName());
         testResult.setApplication(request.getApplicationName());
         testResult.setTimestamp(System.currentTimeMillis());
         testResult.setSkipped(request.getSkipped());
@@ -535,7 +544,6 @@ public class TestResultServiceImpl implements TestResultService {
         testResult.setErrors(request.getErrors());
         testResult.setTestcase(request.getTestcase());
         testResult.setCollectorItemId(collectorItem.getId());
-        testResult.setTargetEnvName(cmdb.getConfigurationItem());
         testResult.setType(type);
         testResult.setFailures(request.getFailures());
         testResult.setTests(request.getTests());
@@ -551,16 +559,15 @@ public class TestResultServiceImpl implements TestResultService {
     private TestResult createPerfTestv3(CollectorItem collectorItem, TestPerformance request, TestSuiteType type) {
 
         TestResultPerformance   testResult = new TestResultPerformance();
-        Cmdb cmdb = cmdbService.commonNameByConfigurationItem(request.getBapComponentName()).get(0);
         testResult.setBuildJobId(request.getBuildJobId());
         testResult.setTargetAppName(request.getBapComponentName());
+        testResult.setTargetEnvName(request.getTargetEnvName());
         testResult.setApplicationName(request.getApplicationName());testResult.setType(type);
         testResult.setType(type);
         testResult.setCollectorItemId(collectorItem.getId());
         testResult.setStatus(request.getStatus());
         testResult.setPerformanceMetrics(request.getPerformanceMetrics());
         testResult.setTestId(request.getTestId());
-        testResult.setTargetEnvName(cmdb.getConfigurationItem());
         testResult.setTestAgentType(request.getTestAgentType());
         testResult.setComponentName(request.getComponentName());
         testResult.setTestRequestId(request.getTestRequestId());

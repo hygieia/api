@@ -2,9 +2,9 @@ package com.capitalone.dashboard.util;
 
 public class TestResultConstant {
 
-    public static final String  PERFORMANCE = "performance" ;
+    public static final String  PERFORMANCE = "Performance" ;
 
-    public static final String CUCUMBER = "feature";
+    public static final String CUCUMBER = "Functional";
 
     public static final String JUNIT = "Junit";
 

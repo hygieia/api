@@ -1,5 +1,7 @@
 package com.capitalone.dashboard.model;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -7,14 +9,13 @@ import java.util.Collection;
 public class PrefTestCreateRequest {
 
 
-    @NotNull
     private String runId;
-    @NotNull
     private String testName;
     @NotNull
     private String perfTool;
     @NotNull
-    private TestSuiteType type;
+    private String type;
+
     private TestPerformance testPerformance;
     private String resultStatus;
     private String reportUrl;
@@ -179,11 +180,12 @@ public class PrefTestCreateRequest {
         this.unknownStatusCount = unknownStatusCount;
     }
 
-    public TestSuiteType getType() {
-        return this.type;
+
+    public String getType() {
+        return type;
     }
 
-    public void setType(TestSuiteType type) {
+    public void setType(String type) {
         this.type = type;
     }
 
@@ -365,5 +367,50 @@ public class PrefTestCreateRequest {
 
     public void setTestRequestId(String testRequestId) {
         this.testRequestId = testRequestId;
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("runId", runId)
+                .append("testName", testName)
+                .append("perfTool", perfTool)
+                .append("type", type)
+                .append("testPerformance", testPerformance)
+                .append("resultStatus", resultStatus)
+                .append("reportUrl", reportUrl)
+                .append("timestamp", timestamp)
+                .append("description", description)
+                .append("startTime", startTime)
+                .append("endTime", endTime)
+                .append("duration", duration)
+                .append("failureCount", failureCount)
+                .append("successCount", successCount)
+                .append("skippedCount", skippedCount)
+                .append("unknownStatusCount", unknownStatusCount)
+                .append("totalCount", totalCount)
+                .append("targetAppName", targetAppName)
+                .append("targetEnvName", targetEnvName)
+                .append("buildArtifact", buildArtifact)
+                .append("perfRisk", perfRisk)
+                .append("testCapabilities", testCapabilities)
+                .append("instanceUrl", instanceUrl)
+                .append("line", line)
+                .append("elements", elements)
+                .append("name", name)
+                .append("id", id)
+                .append("keyword", keyword)
+                .append("uri", uri)
+                .append("buildJobId", buildJobId)
+                .append("applicationName", applicationName)
+                .append("bapComponentName", bapComponentName)
+                .append("performanceMetrics", performanceMetrics)
+                .append("testType", testType)
+                .append("testId", testId)
+                .append("testAgentType", testAgentType)
+                .append("componentName", componentName)
+                .append("status", status)
+                .append("testRequestId", testRequestId)
+                .toString();
     }
 }

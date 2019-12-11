@@ -29,6 +29,8 @@ public class TestCucumber {
 
     private String bapComponentName;
 
+    private String targetEnvName;
+
 
     public String getLine() {
         return line;
@@ -118,6 +120,13 @@ public class TestCucumber {
         this.bapComponentName = bapComponentName;
     }
 
+    public String getTargetEnvName() {
+        return targetEnvName;
+    }
+
+    public void setTargetEnvName(String targetEnvName) {
+        this.targetEnvName = targetEnvName;
+    }
 
     public static class Elements {
         private Comments[] comments;
@@ -230,7 +239,22 @@ public class TestCucumber {
             this.tags = tags;
         }
 
-
+        @Override
+        public String toString() {
+            return new ToStringBuilder(this)
+                    .append("comments", comments)
+                    .append("before", before)
+                    .append("line", line)
+                    .append("name", name)
+                    .append("description", description)
+                    .append("id", id)
+                    .append("after", after)
+                    .append("keyword", keyword)
+                    .append("type", type)
+                    .append("steps", steps)
+                    .append("tags", tags)
+                    .toString();
+        }
     }
 
     public static class After {
@@ -254,7 +278,13 @@ public class TestCucumber {
             this.match = match;
         }
 
-
+        @Override
+        public String toString() {
+            return new ToStringBuilder(this)
+                    .append("result", result)
+                    .append("match", match)
+                    .toString();
+        }
     }
 
 
@@ -309,7 +339,16 @@ public class TestCucumber {
             this.keyword = keyword;
         }
 
-
+        @Override
+        public String toString() {
+            return new ToStringBuilder(this)
+                    .append("result", result)
+                    .append("line", line)
+                    .append("name", name)
+                    .append("match", match)
+                    .append("keyword", keyword)
+                    .toString();
+        }
     }
 
     public static class Match {
@@ -325,7 +364,9 @@ public class TestCucumber {
 
         @Override
         public String toString() {
-            return "Match [location = " + location + "]";
+            return new ToStringBuilder(this)
+                    .append("location", location)
+                    .toString();
         }
     }
 
@@ -351,7 +392,13 @@ public class TestCucumber {
             this.match = match;
         }
 
-
+        @Override
+        public String toString() {
+            return new ToStringBuilder(this)
+                    .append("result", result)
+                    .append("match", match)
+                    .toString();
+        }
     }
 
     @Override

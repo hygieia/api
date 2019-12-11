@@ -17,6 +17,7 @@ public interface TestResultService {
     String createV2(TestDataCreateRequest request) throws HygieiaException;
     String createPerf(PerfTestDataCreateRequest request) throws HygieiaException;
     String createPerfV2(PerfTestDataCreateRequest request) throws HygieiaException;
-    String createPerfV3(PrefTestCreateRequest jsonRequest , TestJunit xmlRequest, String prefTool , String type) throws HygieiaException;
+    String createPerfV3( TestJunit xmlRequest) throws HygieiaException;
+    String createPerfV3(PrefTestCreateRequest jsonRequest) throws HygieiaException;
 
 }

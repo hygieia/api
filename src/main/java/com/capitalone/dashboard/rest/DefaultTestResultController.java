@@ -19,9 +19,7 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
 import javax.validation.Valid;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -85,21 +83,21 @@ public class DefaultTestResultController {
     }
 
     @RequestMapping(value = "/v3/quality/testresult", method = POST,
-            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<String> createPerfTestV3(@Valid @RequestParam(value = "Type") String type,
-                                                   @RequestParam(value = "Tool") String perfTool,
-                                                   @RequestBody PrefTestCreateRequest jsonRequest,
-                                                   @RequestBody TestJunit xmlRequest) throws HygieiaException {
-        String response = null;
-        try {
-            response = testResultService.createPerfV3(jsonRequest, xmlRequest, perfTool, type);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+                    consumes = MediaType.APPLICATION_JSON_VALUE , produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> createPerfTestV3(@Valid @RequestBody PrefTestCreateRequest request) throws HygieiaException {
+        String    response = testResultService.createPerfV3(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
     }
 
+    @RequestMapping(value = "/v3/quality/testresult", method = POST,
+                    consumes =  MediaType.APPLICATION_XML_VALUE , produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> createPerfTestV3(@Valid @RequestBody TestJunit request) throws HygieiaException {
+        String response = testResultService.createPerfV3(request);
+        return ResponseEntity
+        .status(HttpStatus.CREATED)
+        .body(response);
+    }
 
 }

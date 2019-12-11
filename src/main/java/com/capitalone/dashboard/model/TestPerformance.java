@@ -31,6 +31,8 @@ public class TestPerformance {
 
     private String bapComponentName;
 
+    private String targetEnvName;
+
 
     public void setPerformanceMetrics(PerformanceMetrics performanceMetrics) {
         this.performanceMetrics = performanceMetrics;
@@ -116,6 +118,14 @@ public class TestPerformance {
         this.bapComponentName = bapComponentName;
     }
 
+    public String getTargetEnvName() {
+        return targetEnvName;
+    }
+
+    public void setTargetEnvName(String targetEnvName) {
+        this.targetEnvName = targetEnvName;
+    }
+
     @Override
     public String toString() {
         return new ToStringBuilder(this)
@@ -130,6 +140,7 @@ public class TestPerformance {
                 .append("buildJobId", buildJobId)
                 .append("applicationName", applicationName)
                 .append("bapComponentName", bapComponentName)
+                .append("targetEnvName", targetEnvName)
                 .toString();
     }
 

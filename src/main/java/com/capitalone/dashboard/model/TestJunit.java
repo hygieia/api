@@ -6,11 +6,17 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TestJunit {
 
+
+    @NotNull
+    private String perfTool;
+    @NotNull
+    private String type;
 
     private String tests;
 
@@ -22,7 +28,6 @@ public class TestJunit {
 
     private String errors;
 
-
     private Properties properties;
 
     private long timestamp;
@@ -32,6 +37,8 @@ public class TestJunit {
     private String applicationName;
 
     private String bapComponentName;
+
+    private String targetEnvName;
 
 
     @JacksonXmlElementWrapper(localName = "testcase", useWrapping = false)
@@ -135,9 +142,35 @@ public class TestJunit {
         this.bapComponentName = bapComponentName;
     }
 
+    public String getPerfTool() {
+        return perfTool;
+    }
+
+    public void setPerfTool(String perfTool) {
+        this.perfTool = perfTool;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getTargetEnvName() {
+        return targetEnvName;
+    }
+
+    public void setTargetEnvName(String targetEnvName) {
+        this.targetEnvName = targetEnvName;
+    }
+
     @Override
     public String toString() {
         return new ToStringBuilder(this)
+                .append("perfTool", perfTool)
+                .append("type", type)
                 .append("tests", tests)
                 .append("failures", failures)
                 .append("name", name)
