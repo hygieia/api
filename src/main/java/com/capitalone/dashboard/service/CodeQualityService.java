@@ -4,7 +4,9 @@ import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.CodeQuality;
 import com.capitalone.dashboard.model.DataResponse;
 import com.capitalone.dashboard.request.CodeQualityCreateRequest;
+import com.capitalone.dashboard.request.CodeQualityDataSyncRequest;
 import com.capitalone.dashboard.request.CodeQualityRequest;
+import org.springframework.http.ResponseEntity;
 
 public interface CodeQualityService {
 
@@ -17,4 +19,5 @@ public interface CodeQualityService {
     DataResponse<Iterable<CodeQuality>> search(CodeQualityRequest request);
     String create(CodeQualityCreateRequest request) throws HygieiaException;
     String createV2(CodeQualityCreateRequest request) throws HygieiaException;
+    ResponseEntity<String> syncData(CodeQualityDataSyncRequest request) throws HygieiaException;
 }

@@ -6,16 +6,18 @@ import com.capitalone.dashboard.model.CodeQuality;
 import com.capitalone.dashboard.model.CodeQualityType;
 import com.capitalone.dashboard.model.DataResponse;
 import com.capitalone.dashboard.request.CodeQualityCreateRequest;
+import com.capitalone.dashboard.request.CodeQualityDataSyncRequest;
 import com.capitalone.dashboard.request.CodeQualityRequest;
 import com.capitalone.dashboard.service.CodeQualityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.InitBinder;
 
 import javax.validation.Valid;
 
@@ -71,5 +73,10 @@ public class CodeQualityController {
     public DataResponse<Iterable<CodeQuality>> qualitySecurityAnalysis(@Valid CodeQualityRequest request) {
         request.setType(CodeQualityType.SecurityAnalysis);
         return codeQualityService.search(request);
+    }
+
+    @RequestMapping(value = "/quality/static-analysis/data-sync", method = GET, produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> codeQualityStaticAnalysisDataSync(@Valid CodeQualityDataSyncRequest request) throws HygieiaException {
+        return codeQualityService.syncData(request);
     }
 }
