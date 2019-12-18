@@ -1,6 +1,6 @@
 package com.capitalone.dashboard.request;
 
-public class CodeQualityDataSyncRequest {
+public class SonarDataSyncRequest {
 
     private String syncFrom;
     private String syncTo;
@@ -22,11 +22,11 @@ public class CodeQualityDataSyncRequest {
         this.syncTo = syncTo;
     }
 
-    public boolean isSync() {
+    public boolean getIsSync() {
         return isSync;
     }
 
-    public void setSync(boolean sync) {
-        isSync = sync;
+    public void setIsSync(boolean isSync) {
+        this.isSync = isSync;
     }
 }
