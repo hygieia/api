@@ -1,5 +1,6 @@
 package com.capitalone.dashboard.settings;
 
+import com.capitalone.dashboard.webhook.settings.GithubSyncSettings;
 import com.capitalone.dashboard.webhook.settings.WebHookSettings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -28,6 +29,8 @@ public class ApiSettings {
     private WebHookSettings webHook;
 
     private String capturePattern;
+
+    private GithubSyncSettings githubSyncSettings;
 
     public WebHookSettings getWebHook() {
         return webHook;
@@ -98,4 +101,13 @@ public class ApiSettings {
     public void setCapturePattern(String capturePattern) {
         this.capturePattern = capturePattern;
     }
+
+    public GithubSyncSettings getGithubSyncSettings() {
+        return githubSyncSettings;
+    }
+
+    public void setGithubSyncSettings(GithubSyncSettings githubSyncSettings) {
+        this.githubSyncSettings = githubSyncSettings;
+    }
+
 }
