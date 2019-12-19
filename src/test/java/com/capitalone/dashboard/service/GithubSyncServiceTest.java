@@ -65,10 +65,10 @@ public class GithubSyncServiceTest {
                 eq(null), eq(String.class)))
                 .thenReturn(new ResponseEntity<>(goodLdapResponse(), HttpStatus.OK));
         String ldapUser = gitHubSyncService.getLDAPDN(getGitRepo(),userUnderscore);
-        assertEquals(ldapUser, "CN=ldapUser,OU=Developers,OU=All Users,DC=cof,DC=ds,DC=mycompany,DC=com");
+        assertEquals(ldapUser, "CN=ldapUser,OU=Developers,OU=All Users,DC=test,DC=ds,DC=mycompany,DC=com");
         assertEquals(gitHubSyncService.getLdapMap().containsKey(userhyphen), true);
         assertEquals(gitHubSyncService.getLdapMap().containsKey(userUnderscore), false);
-        assertEquals(gitHubSyncService.getLdapMap().get(userhyphen), "CN=ldapUser,OU=Developers,OU=All Users,DC=cof,DC=ds,DC=mycompany,DC=com");
+        assertEquals(gitHubSyncService.getLdapMap().get(userhyphen), "CN=ldapUser,OU=Developers,OU=All Users,DC=test,DC=ds,DC=mycompany,DC=com");
         assertEquals(gitHubSyncService.getLdapMap().get(userUnderscore), null);
     }
 
@@ -80,7 +80,7 @@ public class GithubSyncServiceTest {
                 eq(null), eq(String.class)))
                 .thenReturn(new ResponseEntity<>(goodLdapResponse(), HttpStatus.OK));
         String ldapUser = gitHubSyncService.getLDAPDN(getGitRepo(),userhyphen);
-        assertEquals(ldapUser, "CN=ldapUser,OU=Developers,OU=All Users,DC=cof,DC=ds,DC=mycompany,DC=com");
+        assertEquals(ldapUser, "CN=ldapUser,OU=Developers,OU=All Users,DC=test,DC=ds,DC=mycompany,DC=com");
         assertEquals(gitHubSyncService.getLdapMap().containsKey(userhyphen), true);
     }
 
@@ -92,7 +92,7 @@ public class GithubSyncServiceTest {
                 eq(null), eq(String.class)))
                 .thenReturn(new ResponseEntity<>(goodLdapResponse(), HttpStatus.OK));
         String ldapUser = gitHubSyncService.getLDAPDN(getGitRepo(),user);
-        assertEquals(ldapUser, "CN=ldapUser,OU=Developers,OU=All Users,DC=cof,DC=ds,DC=mycompany,DC=com");
+        assertEquals(ldapUser, "CN=ldapUser,OU=Developers,OU=All Users,DC=test,DC=ds,DC=mycompany,DC=com");
         assertEquals(gitHubSyncService.getLdapMap().containsKey(user), true);
     }
 
@@ -118,7 +118,7 @@ public class GithubSyncServiceTest {
                 eq(null), eq(String.class)))
                 .thenReturn(new ResponseEntity<>(goodLdapResponse(), HttpStatus.OK));
         String ldapUser = gitHubSyncService.getLDAPDN(getGitRepo(),user);
-        assertEquals(ldapUser, "CN=ldapUser,OU=Developers,OU=All Users,DC=cof,DC=ds,DC=mycompany,DC=com");
+        assertEquals(ldapUser, "CN=ldapUser,OU=Developers,OU=All Users,DC=test,DC=ds,DC=mycompany,DC=com");
         assertEquals(gitHubSyncService.getLdapMap().containsKey(user), true);
     }
 
@@ -131,7 +131,7 @@ public class GithubSyncServiceTest {
     }
 
     private String goodLdapResponse() {
-        return "{ \"ldap_dn\": \"CN=ldapUser,OU=Developers,OU=All Users,DC=cof,DC=ds,DC=mycompany,DC=com\"}";
+        return "{ \"ldap_dn\": \"CN=ldapUser,OU=Developers,OU=All Users,DC=test,DC=ds,DC=mycompany,DC=com\"}";
     }
     
 }

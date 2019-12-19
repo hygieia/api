@@ -182,7 +182,7 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
         }
         long end = System.currentTimeMillis();
         long elapsedSeconds = (end - start) / 1000;
-        String format = String.format("GitHubCollectorTask:collect stop, totalProcessSeconds=%d, totalRepoCount=%d, totalNewPulls=%d, totalNewCommits=%d totalNewIssues=%d",
+        String format = String.format("GithubSyncServiceImpl : totalProcessSeconds=%d, totalRepoCount=%d, totalNewPulls=%d, totalNewCommits=%d totalNewIssues=%d",
                 elapsedSeconds, repoCount, pullCount, commitCount, issueCount);
         LOG.info(format);
         return format;
