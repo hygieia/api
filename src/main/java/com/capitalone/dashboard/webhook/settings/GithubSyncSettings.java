@@ -4,13 +4,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationPropertiesBinding;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
 @ConfigurationPropertiesBinding
 public class GithubSyncSettings {
     private String token;
-    private List<String> notBuiltCommits;
+    private List<String> notBuiltCommits = new ArrayList<>();
 
     @Value("${github.firstRunHistoryDays:60}")
     private int firstRunHistoryDays;
