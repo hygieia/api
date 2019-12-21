@@ -30,7 +30,7 @@ public class ApiSettings {
 
     private String capturePattern;
 
-    private GithubSyncSettings githubSyncSettings;
+    private GithubSyncSettings githubSyncSettings = new GithubSyncSettings();
 
     public WebHookSettings getWebHook() {
         return webHook;
