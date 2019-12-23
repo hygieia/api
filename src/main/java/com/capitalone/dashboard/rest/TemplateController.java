@@ -69,6 +69,7 @@ public class TemplateController {
         }
     }
 
+
     @RequestMapping(value = "/template/{id}", method = DELETE)
     public ResponseEntity<Void> deleteTemplate(@PathVariable ObjectId id) {
         templateService.delete(id);
