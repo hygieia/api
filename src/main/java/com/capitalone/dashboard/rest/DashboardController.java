@@ -60,7 +60,6 @@ public class DashboardController {
 
     @RequestMapping(value = "/dashboard/template/{template}", method = GET, produces = APPLICATION_JSON_VALUE)
     public Iterable<Dashboard> dashboardsTemplate(@PathVariable("template") String template) {
-        System.out.println("Template is " + template);
         return dashboardService.allTemplate(template);
     }
 
