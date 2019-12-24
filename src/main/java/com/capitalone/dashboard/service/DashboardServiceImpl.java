@@ -122,6 +122,19 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
+    public Iterable<Dashboard> allTemplate(String template){
+        Iterable<Dashboard> templateDashboards = dashboardRepository.findByTemplate(template);
+        for(Dashboard dashboard: templateDashboards) {
+            String appName = dashboard.getConfigurationItemBusServName();
+            String compName = dashboard.getConfigurationItemBusAppName();
+
+            setAppAndComponentNameToDashboard(dashboard, appName, compName);
+        }
+        return templateDashboards;
+    }
+
+
+    @Override
     public Dashboard get(ObjectId id) {
         Dashboard dashboard = dashboardRepository.findOne(id);
         String appName = dashboard.getConfigurationItemBusServName();
