@@ -4,12 +4,10 @@ import com.capitalone.dashboard.editors.CaseInsensitiveTestSuiteTypeEditor;
 import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.CodeQualityType;
 import com.capitalone.dashboard.model.DataResponse;
-import com.capitalone.dashboard.model.PrefTestCreateRequest;
-import com.capitalone.dashboard.model.TestJunit;
 import com.capitalone.dashboard.model.TestResult;
+import com.capitalone.dashboard.model.TestCreateRequest;
 import com.capitalone.dashboard.request.PerfTestDataCreateRequest;
 import com.capitalone.dashboard.request.TestDataCreateRequest;
-import com.capitalone.dashboard.request.TestResultRequest;
 import com.capitalone.dashboard.service.TestResultService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,7 +17,6 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
@@ -43,7 +40,7 @@ public class DefaultTestResultController {
     }
 
     @RequestMapping(value = "/quality/test", method = GET, produces = APPLICATION_JSON_VALUE)
-    public DataResponse<Iterable<TestResult>> qualityData(@Valid TestResultRequest request) {
+    public DataResponse<Iterable<TestResult>> qualityData(@Valid com.capitalone.dashboard.request.TestResultRequest request) {
         return testResultService.search(request);
     }
 
@@ -84,22 +81,13 @@ public class DefaultTestResultController {
                 .body(response);
     }
 
-    @RequestMapping(value = "/v3/quality/testresult", method = POST,
-            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<String> createPerfTestV3(@Valid @RequestParam(value = "Type") String type,
-                                                   @RequestParam(value = "Tool") String perfTool,
-                                                   @RequestBody PrefTestCreateRequest jsonRequest,
-                                                   @RequestBody TestJunit xmlRequest) throws HygieiaException {
-        String response = null;
-        try {
-            response = testResultService.createPerfV3(jsonRequest, xmlRequest, perfTool, type);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    @RequestMapping(value = "/quality/test-result", method = POST,
+            consumes = "application/json;v=3", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> createTest(@Valid @RequestBody TestCreateRequest request) throws HygieiaException {
+        String response = testResultService.createTest(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
     }
-
 
 }
