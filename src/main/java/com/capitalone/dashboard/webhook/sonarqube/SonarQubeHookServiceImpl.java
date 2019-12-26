@@ -309,18 +309,19 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
         Collector collector;
 
         try {
-            if (Strings.isNullOrEmpty(from) ||
-                    Strings.isNullOrEmpty(to) ||
-                    !HttpStatus.OK.equals(restClient.makeRestCallGet(from + getVersionEpt).getStatusCode()) ||
+            if (Strings.isNullOrEmpty(from) || Strings.isNullOrEmpty(to)) {
+                throw new HygieiaException("sonar server host names should not be null or empty", HygieiaException.INVALID_CONFIGURATION);
+            }
+            if (!HttpStatus.OK.equals(restClient.makeRestCallGet(from + getVersionEpt).getStatusCode()) ||
                     !HttpStatus.OK.equals(restClient.makeRestCallGet(to + getVersionEpt).getStatusCode())) {
-                throw new HygieiaException("Invalid arguments...", HygieiaException.INVALID_CONFIGURATION);
+                throw new HygieiaException("sonar server hosts are inactive", HygieiaException.INVALID_CONFIGURATION);
             }
             collector = collectorRepository.findByName("Sonar");
             if (collector == null) {
                 throw new HygieiaException("Collector not found", HygieiaException.COLLECTOR_CREATE_ERROR);
             }
         } catch (Exception e) {
-            throw new HygieiaException("Invalid arguments...", HygieiaException.INVALID_CONFIGURATION);
+            throw new HygieiaException(e.getMessage(), e.getCause(), false, true);
         }
         List<SonarProject> projects = getSonarProjects(to);
         projects.stream().forEach(project -> {
