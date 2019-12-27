@@ -8,6 +8,7 @@ import com.capitalone.dashboard.model.TestResult;
 import com.capitalone.dashboard.model.TestCreateRequest;
 import com.capitalone.dashboard.request.PerfTestDataCreateRequest;
 import com.capitalone.dashboard.request.TestDataCreateRequest;
+import com.capitalone.dashboard.request.TestResultRequest;
 import com.capitalone.dashboard.service.TestResultService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -40,7 +41,7 @@ public class DefaultTestResultController {
     }
 
     @RequestMapping(value = "/quality/test", method = GET, produces = APPLICATION_JSON_VALUE)
-    public DataResponse<Iterable<TestResult>> qualityData(@Valid com.capitalone.dashboard.request.TestResultRequest request) {
+    public DataResponse<Iterable<TestResult>> qualityData(@Valid TestResultRequest request) {
         return testResultService.search(request);
     }
 
