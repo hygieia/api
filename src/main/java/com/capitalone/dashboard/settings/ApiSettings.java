@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
 @Component
 @ConfigurationProperties
 public class ApiSettings {
@@ -31,6 +33,35 @@ public class ApiSettings {
     private String capturePattern;
 
     private GithubSyncSettings githubSyncSettings = new GithubSyncSettings();
+
+    private Map<String,String> functional;
+    private Map<String,String> performance;
+    private String unit;
+
+    public Map<String, String> getFunctional() {
+        return functional;
+    }
+
+    public void setFunctional(Map<String, String> functional) {
+        this.functional = functional;
+    }
+
+    public Map<String, String> getPerformance() {
+        return performance;
+    }
+
+    public void setPerformance(Map<String, String> performance) {
+        this.performance = performance;
+    }
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = unit;
+    }
+
 
     public WebHookSettings getWebHook() {
         return webHook;
