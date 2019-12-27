@@ -246,7 +246,6 @@ public class TestResultServiceTest {
         when(collectorService.createCollector(any(Collector.class))).thenReturn(new Collector());
         when(collectorService.createCollectorItem(any(CollectorItem.class))).thenReturn(new CollectorItem());
         when(apiSettings.getFunctional()).thenReturn( new HashMap<String, String>() {{
-            put("7ps", "7ps");
             put("cucumber", "cucumber");
         }}
 );
