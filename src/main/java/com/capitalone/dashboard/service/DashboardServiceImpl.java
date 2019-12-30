@@ -321,13 +321,18 @@ public class DashboardServiceImpl implements DashboardService {
         //Second: remove all the collectorItem association of the Collector Type  that came in
         HashSet<CollectorType> incomingTypes = new HashSet<>();
         HashMap<ObjectId, CollectorItem> toSaveCollectorItems = new HashMap<>();
+        ObjectId currentCollectorId = null;
+        Collector collector = null;
         for (ObjectId collectorItemId : collectorItemIds) {
             CollectorItem collectorItem = collectorItemRepository.findOne(collectorItemId);
             if(collectorItem == null) {
                 LOG.warn(METHOD_NAME + " Bad CollectorItemId passed in the request : " + collectorItemId);
                 continue;
             }
-            Collector collector = collectorRepository.findOne(collectorItem.getCollectorId());
+            if(currentCollectorId != collectorItem.getCollectorId()) {
+                collector = collectorRepository.findOne(collectorItem.getCollectorId());
+                currentCollectorId = collector.getId();
+            }
             if (!incomingTypes.contains(collector.getCollectorType())) {
                 incomingTypes.add(collector.getCollectorType());
                 List<CollectorItem> cItems = component.getCollectorItems(collector.getCollectorType());
@@ -374,7 +379,7 @@ public class DashboardServiceImpl implements DashboardService {
                     || compareMaps(collectorItem.getOptions(), existingCollectorItem.getOptions()) ) {
                 collectorItem.setLastUpdated(System.currentTimeMillis());
             }
-            Collector collector = collectorRepository.findOne(collectorItem.getCollectorId());
+            collector = collectorRepository.findOne(collectorItem.getCollectorId());
             component.addCollectorItem(collector.getCollectorType(), collectorItem);
             toSaveCollectorItems.put(collectorItemId, collectorItem);
             // set transient collector property
