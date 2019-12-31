@@ -257,7 +257,7 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
     private CollectorItem entryToCollectorItem(DashboardRemoteRequest.Entry entry, Collector collector) throws HygieiaException {
         CollectorItem item = entry.toCollectorItem(collector);
         item.setCollectorId(collector.getId());
-        return collectorService.createCollectorItemSelectOptions(item,collector.getAllFields(), item.getOptions());
+        return collectorService.createCollectorItemSelectOptions(item, collector, collector.getAllFields(), item.getOptions());
     }
 
     /**

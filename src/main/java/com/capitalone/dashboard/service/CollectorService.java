@@ -73,7 +73,8 @@ public interface CollectorService {
 
     // This is to handle scenarios where the option contains user credentials etc. We do not want to create a new collector item -
     // just update the new credentials.
-    CollectorItem createCollectorItemSelectOptions(CollectorItem item, Map<String, Object> allOptions, Map<String, Object> selecOptions);
+    CollectorItem createCollectorItemSelectOptions(CollectorItem item, Map<String, Object> allOptions, Map<String, Object> selectOptions);
+    CollectorItem createCollectorItemSelectOptions(CollectorItem item, Collector collector, Map<String, Object> allOptions, Map<String, Object> selectOptions);
 
 
     /**
