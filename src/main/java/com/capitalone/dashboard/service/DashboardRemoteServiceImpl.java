@@ -146,14 +146,6 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
         for (String key : allWidgetRequests.keySet()) {
             WidgetRequest widgetRequest = allWidgetRequests.get(key);
 
-//            widgetRequest.getCollectorItemIds().forEach(id->{
-//                CollectorItem  c = collectorItemRepository.findOne(id);
-//                if(c!=null) {
-//                    Collector collector = collectorRepository.findOne(c.getCollectorId());
-//                    incomingTypes.add(collector.getCollectorType());
-//                }
-//            });
-
             component = dashboardService.associateCollectorToComponent(dashboard.getApplication().getComponents().get(0).getId(), widgetRequest.getCollectorItemIds(),component);
             Widget newWidget = widgetRequest.widget();
             if (isUpdate) {
