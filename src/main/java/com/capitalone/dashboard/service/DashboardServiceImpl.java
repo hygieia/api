@@ -393,7 +393,7 @@ public class DashboardServiceImpl implements DashboardService {
             collectorItem.setCollector(collector);
         }
 
-        collectorItemRepository.save(toSaveCollectorItems.values());
+        collectorItemRepository.save(new HashSet<>(toSaveCollectorItems.values()));
         if(save){
             componentRepository.save(component);
         }
