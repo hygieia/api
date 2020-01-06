@@ -16,7 +16,7 @@ public class SonarDataSyncSettings {
 
     private String userId;
     private String passCode;
-    private String token="588809e14ed713b2febc376bd1550cafda837818";
+    private String token;
 
     public String getUserId() {
         return userId;
