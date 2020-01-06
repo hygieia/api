@@ -3,11 +3,10 @@ package com.capitalone.dashboard.service;
 import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.Collector;
 import com.capitalone.dashboard.model.CollectorItem;
-import com.capitalone.dashboard.model.PrefTestCreateRequest;
 import com.capitalone.dashboard.model.TestCapability;
 import com.capitalone.dashboard.model.TestCase;
 import com.capitalone.dashboard.model.TestCaseStatus;
-import com.capitalone.dashboard.model.TestPerformance;
+import com.capitalone.dashboard.model.TestCreateRequest;
 import com.capitalone.dashboard.model.TestResult;
 import com.capitalone.dashboard.model.TestSuite;
 import com.capitalone.dashboard.model.TestSuiteType;
@@ -19,6 +18,7 @@ import com.capitalone.dashboard.repository.ComponentRepository;
 import com.capitalone.dashboard.repository.TestResultRepository;
 import com.capitalone.dashboard.request.TestDataCreateRequest;
 import com.capitalone.dashboard.request.TestResultRequest;
+import com.capitalone.dashboard.settings.ApiSettings;
 import org.bson.types.ObjectId;
 import org.junit.Assert;
 import org.junit.Test;
@@ -28,6 +28,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -41,6 +42,7 @@ public class TestResultServiceTest {
     @Mock private CollectorRepository collectorRepository;
     @Mock private CollectorService collectorService;
     @Mock private ComponentRepository componentRepository;
+    @Mock private ApiSettings apiSettings;
     @InjectMocks private TestResultServiceImpl testResultService;
 
 
@@ -222,55 +224,38 @@ public class TestResultServiceTest {
     }
 
 
-    private PrefTestCreateRequest makeTestDateCreateRequestV3() {
-        PrefTestCreateRequest data = new PrefTestCreateRequest();
-        TestPerformance perf = new TestPerformance();
-        perf.setApplicationName("appName");
-        perf.setBapComponentName("CompName");
-        perf.setBuildJobId("1");
-        data.setTestPerformance(perf);
-        data.setDescription("description");
-        data.setDuration(1L);
-        data.setStartTime(2L);
-        data.setEndTime(3L);
-        data.setFailureCount(1);
-        data.setSuccessCount(2);
-        data.setSkippedCount(0);
-        data.setTotalCount(3);
-
-        TestCapability capability = new TestCapability();
-        capability.setDescription("description");
-        capability.setDuration(1L);
-        capability.setStartTime(2L);
-        capability.setEndTime(3L);
-        capability.setFailedTestSuiteCount(1);
-        capability.setSkippedTestSuiteCount(2);
-        capability.setSuccessTestSuiteCount(3);
-        capability.setTotalTestSuiteCount(6);
-
-        TestSuite suite = new TestSuite();
-        suite.setDescription("description");
-        suite.setDuration(1L);
-        suite.setStartTime(2L);
-        suite.setEndTime(3L);
-        suite.setType(TestSuiteType.Functional);
-        suite.setFailedTestCaseCount(1);
-        suite.setSuccessTestCaseCount(2);
-        suite.setSkippedTestCaseCount(0);
-        suite.setTotalTestCaseCount(3);
-
-        capability.getTestSuites().add(suite);
-        data.getTestCapabilities().add(capability);
-
-        TestCase testCase = new TestCase();
-        testCase.setId("id");
-        testCase.setDescription("description");
-        testCase.setStatus(TestCaseStatus.Failure);
-        testCase.setDuration(20l);
-
-        suite.getTestCases().add(testCase);
-
+    private TestCreateRequest makePrefTestCreateRequest() {
+        TestCreateRequest data = new TestCreateRequest();
+        data.setSourceFormat("cucumber");
+        data.setTestType("functional");
+        data.setSource("a");
+        data.getTimestamp();
+        data.setPayload("ewogICAgImlkIjogImlkIiwKICAgICJrZXl3b3JkIjogImtleXdvcmQiLAogICAgIm5hbWUiOiAibmFtZSIsCiAgICAiZWxlbWVudHMiOiBbCiAgICAgIHsKICAgICAgICAiaWQiOiAiZWxlbTEiLAogICAgICAgICJrZXl3b3JkIjogImtleXdvcmQxIiwKICAgICAgICAibmFtZSI6ICJuYW1lMSIsCiAgICAgICAgInN0ZXBzIjogWwogICAgICAgICAgewogICAgICAgICAgICAiaWQiOiAiZWxlbTEiLAogICAgICAgICAgICAia2V5d29yZCI6ICJrZXl3b3JkMSIsCiAgICAgICAgICAgICJsaW5lIjogImxpbmUxIiwKICAgICAgICAgICAgInJlc3VsdCI6IHsKICAgICAgICAgICAgICAiZHVyYXRpb24iOiAxMDAsCiAgICAgICAgICAgICAgInN0YXR1cyI6ICJwYXNzZWQiCiAgICAgICAgICAgIH0KICAgICAgICAgIH0sCiAgICAgICAgICB7CiAgICAgICAgICAgICJpZCI6ICJlbGVtMiIsCiAgICAgICAgICAgICJrZXl3b3JkIjogImtleXdvcmQyIiwKICAgICAgICAgICAgImxpbmUiOiAibGluZTIiLAogICAgICAgICAgICAicmVzdWx0IjogewogICAgICAgICAgICAgICJkdXJhdGlvbiI6IDEwMCwKICAgICAgICAgICAgICAic3RhdHVzIjogInBhc3NlZCIKICAgICAgICAgICAgfQogICAgICAgICAgfSwKICAgICAgICAgIHsKICAgICAgICAgICAgImlkIjogImVsZW0zIiwKICAgICAgICAgICAgImtleXdvcmQiOiAia2V5d29yZDMiLAogICAgICAgICAgICAibGluZSI6ICJsaW5lMyIsCiAgICAgICAgICAgICJyZXN1bHQiOiB7CiAgICAgICAgICAgICAgImR1cmF0aW9uIjogMTAwLAogICAgICAgICAgICAgICJzdGF0dXMiOiAiZmFpbGVkIgogICAgICAgICAgICB9CiAgICAgICAgICB9CiAgICAgICAgXQogICAgICB9LAogICAgICB7CiAgICAgICAgImlkIjogImVsZW0yIiwKICAgICAgICAia2V5d29yZCI6ICJrZXl3b3JkMiIsCiAgICAgICAgIm5hbWUiOiAibmFtZTIiLAogICAgICAgICJzdGVwcyI6IFsKICAgICAgICAgIHsKICAgICAgICAgICAgImlkIjogImVsZW0xIiwKICAgICAgICAgICAgImtleXdvcmQiOiAia2V5d29yZDEiLAogICAgICAgICAgICAibGluZSI6ICJsaW5lMSIsCiAgICAgICAgICAgICJyZXN1bHQiOiB7CiAgICAgICAgICAgICAgImR1cmF0aW9uIjogMTAwLAogICAgICAgICAgICAgICJzdGF0dXMiOiAicGFzc2VkIgogICAgICAgICAgICB9CiAgICAgICAgICB9LAogICAgICAgICAgewogICAgICAgICAgICAiaWQiOiAiZWxlbTIiLAogICAgICAgICAgICAia2V5d29yZCI6ICJrZXl3b3JkMiIsCiAgICAgICAgICAgICJsaW5lIjogImxpbmUyIiwKICAgICAgICAgICAgInJlc3VsdCI6IHsKICAgICAgICAgICAgICAiZHVyYXRpb24iOiAxMDAsCiAgICAgICAgICAgICAgInN0YXR1cyI6ICJwYXNzZWQiCiAgICAgICAgICAgIH0KICAgICAgICAgIH0sCiAgICAgICAgICB7CiAgICAgICAgICAgICJpZCI6ICJlbGVtMyIsCiAgICAgICAgICAgICJrZXl3b3JkIjogImtleXdvcmQzIiwKICAgICAgICAgICAgImxpbmUiOiAibGluZTMiLAogICAgICAgICAgICAicmVzdWx0IjogewogICAgICAgICAgICAgICJkdXJhdGlvbiI6IDEwMCwKICAgICAgICAgICAgICAic3RhdHVzIjogImZhaWxlZCIKICAgICAgICAgICAgfQogICAgICAgICAgfQogICAgICAgIF0KICAgICAgfQogICAgXQogIH0K");
         return data;
+    }
+
+
+
+    @Test
+    public void createWithGoodCucumberRequest() throws HygieiaException {
+        ObjectId collectorId = ObjectId.get();
+
+        TestCreateRequest request = makePrefTestCreateRequest();
+
+        when(collectorRepository.findOne(collectorId)).thenReturn(new Collector());
+        when(collectorService.createCollector(any(Collector.class))).thenReturn(new Collector());
+        when(collectorService.createCollectorItem(any(CollectorItem.class))).thenReturn(new CollectorItem());
+        when(apiSettings.getFunctional()).thenReturn( new HashMap<String, String>() {{
+            put("cucumber", "cucumber");
+        }}
+);
+
+        TestResult testResult = makeTestResult();
+
+        when(testResultRepository.save(any(TestResult.class))).thenReturn(testResult);
+        String response = testResultService.createTest(request);
+        String expected = testResult.getId().toString() + "," + testResult.getCollectorItemId();
+        assertEquals(response, expected);
     }
 
 

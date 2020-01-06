@@ -26,6 +26,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -40,6 +41,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
@@ -306,21 +308,35 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
         boolean isSync = request.getIsSync();
         final AtomicInteger index = new AtomicInteger();
         final AtomicInteger compIndex = new AtomicInteger();
+        HttpHeaders httpHeaders = new HttpHeaders();
         Collector collector;
 
         try {
-            if (Strings.isNullOrEmpty(from) ||
-                    Strings.isNullOrEmpty(to) ||
-                    !HttpStatus.OK.equals(restClient.makeRestCallGet(from + getVersionEpt).getStatusCode()) ||
-                    !HttpStatus.OK.equals(restClient.makeRestCallGet(to + getVersionEpt).getStatusCode())) {
-                throw new HygieiaException("Invalid arguments...", HygieiaException.INVALID_CONFIGURATION);
+            if (Strings.isNullOrEmpty(from) || Strings.isNullOrEmpty(to)) {
+                throw new HygieiaException("sonar server host names should not be null or empty", HygieiaException.INVALID_CONFIGURATION);
             }
+            ResponseEntity<String> responseFrom = restClient.makeRestCallGet(from + getVersionEpt, httpHeaders);
+            ResponseEntity<String> responseTo = restClient.makeRestCallGet(to + getVersionEpt, httpHeaders);
+
+            if (Objects.isNull(responseFrom) || Objects.isNull(responseTo)){
+                throw new HygieiaException("sonar server response is null or empty", HygieiaException.INVALID_CONFIGURATION);
+            }
+            HttpStatus syncFromStatus = responseFrom.getStatusCode();
+            HttpStatus syncToStatus = responseTo.getStatusCode();
+            LOG.info("syncFrom server response status code : " + syncFromStatus);
+            LOG.info("syncTo server response status code : " + syncToStatus);
+
+            if (!HttpStatus.OK.equals(syncFromStatus) ||
+                    !HttpStatus.OK.equals(syncToStatus)) {
+                throw new HygieiaException("sonar server hosts status code is not OK (200)", HygieiaException.INVALID_CONFIGURATION);
+            }
+
             collector = collectorRepository.findByName("Sonar");
             if (collector == null) {
                 throw new HygieiaException("Collector not found", HygieiaException.COLLECTOR_CREATE_ERROR);
             }
         } catch (Exception e) {
-            throw new HygieiaException("Invalid arguments...", HygieiaException.INVALID_CONFIGURATION);
+            throw new HygieiaException(e.getMessage(), e.getCause(), false, true);
         }
         List<SonarProject> projects = getSonarProjects(to);
         projects.stream().forEach(project -> {
@@ -358,9 +374,10 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
         JSONParser jsonParser = new JSONParser();
         JSONArray jsonArray = new JSONArray();
         List<SonarProject> projects = new ArrayList<>();
+        HttpHeaders httpHeaders = new HttpHeaders();
 
         try {
-            ResponseEntity<String> response = restClient.makeRestCallGet(getProjectsEpt);
+            ResponseEntity<String> response = restClient.makeRestCallGet(getProjectsEpt, httpHeaders);
             if (!response.getStatusCode().equals(HttpStatus.OK)) {
                 throw new HygieiaException(response.getBody(), HygieiaException.INVALID_CONFIGURATION);
             }
@@ -375,7 +392,7 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
             } else {
                 for (int start = 1; start <= pages; start++) {
                     String urlFinal = getProjectsEpt + "&p=" + start;
-                    response = restClient.makeRestCallGet(urlFinal);
+                    response = restClient.makeRestCallGet(urlFinal, httpHeaders);
                     JSONObject jsonObjectResponse = (JSONObject) jsonParser.parse(response.getBody());
                     jsonArray.addAll((JSONArray) jsonObjectResponse.get("components"));
                 }
