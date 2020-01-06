@@ -315,22 +315,6 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
             if (Strings.isNullOrEmpty(from) || Strings.isNullOrEmpty(to)) {
                 throw new HygieiaException("sonar server host names should not be null or empty", HygieiaException.INVALID_CONFIGURATION);
             }
-            ResponseEntity<String> responseFrom = restClient.makeRestCallGet(from + getVersionEpt, httpHeaders);
-            ResponseEntity<String> responseTo = restClient.makeRestCallGet(to + getVersionEpt, httpHeaders);
-
-            if (Objects.isNull(responseFrom) || Objects.isNull(responseTo)){
-                throw new HygieiaException("sonar server response is null or empty", HygieiaException.INVALID_CONFIGURATION);
-            }
-            HttpStatus syncFromStatus = responseFrom.getStatusCode();
-            HttpStatus syncToStatus = responseTo.getStatusCode();
-            LOG.info("syncFrom server response status code : " + syncFromStatus);
-            LOG.info("syncTo server response status code : " + syncToStatus);
-
-            if (!HttpStatus.OK.equals(syncFromStatus) ||
-                    !HttpStatus.OK.equals(syncToStatus)) {
-                throw new HygieiaException("sonar server hosts status code is not OK (200)", HygieiaException.INVALID_CONFIGURATION);
-            }
-
             collector = collectorRepository.findByName("Sonar");
             if (collector == null) {
                 throw new HygieiaException("Collector not found", HygieiaException.COLLECTOR_CREATE_ERROR);
