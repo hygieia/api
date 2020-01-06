@@ -1,6 +1,7 @@
 package com.capitalone.dashboard.settings;
 
 import com.capitalone.dashboard.webhook.settings.GithubSyncSettings;
+import com.capitalone.dashboard.webhook.settings.SonarDataSyncSettings;
 import com.capitalone.dashboard.webhook.settings.WebHookSettings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -33,6 +34,7 @@ public class ApiSettings {
     private String capturePattern;
 
     private GithubSyncSettings githubSyncSettings = new GithubSyncSettings();
+    private SonarDataSyncSettings sonarDataSyncSettings = new SonarDataSyncSettings();
 
     private Map<String,String> functional;
     private Map<String,String> performance;
@@ -139,6 +141,14 @@ public class ApiSettings {
 
     public void setGithubSyncSettings(GithubSyncSettings githubSyncSettings) {
         this.githubSyncSettings = githubSyncSettings;
+    }
+
+    public SonarDataSyncSettings getSonarDataSyncSettings() {
+        return sonarDataSyncSettings;
+    }
+
+    public void setSonarDataSyncSettings(SonarDataSyncSettings sonarDataSyncSettings) {
+        this.sonarDataSyncSettings = sonarDataSyncSettings;
     }
 
 }
