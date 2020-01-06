@@ -1,6 +1,7 @@
 package com.capitalone.dashboard.webhook.sonarqube;
 
 import com.capitalone.dashboard.client.RestClient;
+import com.capitalone.dashboard.client.RestUserInfo;
 import com.capitalone.dashboard.collector.RestOperationsSupplier;
 import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.repository.CodeQualityRepository;
@@ -16,9 +17,12 @@ import com.capitalone.dashboard.model.CodeQualityType;
 import com.capitalone.dashboard.model.Component;
 import com.capitalone.dashboard.model.CollectorItem;
 import com.capitalone.dashboard.request.SonarDataSyncRequest;
+import com.capitalone.dashboard.webhook.settings.SonarDataSyncSettings;
 import com.google.common.base.Strings;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONArray;
@@ -33,6 +37,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
 import javax.annotation.Nullable;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -358,7 +363,9 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
         JSONParser jsonParser = new JSONParser();
         JSONArray jsonArray = new JSONArray();
         List<SonarProject> projects = new ArrayList<>();
-        HttpHeaders httpHeaders = new HttpHeaders();
+        SonarDataSyncSettings settings = new SonarDataSyncSettings();
+        RestUserInfo restUserInfo = new RestUserInfo(settings.getUserId(), settings.getPassCode(), settings.getToken());
+        HttpHeaders httpHeaders = settings.getHeaders(restUserInfo);
 
         try {
             ResponseEntity<String> response = restClient.makeRestCallGet(getProjectsEpt, httpHeaders);
@@ -406,16 +413,19 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
         List<CollectorItem> codeQualityCollectorItems = new ArrayList<>();
         components.forEach(component -> {
             component.getCollectorItems(CollectorType.CodeQuality).forEach(collectorItem -> {
-                if (eSonarProject.getProjectName().equals((String) collectorItem.getOptions().get("projectName"))){
+                if (eSonarProject.getProjectName().equals((String) collectorItem.getOptions().get("projectName"))) {
                     collectorItem.getOptions().put("projectId", eSonarProject.getProjectId());
                     collectorItem.getOptions().put("instanceUrl", eSonarProject.getInstanceUrl());
-                    if (null != compIndex) { compIndex.getAndIncrement(); }
+                    if (null != compIndex) {
+                        compIndex.getAndIncrement();
+                    }
                 }
                 codeQualityCollectorItems.add(collectorItem);
             });
             component.setCollectorItems(Collections.singletonMap(CollectorType.CodeQuality, codeQualityCollectorItems));
-            if (isSync) { componentRepository.save(component); }
+            if (isSync) {
+                componentRepository.save(component);
+            }
         });
-
     }
 }
