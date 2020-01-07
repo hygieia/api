@@ -1,6 +1,7 @@
 package com.capitalone.dashboard.webhook.sonarqube;
 
 import com.capitalone.dashboard.client.RestClient;
+import com.capitalone.dashboard.client.RestUserInfo;
 import com.capitalone.dashboard.collector.RestOperationsSupplier;
 import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.repository.CodeQualityRepository;
@@ -16,9 +17,12 @@ import com.capitalone.dashboard.model.CodeQualityType;
 import com.capitalone.dashboard.model.Component;
 import com.capitalone.dashboard.model.CollectorItem;
 import com.capitalone.dashboard.request.SonarDataSyncRequest;
+import com.capitalone.dashboard.webhook.settings.SonarDataSyncSettings;
 import com.google.common.base.Strings;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONArray;
@@ -26,12 +30,14 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
 import javax.annotation.Nullable;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -307,28 +313,13 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
         boolean isSync = request.getIsSync();
         final AtomicInteger index = new AtomicInteger();
         final AtomicInteger compIndex = new AtomicInteger();
+        HttpHeaders httpHeaders = new HttpHeaders();
         Collector collector;
 
         try {
             if (Strings.isNullOrEmpty(from) || Strings.isNullOrEmpty(to)) {
                 throw new HygieiaException("sonar server host names should not be null or empty", HygieiaException.INVALID_CONFIGURATION);
             }
-            ResponseEntity<String> responseFrom = restClient.makeRestCallGet(from + getVersionEpt);
-            ResponseEntity<String> responseTo = restClient.makeRestCallGet(to + getVersionEpt);
-
-            if (Objects.isNull(responseFrom) || Objects.isNull(responseTo)){
-                throw new HygieiaException("sonar server response is null or empty", HygieiaException.INVALID_CONFIGURATION);
-            }
-            HttpStatus syncFromStatus = responseFrom.getStatusCode();
-            HttpStatus syncToStatus = responseTo.getStatusCode();
-            LOG.info("syncFrom server response status code : " + syncFromStatus);
-            LOG.info("syncTo server response status code : " + syncToStatus);
-
-            if (!HttpStatus.OK.equals(syncFromStatus) ||
-                    !HttpStatus.OK.equals(syncToStatus)) {
-                throw new HygieiaException("sonar server hosts status code is not OK (200)", HygieiaException.INVALID_CONFIGURATION);
-            }
-
             collector = collectorRepository.findByName("Sonar");
             if (collector == null) {
                 throw new HygieiaException("Collector not found", HygieiaException.COLLECTOR_CREATE_ERROR);
@@ -372,9 +363,12 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
         JSONParser jsonParser = new JSONParser();
         JSONArray jsonArray = new JSONArray();
         List<SonarProject> projects = new ArrayList<>();
+        SonarDataSyncSettings settings = new SonarDataSyncSettings();
+        RestUserInfo restUserInfo = new RestUserInfo(settings.getUserId(), settings.getPassCode(), settings.getToken());
+        HttpHeaders httpHeaders = settings.getHeaders(restUserInfo);
 
         try {
-            ResponseEntity<String> response = restClient.makeRestCallGet(getProjectsEpt);
+            ResponseEntity<String> response = restClient.makeRestCallGet(getProjectsEpt, httpHeaders);
             if (!response.getStatusCode().equals(HttpStatus.OK)) {
                 throw new HygieiaException(response.getBody(), HygieiaException.INVALID_CONFIGURATION);
             }
@@ -389,7 +383,7 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
             } else {
                 for (int start = 1; start <= pages; start++) {
                     String urlFinal = getProjectsEpt + "&p=" + start;
-                    response = restClient.makeRestCallGet(urlFinal);
+                    response = restClient.makeRestCallGet(urlFinal, httpHeaders);
                     JSONObject jsonObjectResponse = (JSONObject) jsonParser.parse(response.getBody());
                     jsonArray.addAll((JSONArray) jsonObjectResponse.get("components"));
                 }
@@ -419,16 +413,19 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
         List<CollectorItem> codeQualityCollectorItems = new ArrayList<>();
         components.forEach(component -> {
             component.getCollectorItems(CollectorType.CodeQuality).forEach(collectorItem -> {
-                if (eSonarProject.getProjectName().equals((String) collectorItem.getOptions().get("projectName"))){
+                if (eSonarProject.getProjectName().equals((String) collectorItem.getOptions().get("projectName"))) {
                     collectorItem.getOptions().put("projectId", eSonarProject.getProjectId());
                     collectorItem.getOptions().put("instanceUrl", eSonarProject.getInstanceUrl());
-                    if (null != compIndex) { compIndex.getAndIncrement(); }
+                    if (null != compIndex) {
+                        compIndex.getAndIncrement();
+                    }
                 }
                 codeQualityCollectorItems.add(collectorItem);
             });
             component.setCollectorItems(Collections.singletonMap(CollectorType.CodeQuality, codeQualityCollectorItems));
-            if (isSync) { componentRepository.save(component); }
+            if (isSync) {
+                componentRepository.save(component);
+            }
         });
-
     }
 }
