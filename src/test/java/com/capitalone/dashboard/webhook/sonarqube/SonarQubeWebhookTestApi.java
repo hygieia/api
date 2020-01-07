@@ -46,7 +46,7 @@ public class SonarQubeWebhookTestApi {
     public void init() {
         RestClient restClientTemp = new RestClient(restOperationsSupplier);
         restClient = Mockito.spy(restClientTemp);
-        sonarQubeHookService = new SonarQubeHookServiceImpl(codeQualityRepository,sonarProjectRepository,collectorRepository, componentRepository,apiSettings);
+        sonarQubeHookService = new SonarQubeHookServiceImpl(codeQualityRepository,sonarProjectRepository,collectorRepository, componentRepository,apiSettings,restClient);
     }
 
     @Test

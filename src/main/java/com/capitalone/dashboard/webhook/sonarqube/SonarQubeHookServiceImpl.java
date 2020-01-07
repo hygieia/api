@@ -83,20 +83,21 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
     private final SonarProjectRepository sonarProjectRepository;
     private final CollectorRepository collectorRepository;
     private final ComponentRepository componentRepository;
-    private final RestClient restClient = new RestClient(new RestOperationsSupplier());
+    private final RestClient restClient;
     @Autowired
     private ApiSettings settings;
 
 
     @Autowired
     SonarQubeHookServiceImpl( CodeQualityRepository codeQualityRepository, SonarProjectRepository sonarProjectRepository,
-                              CollectorRepository collectorRepository, ComponentRepository componentRepository,ApiSettings settings)
+                              CollectorRepository collectorRepository, ComponentRepository componentRepository,ApiSettings settings, RestClient restClient)
     {
         this.codeQualityRepository = codeQualityRepository;
         this.sonarProjectRepository = sonarProjectRepository;
         this.collectorRepository = collectorRepository;
         this.componentRepository = componentRepository;
         this.settings = settings;
+        this.restClient = restClient;
     }
 
     @Override
