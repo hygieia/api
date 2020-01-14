@@ -64,7 +64,6 @@ public class ApiSettings {
         this.unit = unit;
     }
 
-
     public WebHookSettings getWebHook() {
         return webHook;
     }
