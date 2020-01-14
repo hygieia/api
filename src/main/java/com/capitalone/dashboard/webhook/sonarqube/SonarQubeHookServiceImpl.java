@@ -17,6 +17,7 @@ import com.capitalone.dashboard.model.CodeQualityType;
 import com.capitalone.dashboard.model.Component;
 import com.capitalone.dashboard.model.CollectorItem;
 import com.capitalone.dashboard.request.SonarDataSyncRequest;
+import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.webhook.settings.SonarDataSyncSettings;
 import com.google.common.base.Strings;
 import com.google.gson.JsonObject;
@@ -82,16 +83,21 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
     private final SonarProjectRepository sonarProjectRepository;
     private final CollectorRepository collectorRepository;
     private final ComponentRepository componentRepository;
-    private final RestClient restClient = new RestClient(new RestOperationsSupplier());
+    private final RestClient restClient;
+    @Autowired
+    private ApiSettings settings;
+
 
     @Autowired
     SonarQubeHookServiceImpl( CodeQualityRepository codeQualityRepository, SonarProjectRepository sonarProjectRepository,
-                              CollectorRepository collectorRepository, ComponentRepository componentRepository)
+                              CollectorRepository collectorRepository, ComponentRepository componentRepository,ApiSettings settings, RestClient restClient)
     {
         this.codeQualityRepository = codeQualityRepository;
         this.sonarProjectRepository = sonarProjectRepository;
         this.collectorRepository = collectorRepository;
         this.componentRepository = componentRepository;
+        this.settings = settings;
+        this.restClient = restClient;
     }
 
     @Override
@@ -363,9 +369,11 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
         JSONParser jsonParser = new JSONParser();
         JSONArray jsonArray = new JSONArray();
         List<SonarProject> projects = new ArrayList<>();
-        SonarDataSyncSettings settings = new SonarDataSyncSettings();
-        RestUserInfo restUserInfo = new RestUserInfo(settings.getUserId(), settings.getPassCode(), settings.getToken());
-        HttpHeaders httpHeaders = settings.getHeaders(restUserInfo);
+        String sonarApiToken = settings.getSonarDataSyncSettings().getToken();
+        String userId= settings.getSonarDataSyncSettings().getUserId();
+        String passCode = settings.getSonarDataSyncSettings().getPassCode();
+        RestUserInfo restUserInfo = new RestUserInfo(userId, passCode, sonarApiToken);
+        HttpHeaders httpHeaders = settings.getSonarDataSyncSettings().getHeaders(restUserInfo);
 
         try {
             ResponseEntity<String> response = restClient.makeRestCallGet(getProjectsEpt, httpHeaders);
