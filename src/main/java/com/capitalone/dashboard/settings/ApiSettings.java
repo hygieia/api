@@ -64,36 +64,6 @@ public class ApiSettings {
         this.unit = unit;
     }
 
-
-    private Map<String,String> functional;
-    private Map<String,String> performance;
-    private String unit;
-
-    public Map<String, String> getFunctional() {
-        return functional;
-    }
-
-    public void setFunctional(Map<String, String> functional) {
-        this.functional = functional;
-    }
-
-    public Map<String, String> getPerformance() {
-        return performance;
-    }
-
-    public void setPerformance(Map<String, String> performance) {
-        this.performance = performance;
-    }
-
-    public String getUnit() {
-        return unit;
-    }
-
-    public void setUnit(String unit) {
-        this.unit = unit;
-    }
-
-
     public WebHookSettings getWebHook() {
         return webHook;
     }
