@@ -19,6 +19,7 @@ import hygieia.transformer.CucumberJsonToTestCapabilityTransformer;
 import hygieia.transformer.JunitXmlToTestCapabilityTransformer;
 import org.apache.commons.lang.StringUtils;
 import org.bson.types.ObjectId;
+import org.joda.time.format.DateTimeFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -283,10 +284,10 @@ public class TestResultServiceImpl implements TestResultService {
     }
 
     private <T> T decodeJsonPayload (Class<T> type , TestCreateRequest request) throws HygieiaException{
-        if(request == null || StringUtils.isEmpty(request.getPayload())) {
+        if(request == null || StringUtils.isEmpty(request.getTestResult())) {
             throw new HygieiaException("Payload is not a valid json.", HygieiaException.ERROR_INSERTING_DATA);
         }
-        byte[] decodedBytes = Base64.getDecoder().decode(request.getPayload());
+        byte[] decodedBytes = Base64.getDecoder().decode(request.getTestResult());
         String decodedPayload = new String(decodedBytes);
         Gson gson = new Gson();
         return gson.fromJson(decodedPayload , type);
@@ -296,10 +297,10 @@ public class TestResultServiceImpl implements TestResultService {
 
     private <T> T decodeXmlPayload (Class<T> type , TestCreateRequest request) throws HygieiaException{
 
-        if(request == null || StringUtils.isEmpty(request.getPayload())) {
+        if(request == null || StringUtils.isEmpty(request.getTestResult())) {
             throw new HygieiaException("Payload is not a valid Xml", HygieiaException.ERROR_INSERTING_DATA);
         }
-        byte[] decodedBytes = Base64.getDecoder().decode(request.getPayload());
+        byte[] decodedBytes = Base64.getDecoder().decode(request.getTestResult());
         String decodedPayload = new String(decodedBytes);
         StringReader sr = new StringReader(decodedPayload);
         T junitXmlReport = null;
@@ -317,7 +318,7 @@ public class TestResultServiceImpl implements TestResultService {
     @Override
     public String createTest(TestCreateRequest request) throws HygieiaException {
         TestResult testResult = null;
-
+        validConfigurationItem(request.getConfigurationItem(),request.getTargetAppName());
         if (TestResultConstants.FUNCTIONAL.equals(request.getTestType()) && apiSettings.getFunctional().get("cucumber").equals(request.getSourceFormat())) {
 
             testResult = createTestCucumber(request);
@@ -536,9 +537,6 @@ public class TestResultServiceImpl implements TestResultService {
 
         TestResult  testResult = new TestResult();
         Collection<TestCapability> testCapabilities = new ArrayList();
-        if (request.getTimestamp() == 0) {
-            request.setTimestamp(System.currentTimeMillis());
-        }
         testCapabilities.add(cucumberTestCapabilityTransformer);
         testResult.setTestCapabilities(testCapabilities);
         testResult.setType(type);
@@ -555,7 +553,7 @@ public class TestResultServiceImpl implements TestResultService {
         testResult.setSkippedCount(cucumberTestCapabilityTransformer.getSkippedTestSuiteCount());
         testResult.setTotalCount(cucumberTestCapabilityTransformer.getTotalTestSuiteCount());
         testResult.setUnknownStatusCount(cucumberTestCapabilityTransformer.getUnknownStatusTestSuiteCount());
-        testResult.setTimestamp(request.getTimestamp());
+        testResult.setTimestamp(convertTimestamp(request.getTimeStamp()));
         testResult.getTestCapabilities().addAll(testCapabilities);
         TestResult result = testResultRepository.save(testResult);
         return result;
@@ -566,9 +564,6 @@ public class TestResultServiceImpl implements TestResultService {
 
         TestResult  testResult = new TestResult();
         Collection<TestCapability> testCapabilities = new ArrayList();
-        if (request.getTimestamp() == 0) {
-            request.setTimestamp(System.currentTimeMillis());
-        }
         testCapabilities.add(testCapability);
         testResult.setTestCapabilities(testCapabilities);
         testResult.setType(type);
@@ -582,7 +577,7 @@ public class TestResultServiceImpl implements TestResultService {
         testResult.setSkippedCount(Integer.parseInt(junitXmlReport.getSkipped()));
         testResult.setTotalCount(junitXmlReport.getTests());
         testResult.setUnknownStatusCount(testCapability.getUnknownStatusTestSuiteCount());
-        testResult.setTimestamp(request.getTimestamp());
+        testResult.setTimestamp(convertTimestamp(request.getTimeStamp()));
         testResult.getTestCapabilities().addAll(testCapabilities);
         TestResult result = testResultRepository.save(testResult);
         return result;
@@ -605,5 +600,33 @@ public class TestResultServiceImpl implements TestResultService {
 
         return null;
     }
+
+    private void validConfigurationItem(String configurationItem, String targetAppName) throws HygieiaException{
+
+        if (StringUtils.isBlank(configurationItem))
+        {
+            if (StringUtils.isNotBlank(targetAppName)){
+                throw new HygieiaException(" targetAppName should not be null.",HygieiaException.BAD_DATA);
+
+            }
+        }
+    }
+
+    private long convertTimestamp (String timestamp){
+
+        long time = 0;
+
+        if(StringUtils.isNotEmpty(timestamp)){
+          time = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS Z").parseMillis(timestamp);
+
+        }else{
+            time = System.currentTimeMillis();
+        }
+
+
+        return time;
+    }
+
+
 
 }

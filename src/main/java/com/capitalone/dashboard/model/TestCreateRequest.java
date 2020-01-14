@@ -1,8 +1,8 @@
 package com.capitalone.dashboard.model;
 
-import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.NotNull;
+
 
 public class TestCreateRequest {
 
@@ -11,11 +11,9 @@ public class TestCreateRequest {
      */
 
     @NotNull
-    @ApiModelProperty(notes = "Example values functional,unit")
     private String testType;
 
     @NotNull
-    @ApiModelProperty(notes = "Example values  cucumber,junit")
     private String sourceFormat;
 
     @NotNull
@@ -26,13 +24,16 @@ public class TestCreateRequest {
      */
 
     @NotNull
-    private long timestamp;
-
+    private String timeStamp;
 
     private String configurationItem;
+
     private String targetAppName;
+
     private String targetServiceName;
-    private String payload;
+
+    private String testResult;
+
     private String jobUrl;
 
 
@@ -60,12 +61,13 @@ public class TestCreateRequest {
         this.source = source;
     }
 
-    public String getPayload() {
-        return payload;
+
+    public String getTestResult() {
+        return testResult;
     }
 
-    public void setPayload(String payload) {
-        this.payload = payload;
+    public void setTestResult(String testResult) {
+        this.testResult = testResult;
     }
 
     public String getConfigurationItem() {
@@ -75,13 +77,13 @@ public class TestCreateRequest {
     public void setConfigurationItem(String configurationItem) {
         this.configurationItem = configurationItem;
     }
-    
-    public long getTimestamp() {
-        return timestamp;
+
+    public String getTimeStamp() {
+        return timeStamp;
     }
 
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
+    public void setTimeStamp(String timeStamp) {
+        this.timeStamp = timeStamp;
     }
 
     public String getJobUrl() {
