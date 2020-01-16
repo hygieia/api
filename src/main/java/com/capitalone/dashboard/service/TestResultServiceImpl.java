@@ -190,9 +190,7 @@ public class TestResultServiceImpl implements TestResultService {
             throw new HygieiaException("Failed creating Test collector item.", HygieiaException.COLLECTOR_ITEM_CREATE_ERROR);
         }
 
-
         TestResult testResult = createTest(collectorItem, request);
-
 
         if (testResult == null) {
             throw new HygieiaException("Failed inserting/updating Test information.", HygieiaException.ERROR_INSERTING_DATA);
@@ -292,7 +290,6 @@ public class TestResultServiceImpl implements TestResultService {
         Gson gson = new Gson();
         return gson.fromJson(decodedPayload , type);
 
-
     }
 
     private <T> T decodeXmlPayload (Class<T> type , TestCreateRequest request) throws HygieiaException{
@@ -329,8 +326,6 @@ public class TestResultServiceImpl implements TestResultService {
         }
         return testResult.getId() + "," + testResult.getCollectorItemId();
     }
-
-
 
 
     @Override
@@ -605,8 +600,8 @@ public class TestResultServiceImpl implements TestResultService {
 
         if (StringUtils.isBlank(configurationItem))
         {
-            if (StringUtils.isNotBlank(targetAppName)){
-                throw new HygieiaException(" targetAppName should not be null.",HygieiaException.BAD_DATA);
+            if (StringUtils.isBlank(targetAppName)){
+                throw new HygieiaException("targetAppName should not be null.",HygieiaException.BAD_DATA);
 
             }
         }
@@ -626,7 +621,5 @@ public class TestResultServiceImpl implements TestResultService {
 
         return time;
     }
-
-
 
 }
