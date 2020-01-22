@@ -239,6 +239,7 @@ public class TestResultServiceImpl implements TestResultService {
     protected TestResult createTestCucumber(TestCreateRequest request) throws HygieiaException {
 
         CucumberJsonReport.Feature cucumberFeature = null;
+
         try {
             cucumberFeature = decodeJsonPayload(CucumberJsonReport.Feature.class , request);
         }catch (Exception ex){
