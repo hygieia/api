@@ -238,7 +238,12 @@ public class TestResultServiceImpl implements TestResultService {
 
     protected TestResult createTestCucumber(TestCreateRequest request) throws HygieiaException {
 
-        CucumberJsonReport.Feature cucumberFeature = decodeJsonPayload(CucumberJsonReport.Feature.class , request);
+        CucumberJsonReport.Feature cucumberFeature = null;
+        try {
+            cucumberFeature = decodeJsonPayload(CucumberJsonReport.Feature.class , request);
+        }catch (Exception ex){
+            throw new HygieiaException("TestResult is not a valid json.", HygieiaException.JSON_FORMAT_ERROR);
+        }
         Collector collector = createGenericCollector(request, TestResultConstants.JENKINSCUCUMBERTEST);
         if (collector == null) {
             throw new HygieiaException("Failed creating Test collector.", HygieiaException.COLLECTOR_CREATE_ERROR);
@@ -262,7 +267,7 @@ public class TestResultServiceImpl implements TestResultService {
 
     protected TestResult createTestJunit(TestCreateRequest request) throws HygieiaException {
 
-        JunitXmlReport junitXmlReport = decodeXmlPayload(JunitXmlReport.class,request);
+        JunitXmlReport  junitXmlReport = decodeXmlPayload(JunitXmlReport.class,request);
         Collector collector = createGenericCollector(request, TestResultConstants.JUNITTEST);;
         if (collector == null) {
             throw new HygieiaException("Failed creating Test collector.", HygieiaException.COLLECTOR_CREATE_ERROR);
@@ -283,7 +288,7 @@ public class TestResultServiceImpl implements TestResultService {
 
     private <T> T decodeJsonPayload (Class<T> type , TestCreateRequest request) throws HygieiaException{
         if(request == null || StringUtils.isEmpty(request.getTestResult())) {
-            throw new HygieiaException("Payload is not a valid json.", HygieiaException.ERROR_INSERTING_DATA);
+            throw new HygieiaException("TestResult is not a valid json.", HygieiaException.JSON_FORMAT_ERROR);
         }
         byte[] decodedBytes = Base64.getDecoder().decode(request.getTestResult());
         String decodedPayload = new String(decodedBytes);
@@ -295,7 +300,7 @@ public class TestResultServiceImpl implements TestResultService {
     private <T> T decodeXmlPayload (Class<T> type , TestCreateRequest request) throws HygieiaException{
 
         if(request == null || StringUtils.isEmpty(request.getTestResult())) {
-            throw new HygieiaException("Payload is not a valid Xml", HygieiaException.ERROR_INSERTING_DATA);
+            throw new HygieiaException("TestResult is not a valid Xml", HygieiaException.JSON_FORMAT_ERROR);
         }
         byte[] decodedBytes = Base64.getDecoder().decode(request.getTestResult());
         String decodedPayload = new String(decodedBytes);
@@ -305,9 +310,9 @@ public class TestResultServiceImpl implements TestResultService {
             JAXBContext jaxbContext = JAXBContext.newInstance(type);
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
             junitXmlReport = (T) unmarshaller.unmarshal(sr);
-
-        } catch (JAXBException e) {
-            e.printStackTrace();
+        }catch (JAXBException ex){
+            ex.printStackTrace();
+            throw new HygieiaException("TestResult is not a valid Xml", HygieiaException.JSON_FORMAT_ERROR);
         }
         return junitXmlReport;
     }
