@@ -136,26 +136,15 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
             dashboard = dashboardService.create(requestToDashboard(request));
         }
 
-        List<DashboardRemoteRequest.Entry> entries = request.getAllEntries();
-        Map<String, WidgetRequest> allWidgetRequests = generateRequestWidgetList( entries, dashboard);
-        Set<CollectorType> existingTypes = new HashSet<>();
         Set<CollectorType> incomingTypes = new HashSet<>();
+        List<DashboardRemoteRequest.Entry> entries = request.getAllEntries();
+        Map<String, WidgetRequest> allWidgetRequests = generateRequestWidgetList( entries, dashboard, incomingTypes);
         Component component = componentRepository.findOne(dashboard.getApplication().getComponents().get(0).getId());
-        component.getCollectorItems().forEach((item,val)->{
-            existingTypes.add(item);
-        });
+        Set<CollectorType> existingTypes = component.getCollectorItems().keySet();
 
         //adds widgets
         for (String key : allWidgetRequests.keySet()) {
             WidgetRequest widgetRequest = allWidgetRequests.get(key);
-
-            widgetRequest.getCollectorItemIds().forEach(id->{
-                CollectorItem  c = collectorItemRepository.findOne(id);
-                if(c!=null) {
-                    Collector collector = collectorRepository.findOne(c.getCollectorId());
-                    incomingTypes.add(collector.getCollectorType());
-                }
-            });
 
             component = dashboardService.associateCollectorToComponent(dashboard.getApplication().getComponents().get(0).getId(), widgetRequest.getCollectorItemIds(),component);
             Widget newWidget = widgetRequest.widget();
@@ -207,18 +196,24 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
      * @return Map< String, WidgetRequest > list of Widgets to be created
      * @throws HygieiaException
      */
-    private  Map < String, WidgetRequest > generateRequestWidgetList( List < DashboardRemoteRequest.Entry > entries, Dashboard dashboard ) throws HygieiaException {
+    private  Map < String, WidgetRequest > generateRequestWidgetList( List < DashboardRemoteRequest.Entry > entries, Dashboard dashboard, Set<CollectorType> incomingTypes) throws HygieiaException {
         Map< String, WidgetRequest > allWidgetRequests = new HashMap<>();
+        List< Collector > collectors = new ArrayList<>();
+        Collector collector = null;
         //builds widgets
         for ( DashboardRemoteRequest.Entry entry : entries ) {
-
-            List < Collector > collectors = collectorRepository.findByCollectorTypeAndName( entry.getType(), entry.getToolName() );
-            if ( CollectionUtils.isEmpty( collectors ) ) {
-                throw new HygieiaException( entry.getToolName() + " collector is not available.", HygieiaException.BAD_DATA );
+            // get collector from database
+            if( collector == null || collector.getCollectorType() != entry.getType() ||
+                    !StringUtils.equalsIgnoreCase(collector.getName(), entry.getToolName()) ) {
+                collectors = collectorRepository.findByCollectorTypeAndName( entry.getType(), entry.getToolName() );
+                if ( CollectionUtils.isEmpty( collectors ) ) {
+                    throw new HygieiaException( entry.getToolName() + " collector is not available.", HygieiaException.BAD_DATA );
+                }
+                collector = collectors.get( 0 );
+                incomingTypes.add(collector.getCollectorType());
             }
-            Collector collector = collectors.get( 0 );
-            WidgetRequest widgetRequest = allWidgetRequests.get( entry.getWidgetName() );
 
+            WidgetRequest widgetRequest = allWidgetRequests.get( entry.getWidgetName() );
             if ( widgetRequest == null ) {
                 widgetRequest = entryToWidgetRequest( dashboard, entry, collector) ;
                 allWidgetRequests.put( entry.getWidgetName(), widgetRequest );
@@ -254,8 +249,7 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
     private CollectorItem entryToCollectorItem(DashboardRemoteRequest.Entry entry, Collector collector) throws HygieiaException {
         CollectorItem item = entry.toCollectorItem(collector);
         item.setCollectorId(collector.getId());
-
-        return collectorService.createCollectorItemSelectOptions(item,collector.getAllFields(), item.getOptions());
+        return collectorService.createCollectorItemSelectOptions(item, collector, collector.getAllFields(), item.getOptions());
     }
 
     /**

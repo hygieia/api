@@ -120,6 +120,7 @@ public class GenericCollectorItemServiceImpl implements GenericCollectorItemServ
         generic.setArtifactVersion(artifactVersion);
         generic.setArtifactName(artifactName);
         generic.setCollectorItemId(artifactCollectorItemId);
+        generic.setTimestamp(System.currentTimeMillis());
         generic.addBuild(build);
         return generic;
     }

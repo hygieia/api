@@ -2,30 +2,42 @@ package com.capitalone.dashboard.service;
 
 import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.*;
+import com.capitalone.dashboard.model.quality.CucumberJsonReport;
+import com.capitalone.dashboard.model.quality.JunitXmlReport;
 import com.capitalone.dashboard.repository.CollectorRepository;
 import com.capitalone.dashboard.repository.ComponentRepository;
 import com.capitalone.dashboard.repository.TestResultRepository;
 import com.capitalone.dashboard.request.CollectorRequest;
 import com.capitalone.dashboard.request.PerfTestDataCreateRequest;
 import com.capitalone.dashboard.request.TestDataCreateRequest;
-import com.capitalone.dashboard.request.TestResultRequest;
-import com.capitalone.dashboard.util.TestResultConstant;
+import com.capitalone.dashboard.settings.ApiSettings;
+import com.capitalone.dashboard.util.TestResultConstants;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.mysema.query.BooleanBuilder;
+import hygieia.transformer.CucumberJsonToTestCapabilityTransformer;
+import hygieia.transformer.JunitXmlToTestCapabilityTransformer;
 import org.apache.commons.lang.StringUtils;
 import org.bson.types.ObjectId;
-import org.json.simple.JSONObject;
+import org.joda.time.format.DateTimeFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class TestResultServiceImpl implements TestResultService {
@@ -34,20 +46,28 @@ public class TestResultServiceImpl implements TestResultService {
     private final ComponentRepository componentRepository;
     private final CollectorRepository collectorRepository;
     private final CollectorService collectorService;
+    private final CmdbService cmdbService;
+    private final ApiSettings apiSettings;
+
+
 
     @Autowired
     public TestResultServiceImpl(TestResultRepository testResultRepository,
                                  ComponentRepository componentRepository,
                                  CollectorRepository collectorRepository,
-                                 CollectorService collectorService) {
+                                 CollectorService collectorService,
+                                 CmdbService cmdbService,
+                                 ApiSettings apiSettings) {
         this.testResultRepository = testResultRepository;
         this.componentRepository = componentRepository;
         this.collectorRepository = collectorRepository;
         this.collectorService = collectorService;
+        this.cmdbService = cmdbService;
+        this.apiSettings = apiSettings;
     }
 
     @Override
-    public DataResponse<Iterable<TestResult>> search(TestResultRequest request) {
+    public DataResponse<Iterable<TestResult>> search(com.capitalone.dashboard.request.TestResultRequest request) {
         Component component = componentRepository.findOne(request.getComponentId());
 
         if ((component == null) || !component.getCollectorItems().containsKey(CollectorType.Test)) {
@@ -68,7 +88,7 @@ public class TestResultServiceImpl implements TestResultService {
 
 
 
-    private void validateAllCollectorItems(TestResultRequest request, Component component, List<TestResult> result) {
+    private void validateAllCollectorItems(com.capitalone.dashboard.request.TestResultRequest request, Component component, List<TestResult> result) {
         // add all test result repos
         component.getCollectorItems().get(CollectorType.Test).forEach(item -> {
             QTestResult testResult = new QTestResult("testResult");
@@ -82,7 +102,7 @@ public class TestResultServiceImpl implements TestResultService {
         });
     }
 
-    private void addAllTestResultRepositories(TestResultRequest request, List<TestResult> result, QTestResult testResult, BooleanBuilder builder) {
+    private void addAllTestResultRepositories(com.capitalone.dashboard.request.TestResultRequest request, List<TestResult> result, QTestResult testResult, BooleanBuilder builder) {
         if (request.getMax() == null) {
             result.addAll(Lists.newArrayList(testResultRepository.findAll(builder.getValue(), testResult.timestamp.desc())));
         } else {
@@ -91,25 +111,25 @@ public class TestResultServiceImpl implements TestResultService {
         }
     }
 
-    private void validateTestCapabilities(TestResultRequest request, QTestResult testResult, BooleanBuilder builder) {
+    private void validateTestCapabilities(com.capitalone.dashboard.request.TestResultRequest request, QTestResult testResult, BooleanBuilder builder) {
         if (!request.getTypes().isEmpty()) {
             builder.and(testResult.testCapabilities.any().type.in(request.getTypes()));
         }
     }
 
-    private void validateDurationRange(TestResultRequest request, QTestResult testResult, BooleanBuilder builder) {
+    private void validateDurationRange(com.capitalone.dashboard.request.TestResultRequest request, QTestResult testResult, BooleanBuilder builder) {
         if (request.validDurationRange()) {
             builder.and(testResult.duration.between(request.getDurationGreaterThan(), request.getDurationLessThan()));
         }
     }
 
-    private void validateEndDateRange(TestResultRequest request, QTestResult testResult, BooleanBuilder builder) {
+    private void validateEndDateRange(com.capitalone.dashboard.request.TestResultRequest request, QTestResult testResult, BooleanBuilder builder) {
         if (request.validEndDateRange()) {
             builder.and(testResult.endTime.between(request.getEndDateBegins(), request.getEndDateEnds()));
         }
     }
 
-    private void validateStartDateRange(TestResultRequest request, QTestResult testResult, BooleanBuilder builder) {
+    private void validateStartDateRange(com.capitalone.dashboard.request.TestResultRequest request, QTestResult testResult, BooleanBuilder builder) {
         if (request.validStartDateRange()) {
             builder.and(testResult.startTime.between(request.getStartDateBegins(), request.getStartDateEnds()));
         }
@@ -170,9 +190,7 @@ public class TestResultServiceImpl implements TestResultService {
             throw new HygieiaException("Failed creating Test collector item.", HygieiaException.COLLECTOR_ITEM_CREATE_ERROR);
         }
 
-
         TestResult testResult = createTest(collectorItem, request);
-
 
         if (testResult == null) {
             throw new HygieiaException("Failed inserting/updating Test information.", HygieiaException.ERROR_INSERTING_DATA);
@@ -218,93 +236,104 @@ public class TestResultServiceImpl implements TestResultService {
 
     }
 
+    protected TestResult createTestCucumber(TestCreateRequest request) throws HygieiaException {
 
-    protected TestResult createPerfTestv3(TestCucumber jsonRequest, TestSuiteType type, String prefTool) throws HygieiaException {
-        /**
-         * Step 1: create performance Collector if not there
-         * Step 2: create Perfomance Collector item if not there
-         * Step 3: Insert performance test data if new. If existing, update it
-         */
-        Collector collector = createGenericCollector(prefTool);
+        CucumberJsonReport.Feature cucumberFeature = null;
+
+        try {
+            cucumberFeature = decodeJsonPayload(CucumberJsonReport.Feature.class , request);
+        }catch (Exception ex){
+            throw new HygieiaException("TestResult is not a valid json.", HygieiaException.JSON_FORMAT_ERROR);
+        }
+        Collector collector = createGenericCollector(request, TestResultConstants.JENKINSCUCUMBERTEST);
         if (collector == null) {
             throw new HygieiaException("Failed creating Test collector.", HygieiaException.COLLECTOR_CREATE_ERROR);
         }
-        CollectorItem collectorItem = createGenericCollectorItemV3(collector, jsonRequest, prefTool);
+        CollectorItem collectorItem = createGenericCollectorItem(collector, request , cucumberFeature.getName());
         if (collectorItem == null) {
             throw new HygieiaException("Failed creating Test collector item.", HygieiaException.COLLECTOR_ITEM_CREATE_ERROR);
         }
-        TestResult testResult = createPerfTestv3(collectorItem, jsonRequest, type);
+        List<CucumberJsonReport.Feature> features = new ArrayList<>();
+        features.add(cucumberFeature);
+        CucumberJsonReport cucumberRequest = new CucumberJsonReport(features);
+        CucumberJsonToTestCapabilityTransformer transformer = new CucumberJsonToTestCapabilityTransformer(null,"");
+        TestCapability testCapability = transformer.convert(cucumberRequest);
+        TestResult testResult = createTestCucumber(collectorItem,cucumberFeature , TestSuiteType.Functional, request, testCapability);
         if (testResult == null) {
-            throw new HygieiaException("Failed inserting/updating Test information.", HygieiaException.ERROR_INSERTING_DATA);
+            throw new HygieiaException("Failed inserting cucumber Test information.", HygieiaException.ERROR_INSERTING_DATA);
         }
         return testResult;
 
     }
 
-    protected TestResult createPerfTestv3(TestPerformance jsonRequest, TestSuiteType type, String prefTool) throws HygieiaException {
-        /**
-         * Step 1: create performance Collector if not there
-         * Step 2: create Perfomance Collector item if not there
-         * Step 3: Insert performance test data if new. If existing, update it
-         */
-        Collector collector = createGenericCollector(prefTool);
+    protected TestResult createTestJunit(TestCreateRequest request) throws HygieiaException {
+
+        JunitXmlReport  junitXmlReport = decodeXmlPayload(JunitXmlReport.class,request);
+        Collector collector = createGenericCollector(request, TestResultConstants.JUNITTEST);;
         if (collector == null) {
             throw new HygieiaException("Failed creating Test collector.", HygieiaException.COLLECTOR_CREATE_ERROR);
         }
-        CollectorItem collectorItem = createGenericCollectorItemV3(collector, jsonRequest, prefTool);
+        CollectorItem collectorItem = createGenericCollectorItem(collector, request , junitXmlReport.getName() );
         if (collectorItem == null) {
             throw new HygieiaException("Failed creating Test collector item.", HygieiaException.COLLECTOR_ITEM_CREATE_ERROR);
         }
-        TestResult testResult = createPerfTestv3(collectorItem, jsonRequest, type);
+        JunitXmlToTestCapabilityTransformer transformer = new JunitXmlToTestCapabilityTransformer();
+        TestCapability testCapability = transformer.convert(junitXmlReport);
+        TestResult testResult = createTestJunit(collectorItem, junitXmlReport,  TestSuiteType.Unit, request,testCapability);
         if (testResult == null) {
-            throw new HygieiaException("Failed inserting/updating Test information.", HygieiaException.ERROR_INSERTING_DATA);
+            throw new HygieiaException("Failed inserting Junit Test information.", HygieiaException.ERROR_INSERTING_DATA);
         }
         return testResult;
 
     }
 
-    protected TestResult createPerfTestv3(TestJunit jsonRequest, TestSuiteType type, String prefTool) throws HygieiaException {
+    private <T> T decodeJsonPayload (Class<T> type , TestCreateRequest request) throws HygieiaException{
+        if(request == null || StringUtils.isEmpty(request.getTestResult())) {
+            throw new HygieiaException("TestResult is not a valid json.", HygieiaException.JSON_FORMAT_ERROR);
+        }
+        byte[] decodedBytes = Base64.getDecoder().decode(request.getTestResult());
+        String decodedPayload = new String(decodedBytes);
+        Gson gson = new Gson();
+        return gson.fromJson(decodedPayload , type);
 
-        Collector collector = createGenericCollector(prefTool);
-        if (collector == null) {
-            throw new HygieiaException("Failed creating Test collector.", HygieiaException.COLLECTOR_CREATE_ERROR);
-        }
-        CollectorItem collectorItem = createGenericCollectorItemV3(collector, jsonRequest, prefTool);
-        if (collectorItem == null) {
-            throw new HygieiaException("Failed creating Test collector item.", HygieiaException.COLLECTOR_ITEM_CREATE_ERROR);
-        }
-        TestResult testResult = createPerfTestv3(collectorItem, jsonRequest, type);
-        if (testResult == null) {
-            throw new HygieiaException("Failed inserting/updating Test information.", HygieiaException.ERROR_INSERTING_DATA);
-        }
-        return testResult;
+    }
 
+    private <T> T decodeXmlPayload (Class<T> type , TestCreateRequest request) throws HygieiaException{
+
+        if(request == null || StringUtils.isEmpty(request.getTestResult())) {
+            throw new HygieiaException("TestResult is not a valid Xml", HygieiaException.JSON_FORMAT_ERROR);
+        }
+        byte[] decodedBytes = Base64.getDecoder().decode(request.getTestResult());
+        String decodedPayload = new String(decodedBytes);
+        StringReader sr = new StringReader(decodedPayload);
+        T junitXmlReport = null;
+        try {
+            JAXBContext jaxbContext = JAXBContext.newInstance(type);
+            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+            junitXmlReport = (T) unmarshaller.unmarshal(sr);
+        }catch (JAXBException ex){
+            ex.printStackTrace();
+            throw new HygieiaException("TestResult is not a valid Xml", HygieiaException.JSON_FORMAT_ERROR);
+        }
+        return junitXmlReport;
     }
 
     @Override
-    public String createPerfV3(PrefTestCreateRequest jsonRequest, TestJunit xmlRequest, String prefTool, String type) throws HygieiaException  {
+    public String createTest(TestCreateRequest request) throws HygieiaException {
         TestResult testResult = null;
-        if (TestResultConstant.CUCUMBER.equals(type)) {
-            Gson gson = new Gson();
-            String tmp = gson.toJson(jsonRequest);
-            TestCucumber cucumberRequest = gson.fromJson(tmp , TestCucumber.class);
-            testResult = createPerfTestv3(cucumberRequest, TestSuiteType.Functional, prefTool);
-        } else if (TestResultConstant.JUNIT.equals(type)) {
-            testResult = createPerfTestv3(xmlRequest, TestSuiteType.Unit, prefTool);
-        } else if (TestResultConstant.PERFORMANCE.equals(type) && TestResultConstant.perftool.equals(prefTool)) {
-            Gson gson = new Gson();
-            String tmp = gson.toJson(jsonRequest);
-            TestPerformance performanceRequest = gson.fromJson(tmp, TestPerformance.class);
-            testResult = createPerfTestv3(performanceRequest, TestSuiteType.Unit, prefTool);
-        }else if (TestResultConstant.PERFORMANCE.equals(type)) {
-            Gson gson = new Gson();
-            String tmp = gson.toJson(jsonRequest);
-            PerfTestDataCreateRequest perfRequest = gson.fromJson(tmp, PerfTestDataCreateRequest.class);
-            testResult = createPerfTest(perfRequest);
+        validConfigurationItem(request.getConfigurationItem(),request.getTargetAppName());
+        if (TestResultConstants.FUNCTIONAL.equals(request.getTestType()) && apiSettings.getFunctional().get("cucumber").equals(request.getSourceFormat())) {
+
+            testResult = createTestCucumber(request);
+
+        } else if (TestResultConstants.UNIT.equals(request.getTestType())&& apiSettings.getUnit().equals(request.getSourceFormat())) {
+
+            testResult = createTestJunit(request);
+        } else {
+            return "we are not accepting " + request.getTestType() + " sourceFormat " + request.getSourceFormat();
         }
         return testResult.getId() + "," + testResult.getCollectorItemId();
     }
-
 
 
     @Override
@@ -391,44 +420,57 @@ public class TestResultServiceImpl implements TestResultService {
     }
 
 
-    private CollectorItem createGenericCollectorItemV3(Collector collector, TestCucumber jsonRequest, String perfTool) {
+    private Collector createGenericCollector(TestCreateRequest request, String name) {
+        CollectorRequest collectorReq = new CollectorRequest();
+        collectorReq.setName(name);
+        collectorReq.setCollectorType(CollectorType.Test);
+        Collector col = collectorReq.toCollector();
+        col.setEnabled(true);
+        col.setOnline(true);
+        col.setLastExecuted(System.currentTimeMillis());
+        Map<String, Object> allOptions = new HashMap<>();
+        allOptions.put("jobUrl", request.getJobUrl());
+        Map<String,String> map = getJobNameAndInstanceUrl(request.getJobUrl());
+        allOptions.put("jobName",map.get("jobName"));
+        allOptions.put("instanceUrl", map.get("instanceUrl"));
+        col.setAllFields(allOptions);
+        col.setUniqueFields(allOptions);
+        return collectorService.createCollector(col);
+    }
+
+    private Map<String, String> getJobNameAndInstanceUrl(String jobUrl){
+        Map<String ,String> map = new HashMap<>();
+        if(StringUtils.isNotEmpty(jobUrl)){
+            Pattern pattern = Pattern.compile("(.*?://)([^:^/]*)?(.*)?");
+            Matcher matcher = pattern.matcher(jobUrl);
+            matcher.find();
+            String protocol = matcher.group(1);
+            String domain = matcher.group(2);
+            String uri = matcher.group(3);
+                map.put("jobName", protocol+domain);
+                map.put("instanceUrl", uri);
+        }
+        return map;
+    }
+
+
+
+    private CollectorItem createGenericCollectorItem(Collector collector,  TestCreateRequest request, String desc) {
         CollectorItem tempCi = new CollectorItem();
         tempCi.setCollectorId(collector.getId());
-        tempCi.setDescription(perfTool + " : " + jsonRequest.getName());
+        tempCi.setDescription(desc);
         tempCi.setPushed(true);
         tempCi.setLastUpdated(System.currentTimeMillis());
         Map<String, Object> option = new HashMap<>();
-        option.put("jobName", jsonRequest.getBuildJobId()+"/"+jsonRequest.getApplicationName()+"/"+jsonRequest.getBapComponentName());
+        option.put("jobUrl", request.getJobUrl());
+        Map<String,String> map = getJobNameAndInstanceUrl(request.getJobUrl());
+        option.put("jobName",map.get("jobName"));
+        option.put("instanceUrl", map.get("instanceUrl"));
         tempCi.getOptions().putAll(option);
-        tempCi.setNiceName(perfTool);
+        tempCi.setNiceName(request.getSourceFormat());
         return collectorService.createCollectorItem(tempCi);
     }
 
-    private CollectorItem createGenericCollectorItemV3(Collector collector, TestPerformance jsonRequest, String perfTool) {
-        CollectorItem tempCi = new CollectorItem();
-        tempCi.setCollectorId(collector.getId());
-        tempCi.setDescription(perfTool + " : " + jsonRequest.getComponentName());
-        tempCi.setPushed(true);
-        tempCi.setLastUpdated(System.currentTimeMillis());
-        Map<String, Object> option = new HashMap<>();
-        option.put("jobName", jsonRequest.getBuildJobId()+"/"+jsonRequest.getApplicationName()+"/"+jsonRequest.getBapComponentName());
-        tempCi.getOptions().putAll(option);
-        tempCi.setNiceName(perfTool);
-        return collectorService.createCollectorItem(tempCi);
-    }
-
-    private CollectorItem createGenericCollectorItemV3(Collector collector, TestJunit request, String perfTool) {
-        CollectorItem tempCi = new CollectorItem();
-        tempCi.setCollectorId(collector.getId());
-        tempCi.setDescription(perfTool + " : " + request.getName());
-        tempCi.setPushed(true);
-        tempCi.setLastUpdated(System.currentTimeMillis());
-        Map<String, Object> option = new HashMap<>();
-        option.put("jobName", request.getBuildJobId()+"/"+request.getApplicationName()+ "/"+request.getBapComponentName());
-        tempCi.getOptions().putAll(option);
-        tempCi.setNiceName(perfTool);
-        return collectorService.createCollectorItem(tempCi);
-    }
 
 
     private TestResult createTest(CollectorItem collectorItem, TestDataCreateRequest request) {
@@ -437,7 +479,6 @@ public class TestResultServiceImpl implements TestResultService {
         if (testResult == null) {
             testResult = new TestResult();
         }
-
         testResult.setTargetAppName(request.getTargetAppName());
         testResult.setTargetEnvName(request.getTargetEnvName());
         testResult.setCollectorItemId(collectorItem.getId());
@@ -458,7 +499,6 @@ public class TestResultServiceImpl implements TestResultService {
         testResult.getTestCapabilities().addAll(request.getTestCapabilities());
         testResult.setBuildId(new ObjectId(request.getTestJobId()));
         testResult.setBuildArtifact(request.getBuildArtifact());
-
         return testResultRepository.save(testResult);
     }
 
@@ -494,92 +534,100 @@ public class TestResultServiceImpl implements TestResultService {
     }
 
 
-    private TestResult createPerfTestv3(CollectorItem collectorItem, TestCucumber request, TestSuiteType type) {
-        String executionId = request.getBuildJobId()+request.getBapComponentName()+request.getApplicationName();
-        TestResultCucumber testResult = (TestResultCucumber) testResultRepository.findByCollectorItemIdAndExecutionId(collectorItem.getId(),
-                executionId);
 
-        if (testResult == null) {
-            testResult = new TestResultCucumber();
-        }
-        testResult.setBuildJobId(request.getBuildJobId());
-        testResult.setBapComponentName(request.getBapComponentName());
-        testResult.setApplicationName(request.getApplicationName());
-        testResult.setTimestamp(System.currentTimeMillis());
+
+    private TestResult createTestCucumber(CollectorItem collectorItem, CucumberJsonReport.Feature cucumberReport, TestSuiteType type, TestCreateRequest request, TestCapability cucumberTestCapabilityTransformer) {
+
+        TestResult  testResult = new TestResult();
+        Collection<TestCapability> testCapabilities = new ArrayList();
+        testCapabilities.add(cucumberTestCapabilityTransformer);
+        testResult.setTestCapabilities(testCapabilities);
         testResult.setType(type);
-        testResult.setLine(request.getLine());
         testResult.setCollectorItemId(collectorItem.getId());
-        testResult.setLine(request.getLine());
-        testResult.setKeyword(request.getKeyword());
-        testResult.setUrl(request.getUri());
-        testResult.setElements(request.getElements());
-        testResult.setName(request.getName());
-        testResult.setExecutionId(executionId);
-        testResult.setDescription(request.getDescription());
-        testResult.setKeyword(request.getKeyword());
-        if (request.getTimestamp() == 0) request.setTimestamp(System.currentTimeMillis());
-        testResult.setTimestamp(request.getTimestamp());
+        testResult.setDescription(cucumberReport.getName());
+        testResult.setTestCapabilities(testCapabilities);
+        testResult.setType(type);
+        testResult.setCollectorItemId(collectorItem.getId());
+        testResult.setTargetEnvName(getConfigurationItem(request.getConfigurationItem(),request.getTargetAppName()));
+        testResult.setTargetAppName(request.getTargetAppName());
+        testResult.setDuration(cucumberTestCapabilityTransformer.getDuration());
+        testResult.setFailureCount(cucumberTestCapabilityTransformer.getFailedTestSuiteCount());
+        testResult.setSuccessCount(cucumberTestCapabilityTransformer.getSuccessTestSuiteCount());
+        testResult.setSkippedCount(cucumberTestCapabilityTransformer.getSkippedTestSuiteCount());
+        testResult.setTotalCount(cucumberTestCapabilityTransformer.getTotalTestSuiteCount());
+        testResult.setUnknownStatusCount(cucumberTestCapabilityTransformer.getUnknownStatusTestSuiteCount());
+        testResult.setTimestamp(convertTimestamp(request.getTimeStamp()));
+        testResult.getTestCapabilities().addAll(testCapabilities);
         TestResult result = testResultRepository.save(testResult);
         return result;
     }
 
 
-    private TestResult createPerfTestv3(CollectorItem collectorItem, TestJunit request, TestSuiteType type) {
-        String executionId = request.getBuildJobId()+request.getBapComponentName()+request.getApplicationName();
-        TestResultJunit testResult = (TestResultJunit) testResultRepository.findByCollectorItemIdAndExecutionId(collectorItem.getId(), executionId);
+    private TestResult createTestJunit(CollectorItem collectorItem, JunitXmlReport junitXmlReport, TestSuiteType type, TestCreateRequest request, TestCapability testCapability) {
 
-        if (testResult == null) {
-            testResult = new TestResultJunit();
-        }
-        testResult.setBuildJobId(request.getBuildJobId());
-        testResult.setBapComponentName(request.getBapComponentName());
-        testResult.setApplication(request.getApplicationName());
-        testResult.setTimestamp(System.currentTimeMillis());
-        testResult.setSkipped(request.getSkipped());
-        testResult.setName(request.getName());
-        testResult.setTime(request.getTime());
-        testResult.setErrors(request.getErrors());
-        testResult.setTestcase(request.getTestcase());
-        testResult.setCollectorItemId(collectorItem.getId());
-        testResult.setExecutionId(executionId);
+        TestResult  testResult = new TestResult();
+        Collection<TestCapability> testCapabilities = new ArrayList();
+        testCapabilities.add(testCapability);
+        testResult.setTestCapabilities(testCapabilities);
         testResult.setType(type);
-        testResult.setFailures(request.getFailures());
-        testResult.setTests(request.getTests());
-        testResult.setProperties(request.getProperties());
-        if (request.getTimestamp() == 0) request.setTimestamp(System.currentTimeMillis());
-        testResult.setTimestamp(request.getTimestamp());
+        testResult.setCollectorItemId(collectorItem.getId());
+        testResult.setDescription(junitXmlReport.getName());
+        testResult.setTargetEnvName(getConfigurationItem(request.getConfigurationItem(),request.getTargetAppName()));
+        testResult.setTargetAppName((request.getTargetAppName()));
+        testResult.setDuration(junitXmlReport.getTime().longValue());
+        testResult.setFailureCount(junitXmlReport.getFailures());
+        testResult.setSuccessCount(testCapability.getSuccessTestSuiteCount());
+        testResult.setSkippedCount(Integer.parseInt(junitXmlReport.getSkipped()));
+        testResult.setTotalCount(junitXmlReport.getTests());
+        testResult.setUnknownStatusCount(testCapability.getUnknownStatusTestSuiteCount());
+        testResult.setTimestamp(convertTimestamp(request.getTimeStamp()));
+        testResult.getTestCapabilities().addAll(testCapabilities);
         TestResult result = testResultRepository.save(testResult);
         return result;
-
     }
 
 
-    private TestResult createPerfTestv3(CollectorItem collectorItem, TestPerformance request, TestSuiteType type) {
-        String executionId = request.getBuildJobId()+request.getBapComponentName()+request.getApplicationName();
-        TestResultPerformance testResult = (TestResultPerformance) testResultRepository.findByCollectorItemIdAndExecutionId(collectorItem.getId(),
-                executionId);
 
-        if (testResult == null) {
-            testResult = new TestResultPerformance();
+    private String getConfigurationItem(String configurationItem, String targetAppName){
+
+        if (StringUtils.isNotBlank(configurationItem))
+        {
+            return configurationItem;
         }
-        testResult.setBuildJobId(request.getBuildJobId());
-        testResult.setBapComponentName(request.getBapComponentName());
-        testResult.setApplicationName(request.getApplicationName());testResult.setType(type);
-        testResult.setType(type);
-        testResult.setCollectorItemId(collectorItem.getId());
-        testResult.setStatus(request.getStatus());
-        testResult.setPerformanceMetrics(request.getPerformanceMetrics());
-        testResult.setTestId(request.getTestId());
-        testResult.setExecutionId(executionId);
-        testResult.setTestAgentType(request.getTestAgentType());
-        testResult.setComponentName(request.getComponentName());
-        testResult.setTestRequestId(request.getTestRequestId());
-        testResult.setTestType(request.getTestType());
-        if (request.getTimestamp() == 0) request.setTimestamp(System.currentTimeMillis());
-        testResult.setTimestamp(request.getTimestamp());
-        testResult.setTimestamp(System.currentTimeMillis());
-        TestResult result = testResultRepository.save(testResult);
-        return result;
+        else if (StringUtils.isNotBlank(targetAppName) ){
+           List<Cmdb> cmdb = cmdbService.commonNameByConfigurationItem(targetAppName);
+           if(cmdb.size() > 0){
+               return cmdb.get(0).getConfigurationItem();
+           }
+        }
+
+        return null;
+    }
+
+    private void validConfigurationItem(String configurationItem, String targetAppName) throws HygieiaException{
+
+        if (StringUtils.isBlank(configurationItem))
+        {
+            if (StringUtils.isBlank(targetAppName)){
+                throw new HygieiaException("targetAppName should not be null.",HygieiaException.BAD_DATA);
+
+            }
+        }
+    }
+
+    private long convertTimestamp (String timestamp){
+
+        long time = 0;
+
+        if(StringUtils.isNotEmpty(timestamp)){
+          time = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS Z").parseMillis(timestamp);
+
+        }else{
+            time = System.currentTimeMillis();
+        }
+
+
+        return time;
     }
 
 }
