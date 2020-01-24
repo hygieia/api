@@ -329,6 +329,8 @@ public class TestResultServiceImpl implements TestResultService {
         } else if (TestResultConstants.UNIT.equals(request.getTestType())&& apiSettings.getUnit().equals(request.getSourceFormat())) {
 
             testResult = createTestJunit(request);
+        } else {
+            return "we are not accepting " + request.getTestType() + " sourceFormat " + request.getSourceFormat();
         }
         return testResult.getId() + "," + testResult.getCollectorItemId();
     }
