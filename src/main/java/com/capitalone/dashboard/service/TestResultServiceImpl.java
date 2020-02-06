@@ -330,7 +330,7 @@ public class TestResultServiceImpl implements TestResultService {
 
             testResult = createTestJunit(request);
         } else {
-            return "we are not accepting " + request.getTestType() + " sourceFormat " + request.getSourceFormat();
+            return "Hygieia are not accepting " + request.getTestType() + " sourceFormat " + request.getSourceFormat();
         }
         return testResult.getId() + "," + testResult.getCollectorItemId();
     }
@@ -447,8 +447,8 @@ public class TestResultServiceImpl implements TestResultService {
             String protocol = matcher.group(1);
             String domain = matcher.group(2);
             String uri = matcher.group(3);
-                map.put("jobName", protocol+domain);
-                map.put("instanceUrl", uri);
+                map.put("instanceUrl", protocol+domain);
+                map.put("jobName", uri);
         }
         return map;
     }
