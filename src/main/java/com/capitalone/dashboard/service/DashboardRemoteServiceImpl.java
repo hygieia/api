@@ -119,6 +119,8 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
             Set<Owner> uniqueOwners = new HashSet<Owner>(validOwners);
             uniqueOwners.addAll(dashboard.getOwners());
             dashboard.setOwners(new ArrayList<Owner>(uniqueOwners));
+            dashboard.setConfigurationItemBusAppName(request.getMetaData().getBusinessApplication());
+            dashboard.setConfigurationItemBusServName(request.getMetaData().getBusinessService());
             if (!isUpdate) {
                 throw new HygieiaException("Dashboard " + dashboard.getTitle() + " (id =" + dashboard.getId() + ") already exists", HygieiaException.DUPLICATE_DATA);
             }
