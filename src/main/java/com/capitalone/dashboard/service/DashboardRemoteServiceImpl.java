@@ -142,7 +142,7 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
         List<DashboardRemoteRequest.Entry> entries = request.getAllEntries();
         Map<String, WidgetRequest> allWidgetRequests = generateRequestWidgetList( entries, dashboard, incomingTypes);
         Component component = componentRepository.findOne(dashboard.getApplication().getComponents().get(0).getId());
-        Set<CollectorType> existingTypes = component.getCollectorItems().keySet();
+        Set<CollectorType> existingTypes = new HashSet<>(component.getCollectorItems().keySet());
 
         //adds widgets
         for (String key : allWidgetRequests.keySet()) {
@@ -173,6 +173,9 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
                 dashboardService.deleteWidget(dashboard,type);
             }
         }
+
+        LOG.info("DashboardTitle=" + dashboard.getTitle() + ", ExistingTypes=" + existingTypes + ", IncomingTypes=" + incomingTypes + ", deleteSet=" + deleteSet);
+
         // delete code analysis widget
         if(isQualityWidget(deleteSet)){
             dashboardService.deleteWidget(dashboard,CollectorType.CodeQuality);
