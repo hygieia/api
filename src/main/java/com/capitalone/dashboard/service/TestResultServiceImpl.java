@@ -330,7 +330,7 @@ public class TestResultServiceImpl implements TestResultService {
 
             testResult = createTestJunit(request);
         } else {
-            return "Hygieia are not accepting " + request.getTestType() + " sourceFormat " + request.getSourceFormat();
+            return "Hygieia does not support " + request.getTestType() + " sourceFormat " + request.getSourceFormat();
         }
         return testResult.getId() + "," + testResult.getCollectorItemId();
     }
