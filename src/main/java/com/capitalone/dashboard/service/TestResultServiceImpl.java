@@ -577,7 +577,7 @@ public class TestResultServiceImpl implements TestResultService {
         testResult.setDuration(junitXmlReport.getTime().longValue());
         testResult.setFailureCount(junitXmlReport.getFailures());
         testResult.setSuccessCount(testCapability.getSuccessTestSuiteCount());
-        testResult.setSkippedCount(Integer.parseInt(junitXmlReport.getSkipped()));
+        testResult.setSkippedCount( StringUtils.isNotEmpty(junitXmlReport.getSkipped())?Integer.parseInt(junitXmlReport.getSkipped()):Integer.parseInt(junitXmlReport.getSkips()));
         testResult.setTotalCount(junitXmlReport.getTests());
         testResult.setUnknownStatusCount(testCapability.getUnknownStatusTestSuiteCount());
         testResult.setTimestamp(convertTimestamp(request.getTimeStamp()));
