@@ -10,6 +10,8 @@ public class GitSyncRequest {
     @NotNull
     private long startTime;
 
+    private int fetchCount;
+
     public String getRepo() {
         return repo;
     }
@@ -34,4 +36,11 @@ public class GitSyncRequest {
         this.startTime = startTime;
     }
 
+    public int getFetchCount() {
+        return fetchCount;
+    }
+
+    public void setFetchCount(int fetchCount) {
+        this.fetchCount = fetchCount;
+    }
 }

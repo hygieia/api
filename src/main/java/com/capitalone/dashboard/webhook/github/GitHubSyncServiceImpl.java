@@ -109,6 +109,7 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
         String statusString;
         long start = System.currentTimeMillis();
         int repoCount = 0;
+        int fetchCount = request.getFetchCount();
         try {
             Collector collector = collectorRepository.findByName(GIT_HUB);
             if (Objects.isNull(collector)) return "Invalid collector";
@@ -131,7 +132,7 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
                             )
                     );
 
-                    fireGraphQL(repo, true, existingPRMap, existingIssueMap);
+                    fireGraphQL(repo, true, existingPRMap, existingIssueMap,fetchCount);
                     int commitCount1 = processCommits(repo);
                     commitCount += commitCount1;
 
@@ -233,8 +234,8 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
         return "";
     }
 
-    private int getFetchCount(boolean firstRun) {
-        if (firstRun) return 100;
+    private int getFetchCount(boolean firstRun,int fetchCount) {
+        if (firstRun) return fetchCount;
         return apiSettings.getGithubSyncSettings().getFetchCount();
     }
 
@@ -265,14 +266,14 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
         return CollectionMode.None;
     }
 
-    private JSONObject buildQuery(boolean firstTime, boolean firstRun, boolean missingCommits, GitHubParsed gitHubParsed, GitHubRepo repo, GitHubPaging commitPaging, GitHubPaging pullPaging, GitHubPaging issuePaging) {
+    private JSONObject buildQuery(boolean firstTime, boolean firstRun, boolean missingCommits, GitHubParsed gitHubParsed, GitHubRepo repo, GitHubPaging commitPaging, GitHubPaging pullPaging, GitHubPaging issuePaging, int fetchCount) {
         CollectionMode mode = getCollectionMode(firstTime, commitPaging, pullPaging, issuePaging);
         JSONObject jsonObj = new JSONObject();
         String query;
         JSONObject variableJSON = new JSONObject();
         variableJSON.put("owner", gitHubParsed.getOrgName());
         variableJSON.put("name", gitHubParsed.getRepoName());
-        variableJSON.put("fetchCount", getFetchCount(firstRun));
+        variableJSON.put("fetchCount", getFetchCount(firstRun,fetchCount));
 
         LOG.debug("Collection Mode =" + mode.toString());
         switch (mode) {
@@ -1116,7 +1117,7 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
         return paging;
     }
 
-    public void fireGraphQL(GitHubRepo repo, boolean firstRun, Map<Long, String> existingPRMap, Map<Long, String> existingIssueMap) throws RestClientException, MalformedURLException, HygieiaException {
+    public void fireGraphQL(GitHubRepo repo, boolean firstRun, Map<Long, String> existingPRMap, Map<Long, String> existingIssueMap,int fetchCount) throws RestClientException, MalformedURLException, HygieiaException {
         // format URL
         String repoUrl = (String) repo.getOptions().get("url");
         GitHubParsed gitHubParsed = new GitHubParsed(repoUrl);
@@ -1142,7 +1143,7 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
         dummyCommitPaging.setLastPage(false);
 
         int loopCount = 1;
-        JSONObject query = buildQuery(true, firstRun, false, gitHubParsed, repo, dummyCommitPaging, dummyPRPaging, dummyIssuePaging);
+        JSONObject query = buildQuery(true, firstRun, false, gitHubParsed, repo, dummyCommitPaging, dummyPRPaging, dummyIssuePaging,fetchCount);
         while (!alldone) {
             LOG.debug("Executing loop " + loopCount + " for " + gitHubParsed.getOrgName() + "/" + gitHubParsed.getRepoName());
             JSONObject data = getDataFromRestCallPost(gitHubParsed, repo, decryptedPassword, token, query);
@@ -1161,7 +1162,7 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
 
                 alldone = pullPaging.isLastPage() && commitPaging.isLastPage() && issuePaging.isLastPage();
 
-                query = buildQuery(false, firstRun, false, gitHubParsed, repo, commitPaging, pullPaging, issuePaging);
+                query = buildQuery(false, firstRun, false, gitHubParsed, repo, commitPaging, pullPaging, issuePaging,fetchCount);
 
                 loopCount++;
             }
@@ -1189,7 +1190,7 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
         dummyCommitPaging = new GitHubPaging();
         dummyCommitPaging.setLastPage(false);
 
-        query = buildQuery(true, false, true, gitHubParsed, repo, dummyCommitPaging, dummyPRPaging, dummyIssuePaging);
+        query = buildQuery(true, false, true, gitHubParsed, repo, dummyCommitPaging, dummyPRPaging, dummyIssuePaging,fetchCount);
 
         loopCount = 1;
         int missingCommitCount = 0;
@@ -1204,7 +1205,7 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
                 alldone = commitPaging.isLastPage();
                 missingCommitCount += commitPaging.getCurrentCount();
 
-                query = buildQuery(false, firstRun, true, gitHubParsed, repo, commitPaging, dummyPRPaging, dummyIssuePaging);
+                query = buildQuery(false, firstRun, true, gitHubParsed, repo, commitPaging, dummyPRPaging, dummyIssuePaging,fetchCount);
 
                 loopCount++;
             }
