@@ -166,12 +166,12 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
         // Delete collector item types that are not in the incoming types
         Set<CollectorType> deleteSet = new HashSet<>();
         for (CollectorType existingType : existingTypes) {
-            if (existingType!=CollectorType.Audit && !incomingTypes.contains(existingType)) {
-                // Audit is used by NFRR, not present in incoming types
+            if (existingType==CollectorType.Audit) continue;    // Audit is used by NFRR, not present in incoming types
+            if (existingType==CollectorType.Artifact) continue; // right now we cannot fully trust BladeRunner on this,
+                                                                // as they do not have the parsing logic implemented
+            if (!incomingTypes.contains(existingType)) {
                 deleteSet.add(existingType);
-                if(!existingType.equals(CollectorType.Artifact)){
-                    component.getCollectorItems().remove(existingType);
-                }
+                component.getCollectorItems().remove(existingType);
             }
         }
 
