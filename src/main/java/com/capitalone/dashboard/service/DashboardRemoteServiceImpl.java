@@ -163,35 +163,35 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
             }
         }
 
-
-        Set<CollectorType> deleteSet = existingTypes.stream().filter(type->!incomingTypes.contains(type)).collect(Collectors.toSet());
-        for (CollectorType type: deleteSet) {
-            if(!type.equals(CollectorType.Artifact)){
-                component.getCollectorItems().remove(type);
+        // Delete collector item types that are not in the incoming types
+        Set<CollectorType> deleteSet = new HashSet<>();
+        for (CollectorType existingType : existingTypes) {
+            if (existingType==CollectorType.Audit) continue;    // Audit is used by NFRR, not present in incoming types
+            if (existingType==CollectorType.Artifact) continue; // right now we cannot fully trust BladeRunner on this,
+                                                                // as they do not have the parsing logic implemented
+            if (!incomingTypes.contains(existingType)) {
+                deleteSet.add(existingType);
+                component.getCollectorItems().remove(existingType);
             }
-            if(!codeAnalysisWidget(type)){
+        }
+
+        // Delete widgets that do not have collector items, except the quality widget (which may have more than one type)
+        for (CollectorType type: deleteSet) {
+            if (!DashboardServiceImpl.QualityWidget.contains(type)) {
                 dashboardService.deleteWidget(dashboard,type);
             }
         }
-
-        LOG.info("DashboardTitle=" + dashboard.getTitle() + ", ExistingTypes=" + existingTypes + ", IncomingTypes=" + incomingTypes + ", deleteSet=" + deleteSet);
-
-        // delete code analysis widget
-        if(isQualityWidget(deleteSet)){
+        // delete code analysis widget if no collector item types is incoming
+        if (incomingTypes.stream().noneMatch(DashboardServiceImpl.QualityWidget::contains)) {
             dashboardService.deleteWidget(dashboard,CollectorType.CodeQuality);
         }
 
+        LOG.info("DashboardTitle=" + dashboard.getTitle() + ", ExistingTypes=" + existingTypes.size() +
+                " " + existingTypes + ", IncomingTypes=" + incomingTypes.size() + " " + incomingTypes
+                + ", deleteSet=" + deleteSet.size() + " " + deleteSet);
+
         componentRepository.save(component);
         return (dashboard != null) ? dashboardService.get(dashboard.getId()) : null;
-    }
-
-    private boolean isQualityWidget(Set<CollectorType> deleteSet) {
-        return DashboardServiceImpl.QualityWidget.stream().allMatch(deleteSet::contains);
-
-    }
-
-    private boolean codeAnalysisWidget(CollectorType collectorType){
-        return DashboardServiceImpl.QualityWidget.stream().filter(collectorType::equals).findAny().isPresent();
     }
 
     /**
