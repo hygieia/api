@@ -141,7 +141,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 				try {
 					return searchLdapUser(userId);
 				} catch (AuthenticationException ae) {
-					LOGGER.error("Service Account credentials are incorrect", ae);
+					LOGGER.error("LDAP bind credentials are incorrect", ae);
 					return false;
 				} catch (NamingException ne) {
 					LOGGER.error("Failed to query ldap for " + userId, ne);
