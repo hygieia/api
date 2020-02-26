@@ -20,6 +20,7 @@ import com.capitalone.dashboard.model.UserRole;
 import com.capitalone.dashboard.repository.UserInfoRepository;
 import com.google.common.collect.Sets;
 
+import javax.naming.AuthenticationException;
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -140,7 +141,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 				try {
 					return searchLdapUser(userId);
 				} catch (AuthenticationException ae) {
-					LOGGER.error("Service Account password may be incorrect", ae);
+					LOGGER.error("Service Account credentials are incorrect", ae);
 					return false;
 				} catch (NamingException ne) {
 					LOGGER.error("Failed to query ldap for " + userId, ne);
