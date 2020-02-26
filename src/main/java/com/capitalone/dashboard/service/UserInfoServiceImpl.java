@@ -139,6 +139,9 @@ public class UserInfoServiceImpl implements UserInfoService {
 			if (authType == AuthType.LDAP) {
 				try {
 					return searchLdapUser(userId);
+				} catch (AuthenticationException ae) {
+					LOGGER.error("Service Account password is incorrect", ae);
+					return false;
 				} catch (NamingException ne) {
 					LOGGER.error("Failed to query ldap for " + userId, ne);
 					return false;
