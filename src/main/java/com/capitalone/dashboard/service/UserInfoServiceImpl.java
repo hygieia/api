@@ -184,7 +184,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 			String searchBase = "";
 			String searchFilter = "";
 			if(!StringUtils.isBlank(authProperties.getAdUrl())) {
-				searchBase = authProperties.getAdRootDn();
+				searchBase = authProperties.getAdSvcRootDn();
 				searchFilter = "(&(objectClass=user)(userPrincipalName="	+ searchId + "@" + authProperties.getAdDomain() + "))";
 			} else {
 				searchBase = authProperties.getLdapUserDnPattern().substring(
@@ -195,6 +195,8 @@ public class UserInfoServiceImpl implements UserInfoService {
 			}
 
 			NamingEnumeration<SearchResult> results = context.search(searchBase, searchFilter, ctrls);
+			// if user cannot be found in ou Service Accounts, then search in ou All Users
+			results = (!results.hasMore()) ? context.search(authProperties.getAdUserRootDn(),searchFilter,ctrls) : results;
 
 			if (!results.hasMore()) {
 				return searchResult;
