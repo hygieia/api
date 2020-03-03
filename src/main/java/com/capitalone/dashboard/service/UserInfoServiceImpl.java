@@ -177,7 +177,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 			}
 
 			NamingEnumeration<SearchResult> results = this.initialDirContext.search(searchBase, searchFilter, ctrls);
-			// if user cannot be found in ou Service Accounts, then search in ou All Users
+			// if searchId cannot be found in service accounts, then search in users
 			results = (!results.hasMore()) ? this.initialDirContext.search(authProperties.getAdUserRootDn(),searchFilter,ctrls) : results;
 
 			if (!results.hasMore()) {

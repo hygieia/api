@@ -6,8 +6,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.any;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -240,7 +242,7 @@ public class UserInfoServiceImplTest {
         when(results.hasMore()).thenReturn(true);
         when(results.next()).thenReturn(searchResult);
         when(searchResult.getAttributes()).thenReturn(attrs);
-        when(searchResult.getAttributes().get(anyString())).thenReturn(att);
+        when(searchResult.getAttributes().get(any(String.class))).thenReturn(att);
 
         // service account
         assertNotNull(att);

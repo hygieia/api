@@ -74,7 +74,7 @@ import org.springframework.context.annotation.ComponentScan;
 
  	@Bean
 	public AuthProperties authProperties() {
-		 return Mockito.mock(AuthProperties.class);
+		 return new AuthProperties();
 	 }
 
  	@Bean

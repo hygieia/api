@@ -75,7 +75,7 @@ public class TestAuthConfig {
 
     @Bean
     public AuthProperties authProperties() {
-        return Mockito.mock(AuthProperties.class);
+        return new AuthProperties();
     }
 
     @Bean
