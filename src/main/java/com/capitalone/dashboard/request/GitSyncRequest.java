@@ -8,9 +8,7 @@ public class GitSyncRequest {
     @NotNull
     private String branch;
     @NotNull
-    private long startTime;
-
-    private int fetchCount;
+    private int historyDays;
 
     public String getRepo() {
         return repo;
@@ -28,19 +26,7 @@ public class GitSyncRequest {
         this.branch = branch;
     }
 
-    public long getStartTime() {
-        return startTime;
-    }
+    public int getHistoryDays() { return historyDays; }
 
-    public void setStartTime(long startTime) {
-        this.startTime = startTime;
-    }
-
-    public int getFetchCount() {
-        return fetchCount;
-    }
-
-    public void setFetchCount(int fetchCount) {
-        this.fetchCount = fetchCount;
-    }
+    public void setHistoryDays(int historyDays) { this.historyDays = historyDays; }
 }
