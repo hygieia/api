@@ -1,5 +1,6 @@
 package com.capitalone.dashboard.config;
 
+import com.capitalone.dashboard.auth.AuthProperties;
 import com.capitalone.dashboard.repository.ApiTokenRepository;
 import com.capitalone.dashboard.repository.AuthenticationRepository;
 import com.capitalone.dashboard.repository.DashboardRepository;
@@ -72,13 +73,18 @@ import org.springframework.context.annotation.ComponentScan;
  	}
 
  	@Bean
+	public AuthProperties authProperties() {
+		 return new AuthProperties();
+	 }
+
+ 	@Bean
  	public UserInfoRepository userInfoRepository() {
  		return Mockito.mock(UserInfoRepository.class);
  	}
 
  	@Bean
      public UserInfoService userInfoService() {
-         return new UserInfoServiceImpl(userInfoRepository());
+         return new UserInfoServiceImpl(userInfoRepository(),authProperties());
      }
 
 	 @Bean
