@@ -11,7 +11,6 @@ import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Properties;
 
 import com.capitalone.dashboard.auth.AuthProperties;
 import org.junit.Before;
@@ -20,7 +19,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -33,10 +31,7 @@ import com.capitalone.dashboard.model.UserRole;
 import com.capitalone.dashboard.repository.UserInfoRepository;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import org.springframework.security.ldap.authentication.LdapAuthenticationProvider;
-import org.springframework.security.ldap.authentication.LdapAuthenticator;
 
-import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.*;
@@ -53,7 +48,6 @@ public class UserInfoServiceImplTest {
     @Mock
     private InitialDirContext context;
 
-    @Spy
     @InjectMocks
     private UserInfoServiceImpl service;
 
