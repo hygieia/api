@@ -137,22 +137,16 @@ public class UserInfoServiceImpl implements UserInfoService {
 	 */
 	@Override
 	public boolean isUserValid(String userId, AuthType authType) {
-		try {
-			createContext(setProperties());
-		} catch (AuthenticationException ae) {
-			LOGGER.error("LDAP bind credentials are incorrect", ae);
-			return false;
-		} catch (NamingException e) {
-			e.printStackTrace();
-			return false;
-		}
-
 		if (userInfoRepository.findByUsernameAndAuthType(userId, authType) != null) {
 			return true;
 		} else {
 			if (authType == AuthType.LDAP) {
 				try {
+					createContext(setProperties());
 					return searchLdapUser(userId);
+				} catch (AuthenticationException ae) {
+					LOGGER.error("LDAP bind credentials are incorrect", ae);
+					return false;
 				} catch (NamingException ne) {
 					LOGGER.error("Failed to query ldap for " + userId, ne);
 					return false;
