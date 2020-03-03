@@ -37,10 +37,13 @@ public class UserInfoServiceImpl implements UserInfoService {
 	private UserInfoRepository userInfoRepository;
 	@Autowired
 	private AuthProperties authProperties;
+
+	private InitialDirContext initialDirContext;
 	
 	@Autowired
-	public UserInfoServiceImpl(UserInfoRepository userInfoRepository) {
+	public UserInfoServiceImpl(UserInfoRepository userInfoRepository, AuthProperties authProperties) {
 		this.userInfoRepository = userInfoRepository;
+		this.authProperties = authProperties;
 	}
 	
 	@Override
@@ -134,15 +137,22 @@ public class UserInfoServiceImpl implements UserInfoService {
 	 */
 	@Override
 	public boolean isUserValid(String userId, AuthType authType) {
+		try {
+			createContext(setProperties());
+		} catch (AuthenticationException ae) {
+			LOGGER.error("LDAP bind credentials are incorrect", ae);
+			return false;
+		} catch (NamingException e) {
+			e.printStackTrace();
+			return false;
+		}
+
 		if (userInfoRepository.findByUsernameAndAuthType(userId, authType) != null) {
 			return true;
 		} else {
 			if (authType == AuthType.LDAP) {
 				try {
 					return searchLdapUser(userId);
-				} catch (AuthenticationException ae) {
-					LOGGER.error("LDAP bind credentials are incorrect", ae);
-					return false;
 				} catch (NamingException ne) {
 					LOGGER.error("Failed to query ldap for " + userId, ne);
 					return false;
@@ -153,30 +163,8 @@ public class UserInfoServiceImpl implements UserInfoService {
 		}
 	}
 
-	private boolean searchLdapUser(String searchId) throws NamingException {
+	public boolean searchLdapUser(String searchId) throws NamingException {
 		boolean searchResult = false;
-
-		Properties props = new Properties();
-		props.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-		props.put("java.naming.security.protocol", "ssl");
-		props.put(Context.SECURITY_AUTHENTICATION, "simple");
-
-		try {
-			if (!StringUtils.isBlank(authProperties.getAdUrl())) {
-				props.put(Context.PROVIDER_URL, authProperties.getAdUrl());
-				props.put(Context.SECURITY_PRINCIPAL, authProperties.getLdapBindUser() + "@" + authProperties.getAdDomain());
-			} else {
-				props.put(Context.PROVIDER_URL, authProperties.getLdapServerUrl());
-				props.put(Context.SECURITY_PRINCIPAL, StringUtils.replace(authProperties.getLdapUserDnPattern(), "{0}", authProperties.getLdapBindUser()));
-			}
-			props.put(Context.SECURITY_CREDENTIALS, authProperties.getLdapBindPass());
-		} catch (Exception e) {
-			LOGGER.error("Failed to retrieve properties for InitialDirContext", e);
-			return false;
-		}
-
-		InitialDirContext context = new InitialDirContext(props);
-
 		try {
 			SearchControls ctrls = new SearchControls();
 			ctrls.setSearchScope(SearchControls.SUBTREE_SCOPE);
@@ -194,9 +182,9 @@ public class UserInfoServiceImpl implements UserInfoService {
 				searchFilter = "(&(objectClass=user)(sAMAccountName="	+ searchId + "))";
 			}
 
-			NamingEnumeration<SearchResult> results = context.search(searchBase, searchFilter, ctrls);
+			NamingEnumeration<SearchResult> results = this.initialDirContext.search(searchBase, searchFilter, ctrls);
 			// if user cannot be found in ou Service Accounts, then search in ou All Users
-			results = (!results.hasMore()) ? context.search(authProperties.getAdUserRootDn(),searchFilter,ctrls) : results;
+			results = (!results.hasMore()) ? this.initialDirContext.search(authProperties.getAdUserRootDn(),searchFilter,ctrls) : results;
 
 			if (!results.hasMore()) {
 				return searchResult;
@@ -209,9 +197,40 @@ public class UserInfoServiceImpl implements UserInfoService {
 				searchResult = true;
 			}
 		} finally {
-			context.close();
+			this.initialDirContext.close();
 		}
 
 		return searchResult;
+	}
+
+	private Properties setProperties() {
+		Properties props = new Properties();
+		props.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+		props.put("java.naming.security.protocol", "ssl");
+		props.put(Context.SECURITY_AUTHENTICATION, "simple");
+
+		try {
+			if (!StringUtils.isBlank(authProperties.getAdUrl())) {
+				props.put(Context.PROVIDER_URL, authProperties.getAdUrl());
+				props.put(Context.SECURITY_PRINCIPAL, authProperties.getLdapBindUser() + "@" + authProperties.getAdDomain());
+			} else {
+				props.put(Context.PROVIDER_URL, authProperties.getLdapServerUrl());
+				props.put(Context.SECURITY_PRINCIPAL, StringUtils.replace(authProperties.getLdapUserDnPattern(), "{0}", authProperties.getLdapBindUser()));
+			}
+			props.put(Context.SECURITY_CREDENTIALS, authProperties.getLdapBindPass());
+		} catch (Exception e) {
+			LOGGER.error("Failed to retrieve properties for InitialDirContext", e);
+		}
+
+		return props;
+	}
+
+	public InitialDirContext createContext(Properties props) throws NamingException {
+		this.initialDirContext =  new InitialDirContext(props);
+		return initialDirContext;
+	}
+
+	public void setInitialContext(InitialDirContext initialContext){
+		this.initialDirContext =  initialContext;
 	}
 }

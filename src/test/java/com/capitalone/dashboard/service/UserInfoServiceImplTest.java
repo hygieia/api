@@ -6,18 +6,21 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Properties;
 
 import com.capitalone.dashboard.auth.AuthProperties;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -30,18 +33,38 @@ import com.capitalone.dashboard.model.UserRole;
 import com.capitalone.dashboard.repository.UserInfoRepository;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import org.springframework.security.ldap.authentication.LdapAuthenticationProvider;
+import org.springframework.security.ldap.authentication.LdapAuthenticator;
+
+import javax.naming.Context;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.directory.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UserInfoServiceImplTest {
-    
+
     @Mock
     private UserInfoRepository userInfoRepository;
 
     @Mock
     private AuthProperties authProperties;
-    
+
+    @Mock
+    private InitialDirContext context;
+
+    @Spy
     @InjectMocks
     private UserInfoServiceImpl service;
+
+    @Before
+    public void setup(){
+        authProperties = new AuthProperties();
+        authProperties.setLdapBindUser("dummy");
+        authProperties.setLdapBindPass("password");
+        authProperties.setAdUrl("ldap://company.com:398");
+        authProperties.setAdDomain("company.com");
+    }
 
     @Test
     public void shouldGetAuthorities() {
@@ -184,7 +207,7 @@ public class UserInfoServiceImplTest {
     }
 
     @Test
-    public void shouldValidateUser() {
+    public void shouldValidateUser() throws NamingException {
         UserInfo user = new UserInfo();
         user.setUsername("standarduser");
         user.setAuthType(AuthType.STANDARD);
@@ -196,6 +219,48 @@ public class UserInfoServiceImplTest {
         when(userInfoRepository.findByUsernameAndAuthType("standarduser", AuthType.STANDARD)).thenReturn(user);
         result = service.isUserValid("standarduser", AuthType.STANDARD);
         assertTrue(result);
+    }
+
+    @Test
+    public void shouldSearchLdapUser() throws NamingException {
+        UserInfo user = new UserInfo();
+        user.setUsername("standarduser");
+        user.setAuthType(AuthType.LDAP);
+
+        UserInfo svc = new UserInfo();
+        svc.setUsername("svc");
+        svc.setAuthType(AuthType.LDAP);
+
+        // setup authProperties
+        setup();
+        service = new UserInfoServiceImpl(userInfoRepository,authProperties);
+
+        context = Mockito.mock(InitialDirContext.class);
+        service.setInitialContext(context);
+        NamingEnumeration<SearchResult> results = Mockito.mock(NamingEnumeration.class);
+        SearchResult searchResult = Mockito.mock(SearchResult.class);
+        Attributes attrs = Mockito.mock(Attributes.class);
+        Attribute att = Mockito.mock(Attribute.class);
+
+        when(context.search(any(String.class),any(String.class),any(SearchControls.class))).thenReturn(results);
+        when(results.hasMore()).thenReturn(true);
+        when(results.next()).thenReturn(searchResult);
+        when(searchResult.getAttributes()).thenReturn(attrs);
+        when(searchResult.getAttributes().get(anyString())).thenReturn(att);
+
+        // service account
+        assertNotNull(att);
+        assertTrue(service.searchLdapUser(svc.getUsername()));
+
+        // valid user
+        assertNotNull(att);
+        when(results.hasMore()).thenReturn(false, true);
+        assertTrue(service.searchLdapUser(user.getUsername()));
+
+        // unknown user
+        when(results.hasMore()).thenReturn(false);
+        assertFalse(service.searchLdapUser("invalidUser"));
+
     }
 
 }
