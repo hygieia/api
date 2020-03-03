@@ -36,7 +36,11 @@ import com.google.common.collect.Sets;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.directory.*;
+import javax.naming.directory.InitialDirContext;
+import javax.naming.directory.SearchResult;
+import javax.naming.directory.SearchControls;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.Attribute;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UserInfoServiceImplTest {
