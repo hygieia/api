@@ -37,10 +37,13 @@ public class UserInfoServiceImpl implements UserInfoService {
 	private UserInfoRepository userInfoRepository;
 	@Autowired
 	private AuthProperties authProperties;
+
+	private InitialDirContext initialDirContext;
 	
 	@Autowired
-	public UserInfoServiceImpl(UserInfoRepository userInfoRepository) {
+	public UserInfoServiceImpl(UserInfoRepository userInfoRepository, AuthProperties authProperties) {
 		this.userInfoRepository = userInfoRepository;
+		this.authProperties = authProperties;
 	}
 	
 	@Override
@@ -139,6 +142,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 		} else {
 			if (authType == AuthType.LDAP) {
 				try {
+					createContext(setProperties());
 					return searchLdapUser(userId);
 				} catch (AuthenticationException ae) {
 					LOGGER.error("LDAP bind credentials are incorrect", ae);
@@ -153,9 +157,47 @@ public class UserInfoServiceImpl implements UserInfoService {
 		}
 	}
 
-	private boolean searchLdapUser(String searchId) throws NamingException {
+	public boolean searchLdapUser(String searchId) throws NamingException {
 		boolean searchResult = false;
+		try {
+			SearchControls ctrls = new SearchControls();
+			ctrls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 
+			String searchBase = "";
+			String searchFilter = "";
+			if(!StringUtils.isBlank(authProperties.getAdUrl())) {
+				searchBase = authProperties.getAdSvcRootDn();
+				searchFilter = "(&(objectClass=user)(userPrincipalName="	+ searchId + "@" + authProperties.getAdDomain() + "))";
+			} else {
+				searchBase = authProperties.getLdapUserDnPattern().substring(
+						authProperties.getLdapUserDnPattern().indexOf(',') + 1,
+						authProperties.getLdapUserDnPattern().length()
+				);
+				searchFilter = "(&(objectClass=user)(sAMAccountName="	+ searchId + "))";
+			}
+
+			NamingEnumeration<SearchResult> results = this.initialDirContext.search(searchBase, searchFilter, ctrls);
+			// if searchId cannot be found in service accounts, then search in users
+			results = (!results.hasMore()) ? this.initialDirContext.search(authProperties.getAdUserRootDn(),searchFilter,ctrls) : results;
+
+			if (!results.hasMore()) {
+				return searchResult;
+			}
+
+			SearchResult result = results.next();
+
+			Attribute memberOf = result.getAttributes().get("memberOf");
+			if (memberOf != null) {
+				searchResult = true;
+			}
+		} finally {
+			this.initialDirContext.close();
+		}
+
+		return searchResult;
+	}
+
+	private Properties setProperties() {
 		Properties props = new Properties();
 		props.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
 		props.put("java.naming.security.protocol", "ssl");
@@ -172,44 +214,17 @@ public class UserInfoServiceImpl implements UserInfoService {
 			props.put(Context.SECURITY_CREDENTIALS, authProperties.getLdapBindPass());
 		} catch (Exception e) {
 			LOGGER.error("Failed to retrieve properties for InitialDirContext", e);
-			return false;
 		}
 
-		InitialDirContext context = new InitialDirContext(props);
+		return props;
+	}
 
-		try {
-			SearchControls ctrls = new SearchControls();
-			ctrls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+	public InitialDirContext createContext(Properties props) throws NamingException {
+		this.initialDirContext =  new InitialDirContext(props);
+		return initialDirContext;
+	}
 
-			String searchBase = "";
-			String searchFilter = "";
-			if(!StringUtils.isBlank(authProperties.getAdUrl())) {
-				searchBase = authProperties.getAdRootDn();
-				searchFilter = "(&(objectClass=user)(userPrincipalName="	+ searchId + "@" + authProperties.getAdDomain() + "))";
-			} else {
-				searchBase = authProperties.getLdapUserDnPattern().substring(
-						authProperties.getLdapUserDnPattern().indexOf(',') + 1,
-						authProperties.getLdapUserDnPattern().length()
-				);
-				searchFilter = "(&(objectClass=user)(sAMAccountName="	+ searchId + "))";
-			}
-
-			NamingEnumeration<SearchResult> results = context.search(searchBase, searchFilter, ctrls);
-
-			if (!results.hasMore()) {
-				return searchResult;
-			}
-
-			SearchResult result = results.next();
-
-			Attribute memberOf = result.getAttributes().get("memberOf");
-			if (memberOf != null) {
-				searchResult = true;
-			}
-		} finally {
-			context.close();
-		}
-
-		return searchResult;
+	public void setInitialContext(InitialDirContext initialContext){
+		this.initialDirContext =  initialContext;
 	}
 }
