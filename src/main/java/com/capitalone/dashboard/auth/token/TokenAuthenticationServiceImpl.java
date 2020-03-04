@@ -3,6 +3,7 @@ package com.capitalone.dashboard.auth.token;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 
 import java.util.Collection;
@@ -65,7 +66,7 @@ public class TokenAuthenticationServiceImpl implements TokenAuthenticationServic
 			
 			return authentication;
 			
-		} catch (ExpiredJwtException | SignatureException e) {
+		} catch (ExpiredJwtException | SignatureException | MalformedJwtException e) {
 			return null;
 		}
 	}
