@@ -13,16 +13,16 @@ public class GithubSyncSettings {
     private String token;
     private List<String> notBuiltCommits = new ArrayList<>();
 
-    @Value("${github.firstRunHistoryDays:60}")
+    @Value("${githubSyncSettings.firstRunHistoryDays:60}")
     private int firstRunHistoryDays;
 
-    @Value("${github.offsetMinutes:10}") // 10 mins default
+    @Value("${githubSyncSettings.offsetMinutes:10}") // 10 mins default
     private int offsetMinutes;
 
-    @Value("${github.fetchCount:100}")
+    @Value("${githubSyncSettings.fetchCount:25}")
     private int fetchCount;
 
-    @Value("${github.commitPullSyncTime:86400000}") // 1 day in milliseconds
+    @Value("${githubSyncSettings.commitPullSyncTime:86400000}") // 1 day in milliseconds
     private long commitPullSyncTime;
 
     public String getToken() {

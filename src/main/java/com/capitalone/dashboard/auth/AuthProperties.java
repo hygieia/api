@@ -30,6 +30,8 @@ public class AuthProperties {
 
 	private String adDomain;
 	private String adRootDn;
+	private String adUserRootDn;
+	private String adSvcRootDn;
 	private String adUrl;
 
 	private String ldapBindUser;
@@ -119,6 +121,22 @@ public class AuthProperties {
 
 	public void setAdRootDn(String adRootDn) {
 		this.adRootDn = adRootDn;
+	}
+
+	public String getAdUserRootDn() {
+		return adUserRootDn;
+	}
+
+	public void setAdUserRootDn(String adUserRootDn) {
+		this.adUserRootDn = adUserRootDn;
+	}
+
+	public String getAdSvcRootDn() {
+		return adSvcRootDn;
+	}
+
+	public void setAdSvcRootDn(String adSvcRootDn) {
+		this.adSvcRootDn = adSvcRootDn;
 	}
 
 	public String getAdUrl() {
