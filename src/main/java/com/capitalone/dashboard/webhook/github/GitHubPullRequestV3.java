@@ -113,10 +113,19 @@ public class GitHubPullRequestV3 extends GitHubV3 {
         }
 
         ResponseEntity<String> response = null;
-        try {
-            response = restClient.makeRestCallPost(gitHubParsed.getGraphQLUrl(), "token", token, postBody);
-        } catch (Exception e) {
-            throw new HygieiaException(e);
+
+        int retryCount = 0;
+        while(true) {
+            try {
+                response = restClient.makeRestCallPost(gitHubParsed.getGraphQLUrl(), "token", token, postBody);
+                break;
+            } catch (Exception e) {
+                retryCount++;
+                if(retryCount > gitHubWebHookSettings.getMaxRetries()) {
+                    LOG.error("Unable to get PR from " + repoUrl + " after " + gitHubWebHookSettings.getMaxRetries() + " tries!");
+                    throw new HygieiaException(e);
+                }
+            }
         }
 
         JSONObject responseJsonObject = restClient.parseAsObject(response);

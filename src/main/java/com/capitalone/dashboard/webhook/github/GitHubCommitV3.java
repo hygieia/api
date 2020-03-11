@@ -289,10 +289,18 @@ public class GitHubCommitV3 extends GitHubV3 {
         JSONObject postBody = getQuery(gitHubParsed, branch, timeStamp.toString(), GraphQLQuery.COMMITS_GRAPHQL);
 
         ResponseEntity<String> response = null;
-        try {
-            response = restClient.makeRestCallPost(gitHubParsed.getGraphQLUrl(), "token", token, postBody);
-        } catch (Exception e) {
-            throw new HygieiaException(e);
+        int retryCount = 0;
+        while(true) {
+            try {
+                response = restClient.makeRestCallPost(gitHubParsed.getGraphQLUrl(), "token", token, postBody);
+                break;
+            } catch (Exception e) {
+                retryCount++;
+                if(retryCount > apiSettings.getWebHook().getGitHub().getMaxRetries()) {
+                    LOG.error("Unable to get COMMIT from " + gitHubParsed.getUrl() + " after " + apiSettings.getWebHook().getGitHub().getMaxRetries() + " tries!");
+                    throw new HygieiaException(e);
+                }
+            }
         }
 
         JSONObject responseJsonObject = restClient.parseAsObject(response);
