@@ -141,6 +141,10 @@ public class GitHubPullRequestV3 extends GitHubV3 {
         Object base = restClient.getAsObject(pullRequestObject, "base");
         String branch = restClient.getString(base, "ref");
 
+        if(!isRegistered(repoUrl, branch)) {
+            return "Repo: <" + repoUrl + "> Branch: <" + branch + "> is not registered in Hygieia";
+        }
+
         GitRequest pull = buildGitRequestFromPayload(repoUrl, branch, pullRequestObject);
 
         updateGitRequestWithGraphQLData(pull, repoUrl, branch, prData, token);
