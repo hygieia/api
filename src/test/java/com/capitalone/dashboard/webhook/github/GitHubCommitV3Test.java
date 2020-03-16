@@ -17,12 +17,15 @@ import com.capitalone.dashboard.service.CollectorService;
 import com.capitalone.dashboard.util.Supplier;
 import com.capitalone.dashboard.webhook.settings.GitHubWebHookSettings;
 import com.capitalone.dashboard.webhook.settings.WebHookSettings;
+import com.google.common.io.Resources;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bson.types.ObjectId;
 import org.joda.time.DateTime;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.Assert;
 import org.junit.Before;
@@ -33,6 +36,8 @@ import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.web.client.RestOperations;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,6 +47,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.regex.Pattern;
 
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.times;
@@ -365,6 +371,40 @@ public class GitHubCommitV3Test {
         Assert.assertEquals(2, parentShas.size());
     }
 
+    @Test
+    public void testRejectUnregisteredRepoCommitFail() throws Exception {
+        Collector collector = gitHubCommitV3.getCollector();
+        String collectorId = createGuid("0123456789abcdef");
+        collector.setId(new ObjectId(collectorId));
+
+        when(collectorService.createCollector(anyObject())).thenReturn(collector);
+        when(gitHubCommitV3.getCollectorItemRepository().findRepoByUrlAndBranch(anyObject(), anyString(), anyString())).thenReturn(null);
+
+        JSONObject commitPayload = getData("GithubWebhook/commit-payload-fail.json");
+
+        String acutalResponse = gitHubCommitV3.process(commitPayload);
+        String expectedResponse = "Repo: <https://github.com/chzhanpeng/WebhookTest> Branch: <dev> is not registered in Hygieia";
+        Assert.assertEquals(expectedResponse, acutalResponse);
+    }
+
+    @Test
+    public void testRejectUnregisteredRepoCommitPass() throws Exception {
+        Collector collector = gitHubCommitV3.getCollector();
+        String collectorId = createGuid("0123456789abcdef");
+        collector.setId(new ObjectId(collectorId));
+
+        CollectorItem repo = makeCollectorItem("https://github.com/chzhanpeng/WebhookTest", "master");
+
+        when(collectorService.createCollector(anyObject())).thenReturn(collector);
+        when(gitHubCommitV3.getCollectorItemRepository().findRepoByUrlAndBranch(anyObject(), anyString(), anyString(), anyBoolean())).thenReturn(repo);
+
+        JSONObject commitPayload = getData("GithubWebhook/commit-payload.json");
+
+        String acutalResponse = gitHubCommitV3.process(commitPayload);
+        String expectedResponse = "Commits Processed Successfully";
+        Assert.assertEquals(expectedResponse, acutalResponse);
+    }
+
     private static String createGuid(String hex) {
         byte[]  bytes = new byte[12];
         new Random().nextBytes(bytes);
@@ -482,5 +522,23 @@ public class GitHubCommitV3Test {
         githubEnterpriseHosts.add("github.com");
 
         return webHookSettings;
+    }
+
+    private CollectorItem makeCollectorItem(String repoUrl, String branch) {
+        Collector collector = gitHubCommitV3.getCollector();
+        CollectorItem collectorItem = new CollectorItem();
+        collectorItem.setCollectorId(collector.getId());
+        collectorItem.setEnabled(true);
+        collectorItem.setPushed(true);
+        collectorItem.setLastUpdated(System.currentTimeMillis());
+        collectorItem.getOptions().put("url", repoUrl);
+        collectorItem.getOptions().put("branch", branch);
+        return collectorItem;
+    }
+
+    private JSONObject getData(String filename) throws Exception {
+        String data = IOUtils.toString(Resources.getResource(filename));
+        JSONParser parser = new JSONParser();
+        return (JSONObject) parser.parse(data);
     }
 }
