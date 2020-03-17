@@ -5,7 +5,10 @@ import com.capitalone.dashboard.repository.MaturityModelRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class MaturityModelServiceImpl implements MaturityModelService {
@@ -25,8 +28,8 @@ public class MaturityModelServiceImpl implements MaturityModelService {
 
     @Override
     public List<String> getProfiles() {
-        return maturityModelRepository.getAllProfiles();
-
+        List<MaturityModel> maturityModels = Optional.ofNullable(maturityModelRepository.getAllProfiles()).orElse(Collections.emptyList());
+        return maturityModels.stream().map(MaturityModel::getProfile).collect(Collectors.toList());
     }
 
 }
