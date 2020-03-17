@@ -2,7 +2,6 @@ package com.capitalone.dashboard.auth.apitoken;
 
 import com.capitalone.dashboard.auth.AuthenticationResultHandler;
 import com.capitalone.dashboard.model.AuthType;
-import com.google.common.base.CharMatcher;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
