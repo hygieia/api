@@ -60,7 +60,7 @@ public class ApiTokenRequestFilter extends AbstractAuthenticationProcessingFilte
 
         String authHeader = request.getHeader("Authorization");
 
-        String encodedAuthStr = CharMatcher.WHITESPACE.matchesAnyOf(authHeader) ? authHeader.substring(authHeader.indexOf(" "), authHeader.length()) : "";
+        String encodedAuthStr = authHeader.substring(authHeader.indexOf(" "), authHeader.length());
         byte[] encodedAuthbytes = encodedAuthStr.getBytes();
         String decodedAuthStr = new String(Base64.decodeBase64(encodedAuthbytes));
         String decodedAuthJson = decodedAuthStr.substring(decodedAuthStr.indexOf(":") + 1, decodedAuthStr.length());
