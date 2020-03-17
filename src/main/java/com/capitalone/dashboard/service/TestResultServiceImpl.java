@@ -242,6 +242,9 @@ public class TestResultServiceImpl implements TestResultService {
 
         try {
             cucumberFeature = decodeJsonPayload(CucumberJsonReport.Feature.class , request);
+            if(cucumberFeature.getId() == null || cucumberFeature.getKeyword() == null || cucumberFeature.getName() == null || cucumberFeature.getElements() == null) {
+                throw new HygieiaException("TestResult is not a valid json.", HygieiaException.JSON_FORMAT_ERROR);
+            }
         }catch (Exception ex){
             throw new HygieiaException("TestResult is not a valid json.", HygieiaException.JSON_FORMAT_ERROR);
         }
