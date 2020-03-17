@@ -424,13 +424,16 @@ public class SonarQubeHookServiceImpl implements SonarQubeHookService {
                 if (eSonarProject.getProjectName().equals((String) collectorItem.getOptions().get("projectName"))) {
                     collectorItem.getOptions().put("projectId", eSonarProject.getProjectId());
                     collectorItem.getOptions().put("instanceUrl", eSonarProject.getInstanceUrl());
+                    collectorItem.setLastUpdated(System.currentTimeMillis());
                     if (null != compIndex) {
                         compIndex.getAndIncrement();
                     }
                 }
                 codeQualityCollectorItems.add(collectorItem);
             });
-            component.setCollectorItems(Collections.singletonMap(CollectorType.CodeQuality, codeQualityCollectorItems));
+            Map<CollectorType, List<CollectorItem>> collectorItems = component.getCollectorItems();
+            collectorItems.put(CollectorType.CodeQuality, codeQualityCollectorItems);
+            component.setCollectorItems(collectorItems);
             if (isSync) {
                 componentRepository.save(component);
             }

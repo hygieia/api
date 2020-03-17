@@ -89,6 +89,10 @@ public class GitHubCommitV3 extends GitHubV3 {
             branch = ref.replace("refs/heads/", "");
         }
 
+        if(!isRegistered(repoUrl, branch)) {
+            return "Repo: <" + repoUrl + "> Branch: <" + branch + "> is not registered in Hygieia";
+        }
+
         Object senderObj = jsonObject.get("sender");
         String senderLogin = restClient.getString(senderObj,"login");
         String senderLDAPDN = restClient.getString(senderObj,"ldap_dn");
@@ -381,4 +385,5 @@ public class GitHubCommitV3 extends GitHubV3 {
         query.put("variables", variableJSON.toString());
         return query;
     }
+
 }

@@ -167,4 +167,13 @@ public abstract class GitHubV3 {
             throw new HygieiaException("Error in GraphQL query:" + errors.toJSONString(), HygieiaException.JSON_FORMAT_ERROR);
         }
     }
+
+    protected boolean isRegistered(String repoUrl, String branch) throws HygieiaException{
+        Collector col = collectorService.createCollector(getCollector());
+        if (col == null)
+            throw new HygieiaException("Failed creating collector.", HygieiaException.COLLECTOR_CREATE_ERROR);
+
+        CollectorItem existingItem = getCollectorItemRepository().findRepoByUrlAndBranch(col.getId(), repoUrl, branch, true);
+        return existingItem != null;
+    }
 }
