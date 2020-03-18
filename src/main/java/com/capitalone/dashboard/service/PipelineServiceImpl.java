@@ -1,5 +1,6 @@
 package com.capitalone.dashboard.service;
 
+import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.model.CollectorItem;
 import com.capitalone.dashboard.model.Dashboard;
@@ -48,7 +49,7 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     @Override
-    public Iterable<PipelineResponse> search(PipelineSearchRequest searchRequest) {
+    public Iterable<PipelineResponse> search(PipelineSearchRequest searchRequest) throws HygieiaException {
         List<PipelineResponse> pipelineResponses = new ArrayList<>();
         for(ObjectId collectorItemId : searchRequest.getCollectorItemId()){
             Pipeline pipeline = getOrCreatePipeline(collectorItemId);
@@ -67,7 +68,7 @@ public class PipelineServiceImpl implements PipelineService {
         return pipeline;
     }
 
-    private PipelineResponse buildPipelineResponse(Pipeline pipeline, Long beginDate, Long endDate){
+    private PipelineResponse buildPipelineResponse(Pipeline pipeline, Long beginDate, Long endDate) throws HygieiaException {
         Long lowerBound = beginDate;
         if(beginDate == null){
             Calendar cal = new GregorianCalendar();
@@ -80,7 +81,14 @@ public class PipelineServiceImpl implements PipelineService {
          * get the collector item and dashboard
          */
         CollectorItem dashboardCollectorItem = collectorItemRepository.findOne(pipeline.getCollectorItemId());
-        Dashboard dashboard = dashboardRepository.findOne(new ObjectId((String)dashboardCollectorItem.getOptions().get("dashboardId")));
+        if(dashboardCollectorItem.getOptions().get("dashboardId") == null) {
+            throw new HygieiaException(" Collector Item: " + dashboardCollectorItem.getId() + " is not associated to a dashboard. ", HygieiaException.BAD_DATA);
+        }
+        String dashboardId = (String) dashboardCollectorItem.getOptions().get("dashboardId");
+        Dashboard dashboard = dashboardRepository.findOne(new ObjectId(dashboardId));
+        if(dashboard == null) {
+            throw new HygieiaException(" Dashboard " + dashboardId + " is not found for collectorItem: " + dashboardCollectorItem.getId() + " ", HygieiaException.BAD_DATA);
+        }
         PipelineResponse pipelineResponse = new PipelineResponse();
         pipelineResponse.setCollectorItemId(dashboardCollectorItem.getId());
         pipelineResponse.setProdStage(PipelineUtils.getProdStage(dashboard));
