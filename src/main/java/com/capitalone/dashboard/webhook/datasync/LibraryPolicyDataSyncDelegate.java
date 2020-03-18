@@ -37,6 +37,7 @@ public class LibraryPolicyDataSyncDelegate {
         if (CollectionUtils.isEmpty(collectorItems)) return dataSyncUtils.warn(collectorName,"No collector-items found");
         int componentCount = 0;
         int collectorItemsCount = 0;
+        List<String> componentIds = new ArrayList<>();
         for (int idx = 0; idx <= collectorItems.size(); idx++) {
             if(idx == collectorItems.size()) break;
             Iterable<CollectorItem> suspects = dataSyncUtils.findAllCollectorItemsByOptions(collectorItems.get(idx), collector);
@@ -59,6 +60,9 @@ public class LibraryPolicyDataSyncDelegate {
                         List<CollectorItem> suspectCollectorItems = dataSyncUtils.deleteCollectorItems(collectorItems,collectorItem,suspects);
                         collectorItemsCount += suspectCollectorItems.size();
                         if (CollectionUtils.isEmpty(components)) continue;
+                        components.forEach(component -> {
+                            componentIds.add(component.getId().toString());
+                        });
                         componentCount += components.size();
                         dataSyncUtils.updateComponents(collector,components,collectorItem,CollectorType.LibraryPolicy);
                     } else {
@@ -69,6 +73,6 @@ public class LibraryPolicyDataSyncDelegate {
                 }
 
         }
-        return new DataSyncResponse(componentCount,collectorItemsCount,null,null,collectorName + " refresh Successful==>> Updated " + componentCount + " components and " + collectorItemsCount + " collectorItems.");
+        return new DataSyncResponse(componentIds,collectorItemsCount,collectorName + " refresh Successful==>> Updated " + componentCount + " components and " + collectorItemsCount + " collectorItems.");
     }
 }

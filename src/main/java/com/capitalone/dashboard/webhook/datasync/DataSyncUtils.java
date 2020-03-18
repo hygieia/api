@@ -124,6 +124,6 @@ public class DataSyncUtils {
     }
 
     public DataSyncResponse warn(String collectorName, String message){
-        return new DataSyncResponse(ZERO,ZERO,new ArrayList<>(),new ArrayList<>(),message+" "+collectorName);
+        return new DataSyncResponse(new ArrayList<>(),ZERO,message+" "+collectorName);
     }
 }

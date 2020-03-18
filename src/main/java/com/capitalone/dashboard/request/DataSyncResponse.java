@@ -8,26 +8,17 @@ public class DataSyncResponse {
     int componentCount;
     List<String> components;
     int collectorItemCount;
-    List<CollectorItem> collectorItems;
     String message;
 
-    public DataSyncResponse(int componentCount, int collectorItemCount, List<String> components,List<CollectorItem> collectorItems,String message){
-        this.collectorItemCount = collectorItemCount;
-        this.componentCount = componentCount;
-        this.collectorItems = collectorItems;
+    public DataSyncResponse(List<String> components,int collectorItemCount,String message){
         this.components = components;
+        this.collectorItemCount = collectorItemCount;
         this.message = message;
     }
 
-    public String getMessage() {
-        return message;
-    }
 
-    public void setMessage(String message) {
-        this.message = message;
-    }
     public int getComponentCount() {
-        return componentCount;
+        return getComponents().size();
     }
 
     public void setComponentCount(int componentCount) {
@@ -50,12 +41,12 @@ public class DataSyncResponse {
         this.collectorItemCount = collectorItemCount;
     }
 
-    public List<CollectorItem> getCollectorItems() {
-        return collectorItems;
+    public String getMessage() {
+        return message;
     }
 
-    public void setCollectorItems(List<CollectorItem> collectorItems) {
-        this.collectorItems = collectorItems;
+    public void setMessage(String message) {
+        this.message = message;
     }
 
 }

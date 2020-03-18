@@ -37,7 +37,6 @@ public class GithubDataSyncDelegate {
         int componentCount = ZERO;
         int collectorItemsCount = ZERO;
         List<String> componentIds = new ArrayList<>();
-        List<CollectorItem> deletedCollectorItems = new ArrayList<>();
         for (int idx = ZERO; idx <= collectorItems.size(); idx++) {
             if (idx == collectorItems.size()) break;
             Iterable<CollectorItem> suspects = dataSyncUtils.findAllCollectorItemsByOptions(collectorItems.get(idx), collector);
@@ -72,6 +71,6 @@ public class GithubDataSyncDelegate {
                 componentCount = dataSyncUtils.clearDuplicateCollectorItemsAndUpdateComponents(collectorItems, componentCount, suspects, components, collector, CollectorType.SCM);
             }
         }
-        return new DataSyncResponse(componentCount, collectorItemsCount, componentIds, deletedCollectorItems, collectorName + " refresh Successful==>> Updated " + componentCount + " components and " + collectorItemsCount + " collectorItems.");
+        return new DataSyncResponse(componentIds, collectorItemsCount,collectorName + " refresh Successful==>> Updated " + componentCount + " components and " + collectorItemsCount + " collectorItems.");
     }
 }
