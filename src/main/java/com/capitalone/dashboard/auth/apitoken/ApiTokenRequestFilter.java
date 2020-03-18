@@ -2,6 +2,7 @@ package com.capitalone.dashboard.auth.apitoken;
 
 import com.capitalone.dashboard.auth.AuthenticationResultHandler;
 import com.capitalone.dashboard.model.AuthType;
+import com.google.common.base.CharMatcher;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
@@ -59,7 +60,7 @@ public class ApiTokenRequestFilter extends AbstractAuthenticationProcessingFilte
 
         String authHeader = request.getHeader("Authorization");
 
-        String encodedAuthStr = authHeader.substring(authHeader.indexOf(" "), authHeader.length());
+        String encodedAuthStr = CharMatcher.WHITESPACE.matchesAnyOf(authHeader) ? authHeader.substring(authHeader.indexOf(" "), authHeader.length()) : authHeader;
         byte[] encodedAuthbytes = encodedAuthStr.getBytes();
         String decodedAuthStr = new String(Base64.decodeBase64(encodedAuthbytes));
         String decodedAuthJson = decodedAuthStr.substring(decodedAuthStr.indexOf(":") + 1, decodedAuthStr.length());
