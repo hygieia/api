@@ -1,5 +1,6 @@
 package com.capitalone.dashboard.settings;
 
+import com.capitalone.dashboard.webhook.settings.DataSyncSettings;
 import com.capitalone.dashboard.webhook.settings.GithubSyncSettings;
 import com.capitalone.dashboard.webhook.settings.SonarDataSyncSettings;
 import com.capitalone.dashboard.webhook.settings.WebHookSettings;
@@ -35,6 +36,7 @@ public class ApiSettings {
 
     private GithubSyncSettings githubSyncSettings = new GithubSyncSettings();
     private SonarDataSyncSettings sonarDataSyncSettings = new SonarDataSyncSettings();
+    private DataSyncSettings dataSyncSettings = new DataSyncSettings();
 
     private Map<String,String> functional;
     private Map<String,String> performance;
@@ -148,6 +150,14 @@ public class ApiSettings {
 
     public void setSonarDataSyncSettings(SonarDataSyncSettings sonarDataSyncSettings) {
         this.sonarDataSyncSettings = sonarDataSyncSettings;
+    }
+
+    public DataSyncSettings getDataSyncSettings() {
+        return dataSyncSettings;
+    }
+
+    public void setDataSyncSettings(DataSyncSettings dataSyncSettings) {
+        this.dataSyncSettings = dataSyncSettings;
     }
 
 }
