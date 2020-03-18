@@ -9,6 +9,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 
 import javax.servlet.http.HttpServletRequest;
@@ -69,4 +70,23 @@ public class ApiTokenRequestFilterTest {
         assertEquals(AuthType.APIKEY, authentication.getDetails());
     }
 
+    @Test
+    public void test_invalidAuthHeader_throwException() {
+        when(request.getMethod()).thenReturn("POST");
+        String principal = "somesys";
+        String credentials = "itWuQ7y5zVKX1n+k8trjCNnx99o7AXbO";
+        String authHdrInvalid = "BasicUGFzc3dvcmRJc0F1dGhUb2tlbjp7ImFwaUtleSI6Iml0V3VRN3k1elZLWDFuK2s4dHJqQ05ueDk5bzdBWGJPIn0K";
+        when(request.getHeader("apiUser")).thenReturn(principal);
+        when(request.getHeader("Authorization")).thenReturn(authHdrInvalid);
+        Authentication auth = new ApiTokenAuthenticationToken(principal, authHdrInvalid);
+        ArgumentCaptor<Authentication> argumentCaptor = ArgumentCaptor.forClass(Authentication.class);
+        when(manager.authenticate(argumentCaptor.capture())).thenReturn(auth);
+        boolean isException = Boolean.FALSE;
+        try{
+            filter.attemptAuthentication(request, response);
+        } catch (AuthenticationServiceException e) {
+            isException = Boolean.TRUE;
+        }
+        assertEquals(isException, Boolean.TRUE);
+    }
 }
