@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.capitalone.dashboard.misc.HygieiaException;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
@@ -106,7 +107,7 @@ public class DynamicPipelineServiceImpl implements PipelineService {
 	}
 	
 	@Override
-	public Iterable<PipelineResponse> search(PipelineSearchRequest searchRequest) {
+	public Iterable<PipelineResponse> search(PipelineSearchRequest searchRequest) throws HygieiaException {
         //sets the lower and upper bound for the prod bucket's commits.  uses constant for lower bound limit and today as default for upper bound
         Long lowerBound = searchRequest.getBeginDate();
         //if(lowerBound == null){
@@ -140,7 +141,7 @@ public class DynamicPipelineServiceImpl implements PipelineService {
     }
     
     // Creates the response that is returned to the client
-    private PipelineResponse buildPipelineResponse(Pipeline pipeline, Long lowerBound, Long upperBound){
+    private PipelineResponse buildPipelineResponse(Pipeline pipeline, Long lowerBound, Long upperBound) throws HygieiaException {
         /**
          * get the collector item and dashboard
          */
@@ -870,7 +871,7 @@ public class DynamicPipelineServiceImpl implements PipelineService {
      * @param pipeline
      * @return
      */
-    private PipelineResponseCommit applyStageTimestamps(PipelineResponseCommit commit, Dashboard dashboard, Pipeline pipeline,List<PipelineStage> pipelineStageList){
+    private PipelineResponseCommit applyStageTimestamps(PipelineResponseCommit commit, Dashboard dashboard, Pipeline pipeline,List<PipelineStage> pipelineStageList) throws HygieiaException {
         PipelineResponseCommit returnCommit = new PipelineResponseCommit(commit);
 
         for(PipelineStage systemStage : pipelineStageList) {
@@ -894,7 +895,7 @@ public class DynamicPipelineServiceImpl implements PipelineService {
      * @param stageType
      * @return
      */
-    private Map<String, PipelineCommit> findCommitsForStage(Dashboard dashboard, Pipeline pipeline, PipelineStage stage) {
+    private Map<String, PipelineCommit> findCommitsForStage(Dashboard dashboard, Pipeline pipeline, PipelineStage stage) throws HygieiaException {
     	 Map<String, PipelineCommit> commitMap = new HashMap<>();
     	
     	// The environment name including the pseudo environments "Build" and "Commit"
@@ -915,7 +916,7 @@ public class DynamicPipelineServiceImpl implements PipelineService {
      * @param stage current stage
      * @return a list of all commits as pipeline response commits that havent moved past the current stage
      */
-    public List<PipelineResponseCommit> findNotPropagatedCommits(Dashboard dashboard, Pipeline pipeline, PipelineStage stage,List<PipelineStage> pipelineStageList){
+    public List<PipelineResponseCommit> findNotPropagatedCommits(Dashboard dashboard, Pipeline pipeline, PipelineStage stage,List<PipelineStage> pipelineStageList) throws HygieiaException {
 
         Map<String, PipelineCommit> startingStage = findCommitsForStage(dashboard, pipeline, stage);
         List<PipelineResponseCommit> notPropagatedCommits = new ArrayList<>();
