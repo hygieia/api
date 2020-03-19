@@ -134,7 +134,7 @@ public class PipelineServiceImpl implements PipelineService {
      * @param dashboard
      * @return a list of deploy PipelineStages that are not mapped
      */
-    private List<PipelineStage> findUnmappedStages(Dashboard dashboard,List<PipelineStage> pipelineStageList){
+    private List<PipelineStage> findUnmappedStages(Dashboard dashboard,List<PipelineStage> pipelineStageList) throws HygieiaException {
         List<PipelineStage> unmappedStages = new ArrayList<>();
 
         Map<PipelineStage, String> stageToEnvironmentNameMap = PipelineUtils.getStageToEnvironmentNameMap(dashboard);
@@ -158,7 +158,7 @@ public class PipelineServiceImpl implements PipelineService {
      * @param dashboard
      * @return
      */
-    private Map<String, PipelineCommit> getCommitsAfterStage(PipelineStage stage, Pipeline pipeline, Dashboard dashboard,List<PipelineStage> pipelineStageList,Map<String,String> orderMap){
+    private Map<String, PipelineCommit> getCommitsAfterStage(PipelineStage stage, Pipeline pipeline, Dashboard dashboard,List<PipelineStage> pipelineStageList,Map<String,String> orderMap) throws HygieiaException {
         Map<String, PipelineCommit> unionOfAllSets = new HashMap<>();
         // get key(ordinal) for stage name
         List<String> list = getKeysByValue(orderMap,stage.getName());
@@ -202,7 +202,7 @@ public class PipelineServiceImpl implements PipelineService {
      * @param pipeline
      * @return
      */
-    private PipelineResponseCommit applyStageTimestamps(PipelineResponseCommit commit, Dashboard dashboard, Pipeline pipeline,List<PipelineStage> pipelineStageList){
+    private PipelineResponseCommit applyStageTimestamps(PipelineResponseCommit commit, Dashboard dashboard, Pipeline pipeline,List<PipelineStage> pipelineStageList) throws HygieiaException {
         PipelineResponseCommit returnCommit = new PipelineResponseCommit(commit);
 
         for(PipelineStage systemStage : pipelineStageList) {
@@ -226,7 +226,7 @@ public class PipelineServiceImpl implements PipelineService {
      * @param stage
      * @return
      */
-    private Map<String, PipelineCommit> findCommitsForStage(Dashboard dashboard, Pipeline pipeline, PipelineStage stage) {
+    private Map<String, PipelineCommit> findCommitsForStage(Dashboard dashboard, Pipeline pipeline, PipelineStage stage) throws HygieiaException {
         Map<String, PipelineCommit> commitMap = new HashMap<>();
 
         String pseudoEnvironmentName =
@@ -246,7 +246,7 @@ public class PipelineServiceImpl implements PipelineService {
      * @param stage current stage
      * @return a list of all commits as pipeline response commits that havent moved past the current stage
      */
-    public List<PipelineResponseCommit> findNotPropagatedCommits(Dashboard dashboard, Pipeline pipeline, PipelineStage stage,List<PipelineStage> pipelineStageList,Map<String,String> orderMap){
+    public List<PipelineResponseCommit> findNotPropagatedCommits(Dashboard dashboard, Pipeline pipeline, PipelineStage stage,List<PipelineStage> pipelineStageList,Map<String,String> orderMap) throws HygieiaException {
         Map<String, PipelineCommit> startingStage = findCommitsForStage(dashboard, pipeline, stage);
         Map<String, PipelineCommit> commitsInLaterStages = getCommitsAfterStage(stage, pipeline, dashboard,pipelineStageList,orderMap);
 
