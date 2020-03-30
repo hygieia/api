@@ -122,6 +122,19 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
+    public Iterable<Dashboard> allTemplate(String template){
+        Iterable<Dashboard> templateDashboards = dashboardRepository.findByTemplate(template);
+        for(Dashboard dashboard: templateDashboards) {
+            String appName = dashboard.getConfigurationItemBusServName();
+            String compName = dashboard.getConfigurationItemBusAppName();
+
+            setAppAndComponentNameToDashboard(dashboard, appName, compName);
+        }
+        return templateDashboards;
+    }
+
+
+    @Override
     public Dashboard get(ObjectId id) {
         Dashboard dashboard = dashboardRepository.findOne(id);
         String appName = dashboard.getConfigurationItemBusServName();
@@ -308,13 +321,20 @@ public class DashboardServiceImpl implements DashboardService {
         //Second: remove all the collectorItem association of the Collector Type  that came in
         HashSet<CollectorType> incomingTypes = new HashSet<>();
         HashMap<ObjectId, CollectorItem> toSaveCollectorItems = new HashMap<>();
+        HashMap<ObjectId, CollectorItem> incomingCollectorItems = new HashMap<>();
+        ObjectId currentCollectorId = null;
+        Collector collector = null;
         for (ObjectId collectorItemId : collectorItemIds) {
             CollectorItem collectorItem = collectorItemRepository.findOne(collectorItemId);
+            incomingCollectorItems.put(collectorItemId, collectorItem);
             if(collectorItem == null) {
                 LOG.warn(METHOD_NAME + " Bad CollectorItemId passed in the request : " + collectorItemId);
                 continue;
             }
-            Collector collector = collectorRepository.findOne(collectorItem.getCollectorId());
+            if(collector == null || currentCollectorId != collectorItem.getCollectorId()) {
+                collector = collectorRepository.findOne(collectorItem.getCollectorId());
+                currentCollectorId = collector.getId();
+            }
             if (!incomingTypes.contains(collector.getCollectorType())) {
                 incomingTypes.add(collector.getCollectorType());
                 List<CollectorItem> cItems = component.getCollectorItems(collector.getCollectorType());
@@ -347,9 +367,11 @@ public class DashboardServiceImpl implements DashboardService {
             }
         }
 
+        currentCollectorId = null;
+        collector = null;
         //Last step: add collector items that came in
         for (ObjectId collectorItemId : collectorItemIds) {
-            CollectorItem collectorItem = collectorItemRepository.findOne(collectorItemId);
+            CollectorItem collectorItem = incomingCollectorItems.get(collectorItemId);
             if(collectorItem == null) {
                 LOG.warn(METHOD_NAME + " Bad CollectorItemId passed in the incoming request : " + collectorItemId);
                 continue;
@@ -361,23 +383,25 @@ public class DashboardServiceImpl implements DashboardService {
                     || compareMaps(collectorItem.getOptions(), existingCollectorItem.getOptions()) ) {
                 collectorItem.setLastUpdated(System.currentTimeMillis());
             }
-            Collector collector = collectorRepository.findOne(collectorItem.getCollectorId());
+            if(collector == null || currentCollectorId != collectorItem.getCollectorId()) {
+                collector = collectorRepository.findOne(collectorItem.getCollectorId());
+                currentCollectorId = collector.getId();
+            }
             component.addCollectorItem(collector.getCollectorType(), collectorItem);
             toSaveCollectorItems.put(collectorItemId, collectorItem);
             // set transient collector property
             collectorItem.setCollector(collector);
         }
 
-        Set<CollectorItem> deleteSet = new HashSet<>();
-        for (ObjectId id : toSaveCollectorItems.keySet()) {
-            deleteSet.add(toSaveCollectorItems.get(id));
-        }
-        collectorItemRepository.save(deleteSet);
+        collectorItemRepository.save(new HashSet<>(toSaveCollectorItems.values()));
         if(save){
             componentRepository.save(component);
         }
     }
 
+    /*
+        Return true if two maps are different
+     */
     protected boolean compareMaps (Map<String, Object> map1, Map<String, Object> map2) {
         if (map1 == null || map2 == null)
             return true;
@@ -778,8 +802,10 @@ public class DashboardServiceImpl implements DashboardService {
     /**
      * Get all dashboards filtered by title and Pageable ( default page size = 10)
      *
-     * @param title, pageable
-     * @return Page<Dashboard>
+     * @param title Title of Dashboard
+     * @param type Type of Dashboard
+     * @param pageable Pagination Object
+     * @return Page<Dashboard> Page of Dashboards
      */
     @Override
     public Page<Dashboard> getDashboardByTitleWithFilter(String title, String type, Pageable pageable) {
@@ -796,8 +822,9 @@ public class DashboardServiceImpl implements DashboardService {
     /**
      * Get count of all dashboards filtered by title
      *
-     * @param title
-     * @return Integer
+     * @param title Title of Dashboard
+     * @param type Type of Dashboard
+     * @return Integer Count of Dashboards
      */
     @Override
     public Integer getAllDashboardsByTitleCount(String title, String type) {
@@ -813,7 +840,7 @@ public class DashboardServiceImpl implements DashboardService {
     /**
      * Get count of all dashboards, use dashboard type if supplied
      *
-     * @param
+     * @param type Type of the Dashboard
      * @return long
      */
     @Override
@@ -828,6 +855,7 @@ public class DashboardServiceImpl implements DashboardService {
     /**
      * Get all dashboards with page size (default = 10)
      *
+     * @param type Type of Dashboard
      * @param page size
      * @return List of dashboards
      */
@@ -842,7 +870,6 @@ public class DashboardServiceImpl implements DashboardService {
     /**
      * Get page size
      *
-     * @param
      * @return Integer
      */
     @Override

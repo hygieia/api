@@ -89,6 +89,10 @@ public class GitHubCommitV3 extends GitHubV3 {
             branch = ref.replace("refs/heads/", "");
         }
 
+        if(!isRegistered(repoUrl, branch)) {
+            return "Repo: <" + repoUrl + "> Branch: <" + branch + "> is not registered in Hygieia";
+        }
+
         Object senderObj = jsonObject.get("sender");
         String senderLogin = restClient.getString(senderObj,"login");
         String senderLDAPDN = restClient.getString(senderObj,"ldap_dn");
@@ -247,16 +251,12 @@ public class GitHubCommitV3 extends GitHubV3 {
     }
 
     private boolean checkCommitsWithPullNumber(List<Commit> commitsWithPullNumber) {
-        if (!CollectionUtils.isEmpty(commitsWithPullNumber)
-                && (commitsWithPullNumber.size() == 1)) { return true; }
-
-        return false;
+        return !CollectionUtils.isEmpty(commitsWithPullNumber)
+                && (commitsWithPullNumber.size() == 1);
     }
 
     private boolean checkCommitsListForSettingPullNumber(List<Commit> commitsList) {
-        if (!CollectionUtils.isEmpty(commitsList) && (commitsList.size() > 1)) { return true; }
-
-        return false;
+        return !CollectionUtils.isEmpty(commitsList) && (commitsList.size() > 1);
     }
 
     protected void setCommitPullNumber (Commit commit) {
@@ -293,10 +293,18 @@ public class GitHubCommitV3 extends GitHubV3 {
         JSONObject postBody = getQuery(gitHubParsed, branch, timeStamp.toString(), GraphQLQuery.COMMITS_GRAPHQL);
 
         ResponseEntity<String> response = null;
-        try {
-            response = restClient.makeRestCallPostGraphQL(gitHubParsed.getGraphQLUrl(), "token", token, postBody);
-        } catch (Exception e) {
-            throw new HygieiaException(e);
+        int retryCount = 0;
+        while(true) {
+            try {
+                response = restClient.makeRestCallPost(gitHubParsed.getGraphQLUrl(), "token", token, postBody);
+                break;
+            } catch (Exception e) {
+                retryCount++;
+                if(retryCount > apiSettings.getWebHook().getGitHub().getMaxRetries()) {
+                    LOG.error("Unable to get COMMIT from " + gitHubParsed.getUrl() + " after " + apiSettings.getWebHook().getGitHub().getMaxRetries() + " tries!");
+                    throw new HygieiaException(e);
+                }
+            }
         }
 
         JSONObject responseJsonObject = restClient.parseAsObject(response);
@@ -377,4 +385,5 @@ public class GitHubCommitV3 extends GitHubV3 {
         query.put("variables", variableJSON.toString());
         return query;
     }
+
 }

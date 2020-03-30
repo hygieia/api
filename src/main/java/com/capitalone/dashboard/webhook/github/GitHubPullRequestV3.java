@@ -1,5 +1,6 @@
 package com.capitalone.dashboard.webhook.github;
 
+import com.capitalone.dashboard.model.PullRequestEvent;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.client.RestClient;
@@ -28,6 +29,7 @@ import org.json.simple.parser.ParseException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import java.net.MalformedURLException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -64,6 +66,8 @@ public class GitHubPullRequestV3 extends GitHubV3 {
     @Override
     public String process(JSONObject prJsonObject) throws MalformedURLException, HygieiaException, ParseException {
         Object pullRequestObject = restClient.getAsObject(prJsonObject, "pull_request");
+        String event = restClient.getString(prJsonObject,"action");
+        if(!isValidEvent(event)) return "Pull Request data skipped due to event - "+event;
         if (pullRequestObject == null) return "Pull Request Data Not Available";
 
         int prNumber = restClient.getInteger(pullRequestObject,"number");
@@ -109,10 +113,19 @@ public class GitHubPullRequestV3 extends GitHubV3 {
         }
 
         ResponseEntity<String> response = null;
-        try {
-            response = restClient.makeRestCallPostGraphQL(gitHubParsed.getGraphQLUrl(), "token", token, postBody);
-        } catch (Exception e) {
-            throw new HygieiaException(e);
+
+        int retryCount = 0;
+        while(true) {
+            try {
+                response = restClient.makeRestCallPost(gitHubParsed.getGraphQLUrl(), "token", token, postBody);
+                break;
+            } catch (Exception e) {
+                retryCount++;
+                if(retryCount > gitHubWebHookSettings.getMaxRetries()) {
+                    LOG.error("Unable to get PR from " + repoUrl + " after " + gitHubWebHookSettings.getMaxRetries() + " tries!");
+                    throw new HygieiaException(e);
+                }
+            }
         }
 
         JSONObject responseJsonObject = restClient.parseAsObject(response);
@@ -127,6 +140,10 @@ public class GitHubPullRequestV3 extends GitHubV3 {
 
         Object base = restClient.getAsObject(pullRequestObject, "base");
         String branch = restClient.getString(base, "ref");
+
+        if(!isRegistered(repoUrl, branch)) {
+            return "Repo: <" + repoUrl + "> Branch: <" + branch + "> is not registered in Hygieia";
+        }
 
         GitRequest pull = buildGitRequestFromPayload(repoUrl, branch, pullRequestObject);
 
@@ -519,4 +536,14 @@ public class GitHubPullRequestV3 extends GitHubV3 {
     private long getTimeStampMills(String dateTime) {
         return StringUtils.isEmpty(dateTime) ? 0 : new DateTime(dateTime).getMillis();
     }
+
+    private boolean isValidEvent(String action) {
+        List<PullRequestEvent> validPullRequestEvents = new ArrayList<>();
+        Collections.addAll(validPullRequestEvents,PullRequestEvent.Opened,PullRequestEvent.Edited,PullRequestEvent.Closed,
+                PullRequestEvent.Reopened,
+                PullRequestEvent.Merged,
+                PullRequestEvent.Synchronize);
+        return validPullRequestEvents.contains(PullRequestEvent.fromString(action));
+    }
+
 }

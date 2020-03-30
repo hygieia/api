@@ -119,6 +119,8 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
             Set<Owner> uniqueOwners = new HashSet<Owner>(validOwners);
             uniqueOwners.addAll(dashboard.getOwners());
             dashboard.setOwners(new ArrayList<Owner>(uniqueOwners));
+            dashboard.setConfigurationItemBusAppName(request.getMetaData().getBusinessApplication());
+            dashboard.setConfigurationItemBusServName(request.getMetaData().getBusinessService());
             if (!isUpdate) {
                 throw new HygieiaException("Dashboard " + dashboard.getTitle() + " (id =" + dashboard.getId() + ") already exists", HygieiaException.DUPLICATE_DATA);
             }
@@ -136,26 +138,15 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
             dashboard = dashboardService.create(requestToDashboard(request));
         }
 
-        List<DashboardRemoteRequest.Entry> entries = request.getAllEntries();
-        Map<String, WidgetRequest> allWidgetRequests = generateRequestWidgetList( entries, dashboard);
-        Set<CollectorType> existingTypes = new HashSet<>();
         Set<CollectorType> incomingTypes = new HashSet<>();
+        List<DashboardRemoteRequest.Entry> entries = request.getAllEntries();
+        Map<String, WidgetRequest> allWidgetRequests = generateRequestWidgetList( entries, dashboard, incomingTypes);
         Component component = componentRepository.findOne(dashboard.getApplication().getComponents().get(0).getId());
-        component.getCollectorItems().forEach((item,val)->{
-            existingTypes.add(item);
-        });
+        Set<CollectorType> existingTypes = new HashSet<>(component.getCollectorItems().keySet());
 
         //adds widgets
         for (String key : allWidgetRequests.keySet()) {
             WidgetRequest widgetRequest = allWidgetRequests.get(key);
-
-            widgetRequest.getCollectorItemIds().forEach(id->{
-                CollectorItem  c = collectorItemRepository.findOne(id);
-                if(c!=null) {
-                    Collector collector = collectorRepository.findOne(c.getCollectorId());
-                    incomingTypes.add(collector.getCollectorType());
-                }
-            });
 
             component = dashboardService.associateCollectorToComponent(dashboard.getApplication().getComponents().get(0).getId(), widgetRequest.getCollectorItemIds(),component);
             Widget newWidget = widgetRequest.widget();
@@ -172,32 +163,35 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
             }
         }
 
-
-        Set<CollectorType> deleteSet = existingTypes.stream().filter(type->!incomingTypes.contains(type)).collect(Collectors.toSet());
-        for (CollectorType type: deleteSet) {
-            if(!type.equals(CollectorType.Artifact)){
-                component.getCollectorItems().remove(type);
+        // Delete collector item types that are not in the incoming types
+        Set<CollectorType> deleteSet = new HashSet<>();
+        for (CollectorType existingType : existingTypes) {
+            if (existingType==CollectorType.Audit) continue;    // Audit is used by NFRR, not present in incoming types
+            if (existingType==CollectorType.Artifact) continue; // right now we cannot fully trust BladeRunner on this,
+                                                                // as they do not have the parsing logic implemented
+            if (!incomingTypes.contains(existingType)) {
+                deleteSet.add(existingType);
+                component.getCollectorItems().remove(existingType);
             }
-            if(!codeAnalysisWidget(type)){
+        }
+
+        // Delete widgets that do not have collector items, except the quality widget (which may have more than one type)
+        for (CollectorType type: deleteSet) {
+            if (!DashboardServiceImpl.QualityWidget.contains(type)) {
                 dashboardService.deleteWidget(dashboard,type);
             }
         }
-        // delete code analysis widget
-        if(isQualityWidget(deleteSet)){
+        // delete code analysis widget if no collector item types is incoming
+        if (incomingTypes.stream().noneMatch(DashboardServiceImpl.QualityWidget::contains)) {
             dashboardService.deleteWidget(dashboard,CollectorType.CodeQuality);
         }
 
+        LOG.info("DashboardTitle=" + dashboard.getTitle() + ", ExistingTypes=" + existingTypes.size() +
+                " " + existingTypes + ", IncomingTypes=" + incomingTypes.size() + " " + incomingTypes
+                + ", deleteSet=" + deleteSet.size() + " " + deleteSet);
+
         componentRepository.save(component);
         return (dashboard != null) ? dashboardService.get(dashboard.getId()) : null;
-    }
-
-    private boolean isQualityWidget(Set<CollectorType> deleteSet) {
-        return DashboardServiceImpl.QualityWidget.stream().allMatch(deleteSet::contains);
-
-    }
-
-    private boolean codeAnalysisWidget(CollectorType collectorType){
-        return DashboardServiceImpl.QualityWidget.stream().filter(collectorType::equals).findAny().isPresent();
     }
 
     /**
@@ -207,18 +201,24 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
      * @return Map< String, WidgetRequest > list of Widgets to be created
      * @throws HygieiaException
      */
-    private  Map < String, WidgetRequest > generateRequestWidgetList( List < DashboardRemoteRequest.Entry > entries, Dashboard dashboard ) throws HygieiaException {
+    private  Map < String, WidgetRequest > generateRequestWidgetList( List < DashboardRemoteRequest.Entry > entries, Dashboard dashboard, Set<CollectorType> incomingTypes) throws HygieiaException {
         Map< String, WidgetRequest > allWidgetRequests = new HashMap<>();
+        List< Collector > collectors = new ArrayList<>();
+        Collector collector = null;
         //builds widgets
         for ( DashboardRemoteRequest.Entry entry : entries ) {
-
-            List < Collector > collectors = collectorRepository.findByCollectorTypeAndName( entry.getType(), entry.getToolName() );
-            if ( CollectionUtils.isEmpty( collectors ) ) {
-                throw new HygieiaException( entry.getToolName() + " collector is not available.", HygieiaException.BAD_DATA );
+            // get collector from database
+            if( collector == null || collector.getCollectorType() != entry.getType() ||
+                    !StringUtils.equalsIgnoreCase(collector.getName(), entry.getToolName()) ) {
+                collectors = collectorRepository.findByCollectorTypeAndName( entry.getType(), entry.getToolName() );
+                if ( CollectionUtils.isEmpty( collectors ) ) {
+                    throw new HygieiaException( entry.getToolName() + " collector is not available.", HygieiaException.BAD_DATA );
+                }
+                collector = collectors.get( 0 );
+                incomingTypes.add(collector.getCollectorType());
             }
-            Collector collector = collectors.get( 0 );
-            WidgetRequest widgetRequest = allWidgetRequests.get( entry.getWidgetName() );
 
+            WidgetRequest widgetRequest = allWidgetRequests.get( entry.getWidgetName() );
             if ( widgetRequest == null ) {
                 widgetRequest = entryToWidgetRequest( dashboard, entry, collector) ;
                 allWidgetRequests.put( entry.getWidgetName(), widgetRequest );
@@ -254,8 +254,7 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
     private CollectorItem entryToCollectorItem(DashboardRemoteRequest.Entry entry, Collector collector) throws HygieiaException {
         CollectorItem item = entry.toCollectorItem(collector);
         item.setCollectorId(collector.getId());
-
-        return collectorService.createCollectorItemSelectOptions(item,collector.getAllFields(), item.getOptions());
+        return collectorService.createCollectorItemSelectOptions(item, collector, collector.getAllFields(), item.getOptions());
     }
 
     /**

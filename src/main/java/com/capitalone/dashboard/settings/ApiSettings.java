@@ -1,10 +1,15 @@
 package com.capitalone.dashboard.settings;
 
+import com.capitalone.dashboard.webhook.settings.DataSyncSettings;
+import com.capitalone.dashboard.webhook.settings.GithubSyncSettings;
+import com.capitalone.dashboard.webhook.settings.SonarDataSyncSettings;
 import com.capitalone.dashboard.webhook.settings.WebHookSettings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+
+import java.util.Map;
 
 @Component
 @ConfigurationProperties
@@ -31,6 +36,38 @@ public class ApiSettings {
     private String capturePattern;
 
     private String ignoreEndPoint;
+
+    private GithubSyncSettings githubSyncSettings = new GithubSyncSettings();
+    private SonarDataSyncSettings sonarDataSyncSettings = new SonarDataSyncSettings();
+    private DataSyncSettings dataSyncSettings = new DataSyncSettings();
+
+    private Map<String,String> functional;
+    private Map<String,String> performance;
+    private String unit;
+
+    public Map<String, String> getFunctional() {
+        return functional;
+    }
+
+    public void setFunctional(Map<String, String> functional) {
+        this.functional = functional;
+    }
+
+    public Map<String, String> getPerformance() {
+        return performance;
+    }
+
+    public void setPerformance(Map<String, String> performance) {
+        this.performance = performance;
+    }
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = unit;
+    }
 
     public WebHookSettings getWebHook() {
         return webHook;
@@ -102,11 +139,40 @@ public class ApiSettings {
         this.capturePattern = capturePattern;
     }
 
-    public String getIgnoreEndPoint() { return ignoreEndPoint; }
+    public String getIgnoreEndPoint() {
+        return ignoreEndPoint;
+    }
 
-    public void setIgnoreEndPoint(String ignoreEndPoint) { this.ignoreEndPoint = ignoreEndPoint; }
+    public void setIgnoreEndPoint(String ignoreEndPoint) {
+        this.ignoreEndPoint = ignoreEndPoint;
+    }
 
     public boolean checkIgnoreEndPoint(String endPointURI) {
         return !StringUtils.isEmpty(getIgnoreEndPoint()) && getIgnoreEndPoint().equalsIgnoreCase(endPointURI);
     }
+
+    public GithubSyncSettings getGithubSyncSettings() {
+        return githubSyncSettings;
+    }
+
+    public void setGithubSyncSettings(GithubSyncSettings githubSyncSettings) {
+        this.githubSyncSettings = githubSyncSettings;
+    }
+
+    public SonarDataSyncSettings getSonarDataSyncSettings() {
+        return sonarDataSyncSettings;
+    }
+
+    public void setSonarDataSyncSettings(SonarDataSyncSettings sonarDataSyncSettings) {
+        this.sonarDataSyncSettings = sonarDataSyncSettings;
+    }
+
+    public DataSyncSettings getDataSyncSettings() {
+        return dataSyncSettings;
+    }
+
+    public void setDataSyncSettings(DataSyncSettings dataSyncSettings) {
+        this.dataSyncSettings = dataSyncSettings;
+    }
+
 }
