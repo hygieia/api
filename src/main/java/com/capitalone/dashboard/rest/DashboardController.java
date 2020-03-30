@@ -58,6 +58,11 @@ public class DashboardController {
         return dashboardService.all();
     }
 
+    @RequestMapping(value = "/dashboard/template/{template}", method = GET, produces = APPLICATION_JSON_VALUE)
+    public Iterable<Dashboard> dashboardsTemplate(@PathVariable("template") String template) {
+        return dashboardService.allTemplate(template);
+    }
+
     @RequestMapping(value = "/dashboard", method = POST,
             consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<Dashboard> createDashboard(@Valid @RequestBody DashboardRequest request) {

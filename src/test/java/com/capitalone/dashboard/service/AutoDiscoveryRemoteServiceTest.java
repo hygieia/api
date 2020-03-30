@@ -6,8 +6,8 @@ import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.AutoDiscoveredEntry;
 import com.capitalone.dashboard.model.AutoDiscovery;
 import com.capitalone.dashboard.model.AutoDiscoveryMetaData;
-import com.capitalone.dashboard.model.AutoDiscoveryStatusType;
 import com.capitalone.dashboard.model.AutoDiscoveryRemoteRequest;
+import com.capitalone.dashboard.model.AutoDiscoveryStatusType;
 import com.capitalone.dashboard.model.Collector;
 import com.capitalone.dashboard.repository.AutoDiscoveryRepository;
 import com.capitalone.dashboard.repository.CollectorRepository;
@@ -29,11 +29,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.bson.types.ObjectId;
-
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -168,45 +164,6 @@ public class AutoDiscoveryRemoteServiceTest {
         // we should not update anything else other than the status for the AutoDiscoveredEntry
         assertEquals(ad.getMetaData().getTitle(), "testAUTO_DISCOVERY");
         assertEquals(ad.getMetaData().getTemplate(), "template");
-    }
-
-    @Test
-    public void testUpdateStatusOnly() throws HygieiaException {
-        autoSvc.save(ad2);
-        assertEquals(autoRepo.count(), 1);
-
-        AutoDiscovery ad = autoRepo.findAll().iterator().next();
-        ObjectId id2 = ad.getId();
-
-        autoSvc.save(ad1);
-        assertEquals(autoRepo.count(), 2);
-        ad = autoRepo.findOne(id2);
-        assertNotNull(ad);
-        assertNotNull(ad.getCodeRepoEntries());
-        assertEquals(ad.getCodeRepoEntries().size(),1);
-        assertFalse(ad.getArtifactEntries().isEmpty());
-
-        // now try to update ad2
-        ad2.setAutoDiscoveryId(id2.toHexString());
-        ad2.setCodeRepoEntries(new ArrayList<>());
-        AutoDiscoveredEntry artifactEntry = ad2.getArtifactEntries().iterator().next();
-        artifactEntry.setStatus(AutoDiscoveryStatusType.AWAITING_USER_RESPONSE); // this should persist
-        artifactEntry.setDescription("new artifactory descriptions blah blah"); // this should not persist
-        autoSvc.save(ad2);
-        assertEquals(autoRepo.count(), 2);
-        ad = autoRepo.findOne(id2);
-        assertFalse(ad.getCodeRepoEntries().isEmpty());
-        assertFalse(ad.getArtifactEntries().isEmpty());
-        assertNotNull(ad.getModifiedTimestamp());
-
-        artifactEntry = ad.getArtifactEntries().iterator().next();
-        assertEquals(artifactEntry.getStatus(), AutoDiscoveryStatusType.AWAITING_USER_RESPONSE);
-        // we should not update anything else other than the status for the AutoDiscoveredEntry, so description should not change
-        assertEquals(artifactEntry.getDescription(), "Hygieia Artifactory");
-
-        AutoDiscoveredEntry codeRepoEntry = ad.getCodeRepoEntries().iterator().next();
-        assertEquals(codeRepoEntry.getStatus(), AutoDiscoveryStatusType.USER_REJECTED);
-        assertEquals(codeRepoEntry.getDescription(), "Hygieia GitHub");
     }
 
     @Test

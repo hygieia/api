@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.capitalone.dashboard.misc.HygieiaException;
 import org.bson.types.ObjectId;
 import org.junit.Before;
 import org.junit.Test;
@@ -137,7 +138,7 @@ public class DynamicPipelineServiceImplTest {
 	}
 
 	@Test
-	public void testSearch() {
+	public void testSearch() throws HygieiaException {
 		CollectorItem pipelineCI = setupPipelineCollectorItem();
 		CollectorItem scmCI = setupScmCollectorItem();
 		Component component = setupComponent(scmCI);

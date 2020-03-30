@@ -189,6 +189,20 @@ public class CollectorServiceImpl implements CollectorService {
         return collectorItemRepository.save(item);
     }
 
+    @Override
+    public CollectorItem createCollectorItemSelectOptions(CollectorItem item, Collector collector, Map<String, Object> allOptions, Map<String, Object> uniqueOptions) {
+        Map<String,Object> uniqueFieldsFromCollector = collector.getUniqueFields();
+        List<CollectorItem> existing = customRepositoryQuery.findCollectorItemsBySubsetOptions(
+                item.getCollectorId(), allOptions, uniqueOptions,uniqueFieldsFromCollector);
+
+        if (!CollectionUtils.isEmpty(existing)) {
+            CollectorItem existingItem = existing.get(0);
+            existingItem.getOptions().putAll(item.getOptions());
+            return collectorItemRepository.save(existingItem);
+        }
+        return collectorItemRepository.save(item);
+    }
+
 
     @Override
     public CollectorItem createCollectorItemByNiceNameAndProjectId(CollectorItem item, String projectId) throws HygieiaException {

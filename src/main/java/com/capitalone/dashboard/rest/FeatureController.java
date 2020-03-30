@@ -1,11 +1,9 @@
 package com.capitalone.dashboard.rest;
 
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
-
-import java.util.List;
-import java.util.Optional;
-
+import com.capitalone.dashboard.model.DataResponse;
+import com.capitalone.dashboard.model.Feature;
+import com.capitalone.dashboard.model.SprintEstimate;
+import com.capitalone.dashboard.service.FeatureService;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,10 +11,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.capitalone.dashboard.model.DataResponse;
-import com.capitalone.dashboard.model.Feature;
-import com.capitalone.dashboard.model.SprintEstimate;
-import com.capitalone.dashboard.service.FeatureService;
+import java.util.List;
+import java.util.Optional;
+
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 /**
  * REST service managing all requests to the feature repository.
@@ -56,8 +55,6 @@ public class FeatureController {
 	 * REST endpoint for retrieving all features for a given sprint and team
 	 * (the sprint is derived)
 	 *
-	 * @param teamId
-	 *            A given scope-owner's source-system ID
 	 * @return A data response list of type Feature containing all features for
 	 *         the given team and current sprint
 	 */

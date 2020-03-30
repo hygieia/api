@@ -6,6 +6,7 @@ import com.capitalone.dashboard.model.CollectorItem;
 import com.capitalone.dashboard.model.TestCapability;
 import com.capitalone.dashboard.model.TestCase;
 import com.capitalone.dashboard.model.TestCaseStatus;
+import com.capitalone.dashboard.model.TestCreateRequest;
 import com.capitalone.dashboard.model.TestResult;
 import com.capitalone.dashboard.model.TestSuite;
 import com.capitalone.dashboard.model.TestSuiteType;
@@ -17,10 +18,8 @@ import com.capitalone.dashboard.repository.ComponentRepository;
 import com.capitalone.dashboard.repository.TestResultRepository;
 import com.capitalone.dashboard.request.TestDataCreateRequest;
 import com.capitalone.dashboard.request.TestResultRequest;
+import com.capitalone.dashboard.settings.ApiSettings;
 import org.bson.types.ObjectId;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,6 +28,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -42,6 +42,7 @@ public class TestResultServiceTest {
     @Mock private CollectorRepository collectorRepository;
     @Mock private CollectorService collectorService;
     @Mock private ComponentRepository componentRepository;
+    @Mock private ApiSettings apiSettings;
     @InjectMocks private TestResultServiceImpl testResultService;
 
 
@@ -222,40 +223,42 @@ public class TestResultServiceTest {
         return result;
     }
 
+
+    private TestCreateRequest makePrefTestCreateRequest() {
+        TestCreateRequest data = new TestCreateRequest();
+        data.setSourceFormat("cucumber");
+        data.setTestType("functional");
+        data.setSource("a");
+        data.setConfigurationItem("cbfdfdgdfgfd");
+        data.setTimeStamp("2020-01-14T02:26:22.635 +0000");
+        data.setTestResult("ewogICAgImlkIjogImlkIiwKICAgICJrZXl3b3JkIjogImtleXdvcmQiLAogICAgIm5hbWUiOiAibmFtZSIsCiAgICAiZWxlbWVudHMiOiBbCiAgICAgIHsKICAgICAgICAiaWQiOiAiZWxlbTEiLAogICAgICAgICJrZXl3b3JkIjogImtleXdvcmQxIiwKICAgICAgICAibmFtZSI6ICJuYW1lMSIsCiAgICAgICAgInN0ZXBzIjogWwogICAgICAgICAgewogICAgICAgICAgICAiaWQiOiAiZWxlbTEiLAogICAgICAgICAgICAia2V5d29yZCI6ICJrZXl3b3JkMSIsCiAgICAgICAgICAgICJsaW5lIjogImxpbmUxIiwKICAgICAgICAgICAgInJlc3VsdCI6IHsKICAgICAgICAgICAgICAiZHVyYXRpb24iOiAxMDAsCiAgICAgICAgICAgICAgInN0YXR1cyI6ICJwYXNzZWQiCiAgICAgICAgICAgIH0KICAgICAgICAgIH0sCiAgICAgICAgICB7CiAgICAgICAgICAgICJpZCI6ICJlbGVtMiIsCiAgICAgICAgICAgICJrZXl3b3JkIjogImtleXdvcmQyIiwKICAgICAgICAgICAgImxpbmUiOiAibGluZTIiLAogICAgICAgICAgICAicmVzdWx0IjogewogICAgICAgICAgICAgICJkdXJhdGlvbiI6IDEwMCwKICAgICAgICAgICAgICAic3RhdHVzIjogInBhc3NlZCIKICAgICAgICAgICAgfQogICAgICAgICAgfSwKICAgICAgICAgIHsKICAgICAgICAgICAgImlkIjogImVsZW0zIiwKICAgICAgICAgICAgImtleXdvcmQiOiAia2V5d29yZDMiLAogICAgICAgICAgICAibGluZSI6ICJsaW5lMyIsCiAgICAgICAgICAgICJyZXN1bHQiOiB7CiAgICAgICAgICAgICAgImR1cmF0aW9uIjogMTAwLAogICAgICAgICAgICAgICJzdGF0dXMiOiAiZmFpbGVkIgogICAgICAgICAgICB9CiAgICAgICAgICB9CiAgICAgICAgXQogICAgICB9LAogICAgICB7CiAgICAgICAgImlkIjogImVsZW0yIiwKICAgICAgICAia2V5d29yZCI6ICJrZXl3b3JkMiIsCiAgICAgICAgIm5hbWUiOiAibmFtZTIiLAogICAgICAgICJzdGVwcyI6IFsKICAgICAgICAgIHsKICAgICAgICAgICAgImlkIjogImVsZW0xIiwKICAgICAgICAgICAgImtleXdvcmQiOiAia2V5d29yZDEiLAogICAgICAgICAgICAibGluZSI6ICJsaW5lMSIsCiAgICAgICAgICAgICJyZXN1bHQiOiB7CiAgICAgICAgICAgICAgImR1cmF0aW9uIjogMTAwLAogICAgICAgICAgICAgICJzdGF0dXMiOiAicGFzc2VkIgogICAgICAgICAgICB9CiAgICAgICAgICB9LAogICAgICAgICAgewogICAgICAgICAgICAiaWQiOiAiZWxlbTIiLAogICAgICAgICAgICAia2V5d29yZCI6ICJrZXl3b3JkMiIsCiAgICAgICAgICAgICJsaW5lIjogImxpbmUyIiwKICAgICAgICAgICAgInJlc3VsdCI6IHsKICAgICAgICAgICAgICAiZHVyYXRpb24iOiAxMDAsCiAgICAgICAgICAgICAgInN0YXR1cyI6ICJwYXNzZWQiCiAgICAgICAgICAgIH0KICAgICAgICAgIH0sCiAgICAgICAgICB7CiAgICAgICAgICAgICJpZCI6ICJlbGVtMyIsCiAgICAgICAgICAgICJrZXl3b3JkIjogImtleXdvcmQzIiwKICAgICAgICAgICAgImxpbmUiOiAibGluZTMiLAogICAgICAgICAgICAicmVzdWx0IjogewogICAgICAgICAgICAgICJkdXJhdGlvbiI6IDEwMCwKICAgICAgICAgICAgICAic3RhdHVzIjogImZhaWxlZCIKICAgICAgICAgICAgfQogICAgICAgICAgfQogICAgICAgIF0KICAgICAgfQogICAgXQogIH0K");
+        return data;
+    }
+
+
+
     @Test
-    public void createV3WithGoodRequest() throws HygieiaException {
+    public void createWithGoodCucumberRequest() throws HygieiaException {
         ObjectId collectorId = ObjectId.get();
 
-        JSONObject request = createTestResultPerformance();
+        TestCreateRequest request = makePrefTestCreateRequest();
 
         when(collectorRepository.findOne(collectorId)).thenReturn(new Collector());
         when(collectorService.createCollector(any(Collector.class))).thenReturn(new Collector());
         when(collectorService.createCollectorItem(any(CollectorItem.class))).thenReturn(new CollectorItem());
+        when(apiSettings.getFunctional()).thenReturn( new HashMap<String, String>() {{
+            put("cucumber", "cucumber");
+        }}
+);
 
         TestResult testResult = makeTestResult();
 
         when(testResultRepository.save(any(TestResult.class))).thenReturn(testResult);
-        String response = testResultService.createPerfV3(request, null, "7ps", "performance");
+        String response = testResultService.createTest(request);
         String expected = testResult.getId().toString() + "," + testResult.getCollectorItemId();
         assertEquals(response, expected);
-        System.out.println(response + expected);
     }
 
-    private JSONObject createTestResultPerformance(){
-
-        String jsonStr = "{\"performanceMetrics\":{\"startTime\":\"test\",\"endTime\":\"test\",\"message\":\"test1\",\"testSetName\":\"testdata\",\"testDuration\":\"1m\",\"actualResults\":{\"throughPut\":11,\"errorPercent\":1,\"responseTime\":4,\"maxResponseTime\":55,\"minResponseTime\":0},\"benchmarkUsed\":{\"throughPut\":0,\"errorPercent\":0,\"responseTime\":1,\"maxResponseTime\":0,\"minResponseTime\":8},\"testRunStatus\":\"PASS\"},\"testType\":\"performance\",\"testId\":\"test\",\"testAgentType\":\"test\",\"componentName\":\"test\",\"status\":\"COMPLETED\",\"testRequestId\":\"test\"}";
-
-        JSONParser parser = new JSONParser();
-        JSONObject json = null;
-        try {
-            json = (JSONObject) parser.parse(jsonStr);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-
-
-        return json;
-    }
 
 
 }

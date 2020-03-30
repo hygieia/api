@@ -65,4 +65,12 @@ public class CmdbServiceImpl implements CmdbService {
         List<Cmdb> cmdbs = cmdbRepository.findAllByItemType("app");
         return cmdbs;
     }
+
+    @Override
+    public List<Cmdb> commonNameByConfigurationItem(String commonName){
+        List<Cmdb> cmdbConfigurationItem = cmdbRepository.findByCommonNameOrderByTimestamp(commonName);
+        return cmdbConfigurationItem;
+    }
+
+
 }
