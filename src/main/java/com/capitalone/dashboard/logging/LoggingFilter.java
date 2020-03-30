@@ -52,8 +52,6 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Order(1)
 public class LoggingFilter implements Filter {
 
-    public static final String IGNORE_TEST_RESULTS_REQUESTS = "/api/quality/test-result";
-
     private static final Logger LOGGER = Logger.getLogger("LoggingFilter");
 
     @Autowired
@@ -76,8 +74,9 @@ public class LoggingFilter implements Filter {
         if (httpServletRequest.getMethod().equals(HttpMethod.PUT.toString()) ||
                 (httpServletRequest.getMethod().equals(HttpMethod.POST.toString())) ||
                 (httpServletRequest.getMethod().equals(HttpMethod.DELETE.toString()))) {
-            if (IGNORE_TEST_RESULTS_REQUESTS.equalsIgnoreCase(httpServletRequest.getRequestURI()))
-                return;
+
+            if (settings.checkIgnoreEndPoint(httpServletRequest.getRequestURI())) return;
+
             Map<String, String> requestMap = this.getTypesafeRequestMap(httpServletRequest);
             BufferedRequestWrapper bufferedRequest = new BufferedRequestWrapper(httpServletRequest);
             BufferedResponseWrapper bufferedResponse = new BufferedResponseWrapper(httpServletResponse);

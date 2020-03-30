@@ -4,6 +4,7 @@ import com.capitalone.dashboard.webhook.settings.WebHookSettings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 @Component
 @ConfigurationProperties
@@ -28,6 +29,8 @@ public class ApiSettings {
     private WebHookSettings webHook;
 
     private String capturePattern;
+
+    private String ignoreEndPoint;
 
     public WebHookSettings getWebHook() {
         return webHook;
@@ -97,5 +100,13 @@ public class ApiSettings {
 
     public void setCapturePattern(String capturePattern) {
         this.capturePattern = capturePattern;
+    }
+
+    public String getIgnoreEndPoint() { return ignoreEndPoint; }
+
+    public void setIgnoreEndPoint(String ignoreEndPoint) { this.ignoreEndPoint = ignoreEndPoint; }
+
+    public boolean checkIgnoreEndPoint(String endPointURI) {
+        return !StringUtils.isEmpty(getIgnoreEndPoint()) && getIgnoreEndPoint().equalsIgnoreCase(endPointURI);
     }
 }
