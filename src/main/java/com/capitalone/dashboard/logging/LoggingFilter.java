@@ -74,6 +74,9 @@ public class LoggingFilter implements Filter {
         if (httpServletRequest.getMethod().equals(HttpMethod.PUT.toString()) ||
                 (httpServletRequest.getMethod().equals(HttpMethod.POST.toString())) ||
                 (httpServletRequest.getMethod().equals(HttpMethod.DELETE.toString()))) {
+
+            if (settings.checkIgnoreEndPoint(httpServletRequest.getRequestURI())) return;
+
             Map<String, String> requestMap = this.getTypesafeRequestMap(httpServletRequest);
             BufferedRequestWrapper bufferedRequest = new BufferedRequestWrapper(httpServletRequest);
             BufferedResponseWrapper bufferedResponse = new BufferedResponseWrapper(httpServletResponse);
