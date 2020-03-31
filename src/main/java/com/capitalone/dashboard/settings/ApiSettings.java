@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -35,7 +36,7 @@ public class ApiSettings {
 
     private String capturePattern;
 
-    private List<String> ignoreEndPoints;
+    private List<String> ignoreEndPoints = new ArrayList();
 
     private GithubSyncSettings githubSyncSettings = new GithubSyncSettings();
     private SonarDataSyncSettings sonarDataSyncSettings = new SonarDataSyncSettings();
