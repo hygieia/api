@@ -4,11 +4,13 @@ import com.capitalone.dashboard.webhook.settings.DataSyncSettings;
 import com.capitalone.dashboard.webhook.settings.GithubSyncSettings;
 import com.capitalone.dashboard.webhook.settings.SonarDataSyncSettings;
 import com.capitalone.dashboard.webhook.settings.WebHookSettings;
+import org.apache.commons.collections.ListUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -35,7 +37,7 @@ public class ApiSettings {
 
     private String capturePattern;
 
-    private String ignoreEndPoint;
+    private List<String> ignoreEndPoints;
 
     private GithubSyncSettings githubSyncSettings = new GithubSyncSettings();
     private SonarDataSyncSettings sonarDataSyncSettings = new SonarDataSyncSettings();
@@ -139,16 +141,16 @@ public class ApiSettings {
         this.capturePattern = capturePattern;
     }
 
-    public String getIgnoreEndPoint() {
-        return ignoreEndPoint;
+    public List<String> getIgnoreEndPoints() {
+        return ignoreEndPoints;
     }
 
-    public void setIgnoreEndPoint(String ignoreEndPoint) {
-        this.ignoreEndPoint = ignoreEndPoint;
+    public void setIgnoreEndPoints(List<String> ignoreEndPoints) {
+        this.ignoreEndPoints = ignoreEndPoints;
     }
 
     public boolean checkIgnoreEndPoint(String endPointURI) {
-        return !StringUtils.isEmpty(getIgnoreEndPoint()) && getIgnoreEndPoint().equalsIgnoreCase(endPointURI);
+        return !getIgnoreEndPoints().isEmpty() && getIgnoreEndPoints().contains(endPointURI);
     }
 
     public GithubSyncSettings getGithubSyncSettings() {
