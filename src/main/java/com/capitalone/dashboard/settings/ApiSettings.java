@@ -4,11 +4,9 @@ import com.capitalone.dashboard.webhook.settings.DataSyncSettings;
 import com.capitalone.dashboard.webhook.settings.GithubSyncSettings;
 import com.capitalone.dashboard.webhook.settings.SonarDataSyncSettings;
 import com.capitalone.dashboard.webhook.settings.WebHookSettings;
-import org.apache.commons.collections.ListUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Map;
