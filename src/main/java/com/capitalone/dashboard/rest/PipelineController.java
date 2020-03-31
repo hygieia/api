@@ -1,9 +1,11 @@
 package com.capitalone.dashboard.rest;
 
+import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.PipelineResponse;
 import com.capitalone.dashboard.request.PipelineSearchRequest;
 import com.capitalone.dashboard.service.PipelineService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,7 +24,7 @@ public class PipelineController {
     }
 
     @RequestMapping(value = "/pipeline", method = GET, produces = APPLICATION_JSON_VALUE)
-    public Iterable<PipelineResponse> searchPipelines(@Valid PipelineSearchRequest searchRequest) {
+    public Iterable<PipelineResponse> searchPipelines(@Valid @RequestBody PipelineSearchRequest searchRequest) throws HygieiaException {
         return pipelineService.search(searchRequest);
     }
 }
