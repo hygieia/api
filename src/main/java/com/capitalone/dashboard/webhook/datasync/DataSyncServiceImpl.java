@@ -10,10 +10,12 @@ import com.capitalone.dashboard.repository.ComponentRepository;
 import com.capitalone.dashboard.repository.GitRequestRepository;
 import com.capitalone.dashboard.repository.LibraryPolicyResultsRepository;
 import com.capitalone.dashboard.repository.SonarProjectRepository;
+import com.capitalone.dashboard.repository.TestResultRepository;
 import com.capitalone.dashboard.request.DataSyncRequest;
 import com.capitalone.dashboard.request.DataSyncResponse;
 import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.webhook.settings.DataSyncSettings;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +35,7 @@ public class DataSyncServiceImpl implements DataSyncService {
     private final BinaryArtifactRepository binaryArtifactRepository;
     private final GitRequestRepository gitRequestRepository;
     private final LibraryPolicyResultsRepository libraryPolicyResultsRepository;
+    private final TestResultRepository testResultRepository;
     private final DataSyncUtils dataSyncUtils = new DataSyncUtils(this);
     @Autowired
     private ApiSettings settings;
@@ -45,6 +48,7 @@ public class DataSyncServiceImpl implements DataSyncService {
                                BinaryArtifactRepository binaryArtifactRepository,
                                GitRequestRepository gitRequestRepository,
                                LibraryPolicyResultsRepository libraryPolicyResultsRepository,
+                               TestResultRepository testResultRepository,
                                ApiSettings settings) {
         this.codeQualityRepository = codeQualityRepository;
         this.sonarProjectRepository = sonarProjectRepository;
@@ -54,6 +58,7 @@ public class DataSyncServiceImpl implements DataSyncService {
         this.binaryArtifactRepository = binaryArtifactRepository;
         this.gitRequestRepository = gitRequestRepository;
         this.libraryPolicyResultsRepository = libraryPolicyResultsRepository;
+        this.testResultRepository = testResultRepository;
         this.settings = settings;
 
     }
@@ -75,6 +80,8 @@ public class DataSyncServiceImpl implements DataSyncService {
             return new StaticSecurityDataSyncDelegate(this, dataSyncUtils).clean(collector);
         if (dataSyncSettings.getLibraryPolicy().equalsIgnoreCase(collectorName))
             return new LibraryPolicyDataSyncDelegate(this, dataSyncUtils).clean(collector);
+        if (CollectionUtils.isNotEmpty(dataSyncSettings.getTests())&& dataSyncSettings.getTests().contains(collectorName))
+            return new TestDataSyncDelegate(this, dataSyncUtils).clean(collector);
         return dataSyncUtils.warn(collectorName, "Refresh Unsuccessful");
 
     }
@@ -105,6 +112,14 @@ public class DataSyncServiceImpl implements DataSyncService {
 
     public LibraryPolicyResultsRepository getLibraryPolicyResultsRepository() {
         return this.libraryPolicyResultsRepository;
+    }
+
+    public TestResultRepository getTestResultRepository(){
+        return this.testResultRepository;
+    }
+
+    public ApiSettings getSettings(){
+        return this.settings;
     }
 
 }

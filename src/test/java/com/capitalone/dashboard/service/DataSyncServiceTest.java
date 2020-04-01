@@ -19,6 +19,7 @@ import com.capitalone.dashboard.repository.ComponentRepository;
 import com.capitalone.dashboard.repository.GitRequestRepository;
 import com.capitalone.dashboard.repository.LibraryPolicyResultsRepository;
 import com.capitalone.dashboard.repository.SonarProjectRepository;
+import com.capitalone.dashboard.repository.TestResultRepository;
 import com.capitalone.dashboard.request.DataSyncRequest;
 import com.capitalone.dashboard.request.DataSyncResponse;
 import com.capitalone.dashboard.settings.ApiSettings;
@@ -70,6 +71,8 @@ public class DataSyncServiceTest {
     private GitRequestRepository gitRequestRepository;
     @Mock
     private LibraryPolicyResultsRepository libraryPolicyResultsRepository;
+    @Mock
+    private TestResultRepository testResultRepository;
 
 
     @Before
@@ -83,7 +86,7 @@ public class DataSyncServiceTest {
         dataSyncSettings.setStaticSecurity(STATIC_SECURITY);
         settings.setDataSyncSettings(dataSyncSettings);
         dataSyncService = new DataSyncServiceImpl(codeQualityRepository, sonarProjectRepository, collectorRepository, componentRepository, collectorItemRepository, binaryArtifactRepository,
-                gitRequestRepository, libraryPolicyResultsRepository, settings);
+                gitRequestRepository, libraryPolicyResultsRepository,testResultRepository, settings);
 
     }
 
