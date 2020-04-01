@@ -58,6 +58,7 @@ public class TestDataSyncDelegate {
     }
 
     private void setTestType(CollectorItem c, String regex, String type) {
+        if (Objects.isNull(regex)) return;
         if (isMatches(regex, c.getDescription())) {
             c.getOptions().put(TEST_TYPE, type);
             dataSyncServiceImpl.getCollectorItemRepository().save(c);
