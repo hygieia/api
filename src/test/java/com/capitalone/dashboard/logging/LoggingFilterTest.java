@@ -1,6 +1,7 @@
 package com.capitalone.dashboard.logging;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -56,6 +57,22 @@ public class LoggingFilterTest {
         verify(requestLogRepository, times(1)).save(any(RequestLog.class));
     }
 
+    @Test
+    public void testDoFilterPutIgnoreEndPoint() throws Exception {
+        HttpServletRequest httpServletRequest = Mockito.mock(HttpServletRequest.class);
+        HttpServletResponse httpServletResponse =  Mockito.mock(HttpServletResponse.class);
+        FilterChain filterChain =  Mockito.mock(FilterChain.class);
+        when(httpServletRequest.getInputStream()).thenReturn(Mockito.mock(ServletInputStream.class));
+        when(httpServletRequest.getRequestURI()).thenReturn("Success");
+        when(httpServletRequest.getMethod()).thenReturn(HttpMethod.PUT.toString());
+
+        when(requestLogRepository.save(any(RequestLog.class))).thenReturn(new RequestLog());
+        when(httpServletRequest.getContentType()).thenReturn("application/json;charset=UTF-8");
+        when(httpServletResponse.getContentType()).thenReturn("application/json;charset=UTF-8");
+        when(settings.checkIgnoreEndPoint(anyString())).thenReturn(true);
+        loggingFilter.doFilter(httpServletRequest, httpServletResponse,filterChain);
+        verify(requestLogRepository, times(0)).save(any(RequestLog.class));
+    }
 
     @Test
     public void testDoFilterGet() throws Exception {
@@ -93,6 +110,21 @@ public class LoggingFilterTest {
     }
 
 
+    @Test
+    public void testDoFilterPostIgnoreEndPoint() throws Exception {
+        HttpServletRequest httpServletRequest = Mockito.mock(HttpServletRequest.class);
+        HttpServletResponse httpServletResponse =  Mockito.mock(HttpServletResponse.class);
+        FilterChain filterChain =  Mockito.mock(FilterChain.class);
+        when(httpServletRequest.getInputStream()).thenReturn(Mockito.mock(ServletInputStream.class));
+        when(httpServletRequest.getRequestURI()).thenReturn("Success");
+        when(httpServletRequest.getMethod()).thenReturn(HttpMethod.POST.toString());
+        when(requestLogRepository.save(any(RequestLog.class))).thenReturn(new RequestLog());
+        when(httpServletRequest.getContentType()).thenReturn("application/json;charset=UTF-8");
+        when(httpServletResponse.getContentType()).thenReturn("application/json;charset=UTF-8");
+        when(settings.checkIgnoreEndPoint(anyString())).thenReturn(true);
+        loggingFilter.doFilter(httpServletRequest, httpServletResponse,filterChain);
+        verify(requestLogRepository, times(0)).save(any(RequestLog.class));
+    }
 
     @Test
     public void testDoFilterDelete() throws Exception {

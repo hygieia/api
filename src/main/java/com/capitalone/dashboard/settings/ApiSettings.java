@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -33,6 +35,8 @@ public class ApiSettings {
     private WebHookSettings webHook;
 
     private String capturePattern;
+
+    private List<String> ignoreEndPoints = new ArrayList();
 
     private GithubSyncSettings githubSyncSettings = new GithubSyncSettings();
     private SonarDataSyncSettings sonarDataSyncSettings = new SonarDataSyncSettings();
@@ -134,6 +138,18 @@ public class ApiSettings {
 
     public void setCapturePattern(String capturePattern) {
         this.capturePattern = capturePattern;
+    }
+
+    public List<String> getIgnoreEndPoints() {
+        return ignoreEndPoints;
+    }
+
+    public void setIgnoreEndPoints(List<String> ignoreEndPoints) {
+        this.ignoreEndPoints = ignoreEndPoints;
+    }
+
+    public boolean checkIgnoreEndPoint(String endPointURI) {
+        return !getIgnoreEndPoints().isEmpty() && getIgnoreEndPoints().contains(endPointURI);
     }
 
     public GithubSyncSettings getGithubSyncSettings() {
