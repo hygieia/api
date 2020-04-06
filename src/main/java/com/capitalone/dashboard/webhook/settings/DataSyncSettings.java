@@ -4,9 +4,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationPropertiesBinding;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Component
 @ConfigurationPropertiesBinding
 public class DataSyncSettings {
@@ -20,10 +17,6 @@ public class DataSyncSettings {
     String staticSecurity;
     @Value("${dataSyncSettings.libraryPolicy:LibraryPolicy}")
     String libraryPolicy;
-    @Value("${dataSyncSettings.test:Test}")
-    List<String> tests = new ArrayList<>();
-    String regexTestFunctional;
-    String regexTestPerformance;
 
     public String getScm() {
         return scm;
@@ -63,31 +56,6 @@ public class DataSyncSettings {
 
     public void setLibraryPolicy(String libraryPolicy) {
         this.libraryPolicy = libraryPolicy;
-    }
-
-    public List<String> getTests() {
-        return tests;
-    }
-
-    public void setTests(List<String> tests) {
-        this.tests = tests;
-    }
-
-
-    public String getRegexTestFunctional() {
-        return regexTestFunctional;
-    }
-
-    public void setRegexTestFunctional(String regexTestFunctional) {
-        this.regexTestFunctional = regexTestFunctional;
-    }
-
-    public String getRegexTestPerformance() {
-        return regexTestPerformance;
-    }
-
-    public void setRegexTestPerformance(String regexTestPerformance) {
-        this.regexTestPerformance = regexTestPerformance;
     }
 
 }

@@ -363,13 +363,11 @@ public class TestResultServiceImpl implements TestResultService {
         allOptions.put("jobUrl", "");
         allOptions.put("instanceUrl", "");
         allOptions.put("jobName","");
-        allOptions.put("testType","");
         col.setAllFields(allOptions);
         //Combination of jobName and jobUrl should be unique always.
         Map<String, Object> uniqueOptions = new HashMap<>();
         uniqueOptions.put("jobUrl", "");
         uniqueOptions.put("jobName","");
-        uniqueOptions.put("testType","");
         col.setUniqueFields(uniqueOptions);
         return collectorService.createCollector(col);
     }
@@ -386,7 +384,6 @@ public class TestResultServiceImpl implements TestResultService {
         Map<String, Object> allOptions = new HashMap<>();
         allOptions.put("jobName","");
         allOptions.put("instanceUrl", "");
-        allOptions.put("testType","");
         col.setAllFields(allOptions);
         col.setUniqueFields(allOptions);
         return collectorService.createCollector(col);
@@ -402,7 +399,6 @@ public class TestResultServiceImpl implements TestResultService {
         option.put("jobName", request.getTestJobName());
         option.put("jobUrl", request.getTestJobUrl());
         option.put("instanceUrl", request.getServerUrl());
-        option.put("testType",request.getType());
         tempCi.getOptions().putAll(option);
         tempCi.setNiceName(request.getNiceName());
         if (StringUtils.isEmpty(tempCi.getNiceName())) {
@@ -421,7 +417,6 @@ public class TestResultServiceImpl implements TestResultService {
         Map<String, Object> option = new HashMap<>();
         option.put("jobName", request.getTestName());
         option.put("instanceUrl", request.getInstanceUrl());
-        option.put("testType",request.getType());
         tempCi.getOptions().putAll(option);
         tempCi.setNiceName(request.getPerfTool());
         return collectorService.createCollectorItem(tempCi);
@@ -437,10 +432,10 @@ public class TestResultServiceImpl implements TestResultService {
         col.setOnline(true);
         col.setLastExecuted(System.currentTimeMillis());
         Map<String, Object> allOptions = new HashMap<>();
-        allOptions.put("jobUrl", "");
-        allOptions.put("jobName","");
-        allOptions.put("instanceUrl", "");
-        allOptions.put("testType","");
+        allOptions.put("jobUrl", request.getJobUrl());
+        Map<String,String> map = getJobNameAndInstanceUrl(request.getJobUrl());
+        allOptions.put("jobName",map.get("jobName"));
+        allOptions.put("instanceUrl", map.get("instanceUrl"));
         col.setAllFields(allOptions);
         col.setUniqueFields(allOptions);
         return collectorService.createCollector(col);
@@ -474,7 +469,6 @@ public class TestResultServiceImpl implements TestResultService {
         Map<String,String> map = getJobNameAndInstanceUrl(request.getJobUrl());
         option.put("jobName",map.get("jobName"));
         option.put("instanceUrl", map.get("instanceUrl"));
-        option.put("testType",request.getTestType());
         tempCi.getOptions().putAll(option);
         tempCi.setNiceName(request.getSourceFormat());
         return collectorService.createCollectorItem(tempCi);

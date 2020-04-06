@@ -49,9 +49,6 @@ public class DashboardRemoteRequest {
     @Valid
     private List<ArtifactEntry> artifactEntries = new ArrayList<>();
 
-    @Valid
-    private List<PerformanceTestEntry> performanceTestEntries = new ArrayList<>();
-
     /**
      * Dashboard Metadata
      */
@@ -458,34 +455,6 @@ public class DashboardRemoteRequest {
         }
     }
 
-    /**
-     * Entry to create Functional Test in Code Quality Widget
-     */
-    public static class PerformanceTestEntry extends Entry {
-
-        @Override
-        public CollectorType getType() {
-            return CollectorType.Test;
-        }
-
-        @Override
-        public String getWidgetId() {
-            return "codeanalysis0";
-        }
-
-        @Override
-        public String getWidgetName() {
-            return "codeanalysis";
-        }
-
-        @Override
-        public Map<String, Object> toWidgetOptions() {
-            Map<String, Object> opts = new HashMap<>();
-            opts.put("id", getWidgetId());
-            return opts;
-        }
-    }
-
 
     /**
      * Entry to create Functional Test in Code Quality Widget
@@ -627,15 +596,6 @@ public class DashboardRemoteRequest {
         this.artifactEntries = artifactEntries;
     }
 
-    public List<PerformanceTestEntry> getPerformanceTestEntries() {
-        return performanceTestEntries;
-    }
-
-    public void setPerformanceTestEntries(List<PerformanceTestEntry> performanceTestEntries) {
-        this.performanceTestEntries = performanceTestEntries;
-    }
-
-
     public List<Entry> getAllEntries() {
         List<Entry> all = new ArrayList<>();
         all.addAll(buildEntries);
@@ -647,7 +607,6 @@ public class DashboardRemoteRequest {
         all.addAll(deploymentEntries);
         all.addAll(featureEntries);
         all.addAll(artifactEntries);
-        all.addAll(performanceTestEntries);
         return all;
     }
 }
