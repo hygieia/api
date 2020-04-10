@@ -38,7 +38,16 @@ public interface CollectorService {
      * @return CollectorItems matching the specified type
      */
     Page<CollectorItem> collectorItemsByTypeWithFilter(CollectorType collectorType, String descriptionFilter, Pageable pageable);
-    
+
+    /**
+     * Finds paged results of CollectorItems of a given type.
+     *
+     * @param collectorType collector type and search field
+     * @param {@link org.springframework.data.domain.Pageable} object to determine which page to return
+     * @return CollectorItems matching the specified type
+     */
+    Page<CollectorItem> collectorItemsByTypeWithFilter(CollectorType collectorType, String descriptionFilter, String searchField,Pageable pageable);
+
     /**
      * Find a CollectorItem by it's id.
      *
