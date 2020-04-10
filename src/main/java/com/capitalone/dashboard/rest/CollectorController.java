@@ -128,7 +128,7 @@ public class CollectorController {
     @RequestMapping(value = "/collector/item/type/searchField/{collectorType}", method = GET,
             produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<List<CollectorItem>> collectorItemsByTypeAndSearchField(@PathVariable CollectorType collectorType, @RequestParam(value = "search", required = false, defaultValue = "") String descriptionFilter,@RequestParam(value = "searchField", required = false, defaultValue = "") String searchField, @PageableDefault(size = Integer.MAX_VALUE) Pageable pageable) {
-        Page<CollectorItem> pageOfCollectorItems = collectorService.collectorItemsByTypeWithFilter(collectorType, descriptionFilter, pageable);
+        Page<CollectorItem> pageOfCollectorItems = collectorService.collectorItemsByTypeWithFilter(collectorType, descriptionFilter,searchField, pageable);
         return ResponseEntity
                 .ok()
                 .headers(paginationHeaderUtility.buildPaginationHeaders(pageOfCollectorItems))
