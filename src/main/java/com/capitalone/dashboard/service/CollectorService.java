@@ -38,7 +38,18 @@ public interface CollectorService {
      * @return CollectorItems matching the specified type
      */
     Page<CollectorItem> collectorItemsByTypeWithFilter(CollectorType collectorType, String descriptionFilter, Pageable pageable);
-    
+
+    /**
+     * Finds paged results of CollectorItems of a given type.
+     *
+     * @param collectorType collector type and search field
+     * @param descriptionFilter search value
+     * @param searchField search field
+     * @param pageable pageable
+     * @return CollectorItems matching the specified type
+     */
+    Page<CollectorItem> collectorItemsByTypeWithFilter(CollectorType collectorType, String descriptionFilter, String searchField,Pageable pageable);
+
     /**
      * Find a CollectorItem by it's id.
      *
