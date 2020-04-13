@@ -43,6 +43,8 @@ public interface CollectorService {
      * Finds paged results of CollectorItems of a given type.
      *
      * @param collectorType collector type and search field
+     * @param descriptionFilter search value
+     * @param searchField search field
      * @param {@link org.springframework.data.domain.Pageable} object to determine which page to return
      * @return CollectorItems matching the specified type
      */
