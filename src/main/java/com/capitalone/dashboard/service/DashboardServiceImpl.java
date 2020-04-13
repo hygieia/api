@@ -440,6 +440,8 @@ public class DashboardServiceImpl implements DashboardService {
     public Widget updateWidget(Dashboard dashboard, Widget widget) {
         int index = dashboard.getWidgets().indexOf(widget);
         dashboard.getWidgets().set(index, widget);
+        // update dashboard updateAt timestamp
+        dashboard.setUpdatedAt(System.currentTimeMillis());
         dashboardRepository.save(dashboard);
         return widget;
     }
