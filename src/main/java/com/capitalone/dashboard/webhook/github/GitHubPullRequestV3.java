@@ -29,7 +29,6 @@ import org.json.simple.parser.ParseException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import java.net.MalformedURLException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -479,6 +478,8 @@ public class GitHubPullRequestV3 extends GitHubV3 {
             prCommits.add(newCommit);
         }
 
+        updateCommitsWithPullNumber(pull);
+
         if (StringUtils.isEmpty(prHeadSha) || CollectionUtils.isEmpty(pull.getCommitStatuses())) {
             List<CommitStatus> commitStatuses = getCommitStatuses(lastCommitStatusObject);
             List<CommitStatus> existingCommitStatusList = pull.getCommitStatuses();
@@ -507,6 +508,22 @@ public class GitHubPullRequestV3 extends GitHubV3 {
 
         long end = System.currentTimeMillis();
 
+        LOG.debug("Time to make commitRepository call = "+(end-start));
+    }
+
+    // Add pull number to merge commits for the PR if they don't have one, in case of rebase merge or squash merge
+    private void updateCommitsWithPullNumber(GitRequest pull) {
+        long start = System.currentTimeMillis();
+        List<Commit> commitsInDb
+                = commitRepository.findByScmRevisionNumber(pull.getScmRevisionNumber());
+
+        Optional.ofNullable(commitsInDb)
+                .orElseGet(Collections::emptyList)
+                .forEach(commitInDb -> {
+                    commitInDb.setPullNumber(pull.getNumber());
+                    commitRepository.save(commitInDb);
+                });
+        long end = System.currentTimeMillis();
         LOG.debug("Time to make commitRepository call = "+(end-start));
     }
 
