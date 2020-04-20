@@ -498,13 +498,11 @@ public class GitHubPullRequestV3 extends GitHubV3 {
 
         List<Commit> commitsInDb
                 = commitRepository.findAllByScmRevisionNumberAndScmAuthorIgnoreCaseAndScmCommitLogAndScmCommitTimestamp(commit.getScmRevisionNumber(), commit.getScmAuthor(), commit.getScmCommitLog(), commit.getScmCommitTimestamp());
-
-        Optional.ofNullable(commitsInDb)
-            .orElseGet(Collections::emptyList)
-            .forEach(commitInDb -> {
-                commitInDb.setPullNumber(pull.getNumber());
-                commitRepository.save(commitInDb);
-            });
+        if(CollectionUtils.isEmpty(commitsInDb)) { return; }
+        commitsInDb.forEach(commitInDb -> {
+            commitInDb.setPullNumber(pull.getNumber());
+            commitRepository.save(commitInDb);
+        });
 
         long end = System.currentTimeMillis();
 
