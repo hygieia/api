@@ -80,7 +80,7 @@ public class AutoDiscoveryServiceImpl implements AutoDiscoveryService {
         removeDuplicatesNull(request);
         return new AutoDiscovery(request.getMetaData(), request.getCodeRepoEntries(), request.getBuildEntries(), request.getSecurityScanEntries(),
                 request.getDeploymentEntries(), request.getLibraryScanEntries(), request.getFunctionalTestEntries(), request.getArtifactEntries(),
-                request.getStaticCodeEntries(), request.getFeatureEntries());
+                request.getStaticCodeEntries(), request.getFeatureEntries(),request.getPerformanceTestEntries());
     }
 
 
