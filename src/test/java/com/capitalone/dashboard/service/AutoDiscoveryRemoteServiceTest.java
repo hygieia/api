@@ -49,7 +49,7 @@ public class AutoDiscoveryRemoteServiceTest {
     private static List<AutoDiscoveredEntry> artifactEntries = null;
     private static List<AutoDiscoveredEntry> staticCodeEntries = null;
     private static List<AutoDiscoveredEntry> featureEntries = null;
-    private static List<AutoDiscoveredEntry> performanceEntries = null;
+    private static List<AutoDiscoveredEntry> performanceEntries = null; // Additional entry for CollectorType Test
     @Autowired
     private AutoDiscoveryService autoSvc;
 
