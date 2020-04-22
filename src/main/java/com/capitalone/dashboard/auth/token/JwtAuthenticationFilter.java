@@ -10,6 +10,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
@@ -41,7 +42,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 filterChain.doFilter(request, response);
             } finally {
-                LOGGER.info("requester=" + (authHeader == null ? "READ_ONLY" : "API_USER")
+                String apiUser = request.getHeader("apiUser");
+                apiUser = (StringUtils.isEmpty(apiUser)? "API_USER" : apiUser);
+                LOGGER.info("requester=" + (authHeader == null ? "READ_ONLY" : apiUser )
                         + ", timeTaken=" + (System.currentTimeMillis() - startTime)
                         + ", endPoint=" + request.getRequestURI()
                         + ", reqMethod=" + request.getMethod()
@@ -66,7 +69,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 tokenAuthenticationService.addAuthentication(response, authentication);
             }
         } finally {
-            LOGGER.info("requester=" + ( authentication == null || authentication.getPrincipal() == null ? "READ_ONLY" : authentication.getPrincipal() )
+            String apiUser = request.getHeader("apiUser");
+            apiUser = (StringUtils.isEmpty(apiUser)? "READ_ONLY" : apiUser);
+            LOGGER.info("requester=" + ( authentication == null || authentication.getPrincipal() == null ? apiUser : authentication.getPrincipal() )
                     + ", timeTaken=" + (System.currentTimeMillis() - startTime)
                     + ", endPoint=" + request.getRequestURI()
                     + ", reqMethod=" + request.getMethod()
