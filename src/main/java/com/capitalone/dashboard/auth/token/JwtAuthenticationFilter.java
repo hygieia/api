@@ -33,12 +33,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         long startTime = System.currentTimeMillis();
         String authHeader = request.getHeader("Authorization");
+        String apiUser = request.getHeader("apiUser");
+        apiUser = (StringUtils.isEmpty(apiUser)? "API_USER" : apiUser);
         if (authHeader == null || authHeader.startsWith("apiToken ")) {
             try {
                 filterChain.doFilter(request, response);
             } finally {
-                String apiUser = request.getHeader("apiUser");
-                apiUser = (StringUtils.isEmpty(apiUser)? "API_USER" : apiUser);
                 LOGGER.info("requester=" + (authHeader == null ? "READ_ONLY" : apiUser )
                         + ", timeTaken=" + (System.currentTimeMillis() - startTime)
                         + ", endPoint=" + request.getRequestURI()
@@ -64,8 +64,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 tokenAuthenticationService.addAuthentication(response, authentication);
             }
         } finally {
-            String apiUser = request.getHeader("apiUser");
-            apiUser = (StringUtils.isEmpty(apiUser)? "READ_ONLY" : apiUser);
             LOGGER.info("requester=" + ( authentication == null || authentication.getPrincipal() == null ? apiUser : authentication.getPrincipal() )
                     + ", timeTaken=" + (System.currentTimeMillis() - startTime)
                     + ", endPoint=" + request.getRequestURI()
