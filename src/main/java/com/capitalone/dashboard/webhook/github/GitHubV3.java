@@ -19,6 +19,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 
 import java.net.MalformedURLException;
@@ -153,12 +154,15 @@ public abstract class GitHubV3 {
                 JSONObject jsonObject = restClient.parseAsObject(response);
                 ldapLdn = restClient.getString(jsonObject, "ldap_dn");
                 break;
-            } catch (Exception e) {
+            } catch (ResourceAccessException e) {
                 retryCount++;
                 if (retryCount > apiSettings.getWebHook().getGitHub().getMaxRetries()) {
                     LOG.error("Error getting LDAP_DN For user " + user + " after " + apiSettings.getWebHook().getGitHub().getMaxRetries() + " tries.", e);
                     break;
                 }
+            } catch (MalformedURLException | HygieiaException | RestClientException |ParseException e) {
+                LOG.error("LDAP user not found " + user, e);
+                break;
             }
         }
         return ldapLdn;
