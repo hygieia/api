@@ -17,4 +17,4 @@ jobs:
     - name: Build with Maven
       run: mvn test --file pom.xml
     - name: Sonar Check
-      run: mvn verify sonar:sonar -Dsonar.login={{ secrets.SONAR_LOGIN }}  
+      run: mvn verify sonar:sonar  
