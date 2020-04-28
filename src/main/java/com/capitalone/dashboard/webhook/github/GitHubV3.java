@@ -19,6 +19,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 
 import java.net.MalformedURLException;
@@ -141,22 +142,29 @@ public abstract class GitHubV3 {
         // This is weird. Github does replace the _ in commit author with - in the user api!!!
         String formattedUser = user.replace("_", "-");
         String ldapLdn = null;
-        try {
-            GitHubParsed gitHubParsed = new GitHubParsed(repoUrl);
-            String apiUrl = gitHubParsed.getBaseApiUrl();
-            String queryUrl = apiUrl.concat("users/").concat(formattedUser);
-
-            ResponseEntity<String> response = restClient.makeRestCallGet(queryUrl, "token", token);
+        String queryUrl = null;
+        int retryCount = 0;
+        ResponseEntity<String> response;
+        while(true) {
             try {
+                GitHubParsed gitHubParsed = new GitHubParsed(repoUrl);
+                String apiUrl = gitHubParsed.getBaseApiUrl();
+                queryUrl = apiUrl.concat("users/").concat(formattedUser);
+                response = restClient.makeRestCallGet(queryUrl, "token", token);
                 JSONObject jsonObject = restClient.parseAsObject(response);
                 ldapLdn = restClient.getString(jsonObject, "ldap_dn");
-            } catch (ParseException e) {
-                LOG.info("Unable to get user information for "+queryUrl,e);
+                break;
+            } catch (ResourceAccessException e) {
+                retryCount++;
+                if (retryCount > apiSettings.getWebHook().getGitHub().getMaxRetries()) {
+                    LOG.error("Error getting LDAP_DN For user " + user + " after " + apiSettings.getWebHook().getGitHub().getMaxRetries() + " tries.", e);
+                    break;
+                }
+            } catch (MalformedURLException | HygieiaException | RestClientException |ParseException e) {
+                LOG.error("LDAP user not found " + user, e);
+                break;
             }
-        } catch (MalformedURLException | HygieiaException | RestClientException e) {
-            LOG.error("Error getting LDAP_DN For user " + user, e);
         }
-
         return ldapLdn;
     }
 

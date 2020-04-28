@@ -16,3 +16,5 @@ jobs:
         java-version: 1.8
     - name: Build with Maven
       run: mvn test --file pom.xml
+    - name: Sonar Check
+      run: mvn verify sonar:sonar  
