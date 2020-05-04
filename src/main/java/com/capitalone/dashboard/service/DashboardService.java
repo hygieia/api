@@ -71,7 +71,7 @@ public interface DashboardService {
      *
      * @param componentId unique identifier of the Component
      * @param collectorItemIds List of unique identifier of the CollectorItem
-     * @param cleanupQuality flag to cleanup remaining empty fields for quality widget collector item types (true for old UI)
+     * @param cleanupQuality flag to cleanup remaining empty fields for quality widget collector item types
      * @return Component
      */
     Component associateCollectorToComponent(ObjectId componentId, List<ObjectId> collectorItemIds, boolean cleanupQuality);
@@ -81,7 +81,7 @@ public interface DashboardService {
      *
      * @param componentId unique identifier of the Component
      * @param collectorItemIds List of unique identifier of the CollectorItem
-     * @param cleanupQuality flag to cleanup remaining empty fields for quality widget collector item types (true for old UI)
+     * @param cleanupQuality flag to cleanup remaining empty fields for quality widget collector item types
      * @return Component
      */
     Component associateCollectorToComponent(ObjectId componentId, List<ObjectId> collectorItemIds,Component component, boolean cleanupQuality);
