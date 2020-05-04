@@ -148,7 +148,7 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
         for (String key : allWidgetRequests.keySet()) {
             WidgetRequest widgetRequest = allWidgetRequests.get(key);
 
-            component = dashboardService.associateCollectorToComponent(dashboard.getApplication().getComponents().get(0).getId(), widgetRequest.getCollectorItemIds(),component);
+            component = dashboardService.associateCollectorToComponent(dashboard.getApplication().getComponents().get(0).getId(), widgetRequest.getCollectorItemIds(),component,true);
             Widget newWidget = widgetRequest.widget();
             if (isUpdate) {
                 Widget oldWidget = existingWidgets.get(newWidget.getName());

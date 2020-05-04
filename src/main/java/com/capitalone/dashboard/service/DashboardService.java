@@ -71,18 +71,20 @@ public interface DashboardService {
      *
      * @param componentId unique identifier of the Component
      * @param collectorItemIds List of unique identifier of the CollectorItem
+     * @param cleanupQuality flag to cleanup remaining empty fields for quality widget collector item types (true for old UI)
      * @return Component
      */
-    Component associateCollectorToComponent(ObjectId componentId, List<ObjectId> collectorItemIds);
+    Component associateCollectorToComponent(ObjectId componentId, List<ObjectId> collectorItemIds, boolean cleanupQuality);
 
     /**
      * Associate a CollectorItem to a Component
      *
      * @param componentId unique identifier of the Component
      * @param collectorItemIds List of unique identifier of the CollectorItem
+     * @param cleanupQuality flag to cleanup remaining empty fields for quality widget collector item types (true for old UI)
      * @return Component
      */
-    Component associateCollectorToComponent(ObjectId componentId, List<ObjectId> collectorItemIds,Component component);
+    Component associateCollectorToComponent(ObjectId componentId, List<ObjectId> collectorItemIds,Component component, boolean cleanupQuality);
 
     /**
      * Creates a new Widget and adds it to the Dashboard indicated by the dashboardId parameter.

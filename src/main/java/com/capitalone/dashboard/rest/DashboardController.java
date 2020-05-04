@@ -164,7 +164,22 @@ public class DashboardController {
         Dashboard dashboard = dashboardService.get(id);
 
         Component component = dashboardService.associateCollectorToComponent(
-                request.getComponentId(), request.getCollectorItemIds());
+                request.getComponentId(), request.getCollectorItemIds(), true);
+
+        Widget widget = dashboardService.addWidget(dashboard, request.widget());
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(new WidgetResponse(component, widget));
+    }
+
+    @DashboardOwnerOrAdmin
+    @RequestMapping(value = "/v2/dashboard/{id}/widget", method = POST,
+            consumes = APPLICATION_JSON_VALUE)
+    public ResponseEntity<WidgetResponse> addWidgetV2(@PathVariable ObjectId id, @RequestBody WidgetRequest request) {
+
+        Dashboard dashboard = dashboardService.get(id);
+
+        Component component = dashboardService.associateCollectorToComponent(
+                request.getComponentId(), request.getCollectorItemIds(), false);
 
         Widget widget = dashboardService.addWidget(dashboard, request.widget());
 
@@ -178,7 +193,23 @@ public class DashboardController {
                                                        @PathVariable ObjectId widgetId,
                                                        @RequestBody WidgetRequest request) {
         Component component = dashboardService.associateCollectorToComponent(
-                request.getComponentId(), request.getCollectorItemIds());
+                request.getComponentId(), request.getCollectorItemIds(), true);
+
+        Dashboard dashboard = dashboardService.get(id);
+        Widget widget = request.updateWidget(dashboardService.getWidget(dashboard, widgetId));
+        widget = dashboardService.updateWidget(dashboard, widget);
+
+        return ResponseEntity.ok().body(new WidgetResponse(component, widget));
+    }
+
+    @DashboardOwnerOrAdmin
+    @RequestMapping(value = "/v2/dashboard/{id}/widget/{widgetId}", method = PUT,
+            consumes = APPLICATION_JSON_VALUE)
+    public ResponseEntity<WidgetResponse> updateWidgetV2(@PathVariable ObjectId id,
+                                                       @PathVariable ObjectId widgetId,
+                                                       @RequestBody WidgetRequest request) {
+        Component component = dashboardService.associateCollectorToComponent(
+                request.getComponentId(), request.getCollectorItemIds(), false);
 
         Dashboard dashboard = dashboardService.get(id);
         Widget widget = request.updateWidget(dashboardService.getWidget(dashboard, widgetId));
@@ -313,7 +344,23 @@ public class DashboardController {
                                                        @PathVariable ObjectId widgetId,
                                                        @RequestBody WidgetRequest request) {
         Component component = dashboardService.associateCollectorToComponent(
-                request.getComponentId(), request.getCollectorItemIds());
+                request.getComponentId(), request.getCollectorItemIds(), true);
+
+        Dashboard dashboard = dashboardService.get(id);
+        Widget widget =dashboardService.getWidget(dashboard, widgetId);
+        dashboardService.deleteWidget(dashboard, widget,request.getComponentId());
+
+        return ResponseEntity.ok().body(new WidgetResponse(component, null));
+    }
+
+    @DashboardOwnerOrAdmin
+    @RequestMapping(value = "/v2/dashboard/{id}/deleteWidget/{widgetId}", method = PUT,
+            consumes = APPLICATION_JSON_VALUE)
+    public ResponseEntity<WidgetResponse> deleteWidgetV2(@PathVariable ObjectId id,
+                                                       @PathVariable ObjectId widgetId,
+                                                       @RequestBody WidgetRequest request) {
+        Component component = dashboardService.associateCollectorToComponent(
+                request.getComponentId(), request.getCollectorItemIds(), false);
 
         Dashboard dashboard = dashboardService.get(id);
         Widget widget =dashboardService.getWidget(dashboard, widgetId);

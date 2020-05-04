@@ -295,27 +295,27 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    public Component associateCollectorToComponent(ObjectId componentId, List<ObjectId> collectorItemIds) {
+    public Component associateCollectorToComponent(ObjectId componentId, List<ObjectId> collectorItemIds, boolean cleanupQuality) {
         if (componentId == null || collectorItemIds == null) {
             // Not all widgets gather data from collectors
             return null;
         }
         com.capitalone.dashboard.model.Component component = componentRepository.findOne(componentId); //NOPMD - using fully qualified name for clarity
-        associateCollectorItemsToComponent(collectorItemIds, true, component);
+        associateCollectorItemsToComponent(collectorItemIds, true, component, cleanupQuality);
         return component;
     }
 
     @Override
-    public Component associateCollectorToComponent(ObjectId componentId, List<ObjectId> collectorItemIds,Component component) {
+    public Component associateCollectorToComponent(ObjectId componentId, List<ObjectId> collectorItemIds,Component component, boolean cleanupQuality) {
         if (componentId == null || collectorItemIds == null) {
             // Not all widgets gather data from collectors
             return null;
         }
-        associateCollectorItemsToComponent(collectorItemIds, false, component);
+        associateCollectorItemsToComponent(collectorItemIds, false, component, cleanupQuality);
         return component;
     }
 
-    private void associateCollectorItemsToComponent(List<ObjectId> collectorItemIds, boolean save, Component component) {
+    private void associateCollectorItemsToComponent(List<ObjectId> collectorItemIds, boolean save, Component component, boolean cleanupQuality) {
         final String METHOD_NAME = "DashboardServiceImpl.associateCollectorToComponent :";
         //First: disable all collectorItems of the Collector TYPEs that came in with the request.
         //Second: remove all the collectorItem association of the Collector Type  that came in
@@ -352,7 +352,7 @@ public class DashboardServiceImpl implements DashboardService {
         }
 
         // If a collector type is within the code analysis widget, check to see if any of the remaining fields were passed values
-        if(incomingTypes.stream().anyMatch(QualityWidget::contains)){
+        if(incomingTypes.stream().anyMatch(QualityWidget::contains) && cleanupQuality){
             if(!incomingTypes.contains(CollectorType.Test)){
                 component.getCollectorItems().remove(CollectorType.Test);
             }
