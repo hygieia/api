@@ -213,12 +213,50 @@ public class DashboardServiceTest {
         when(collectorRepository.findOne(collId)).thenReturn(collector);
         when(componentRepository.findOne(compId)).thenReturn(component);
 
-        dashboardService.associateCollectorToComponent(compId, collItemIds);
+        dashboardService.associateCollectorToComponent(compId, collItemIds, true);
 
         assertThat(component.getCollectorItems().get(CollectorType.Build), contains(item));
 
         verify(componentRepository).save(component);
         verify(collectorItemRepository, never()).save(item);
+    }
+
+    @Test
+    public void associateCollectorToComponentWithoutCleanUpQuality() {
+        ObjectId compId = ObjectId.get();
+        ObjectId collId1 = ObjectId.get();
+        ObjectId collId2 = ObjectId.get();
+        ObjectId collItemId1 = ObjectId.get();
+        ObjectId collItemId2 = ObjectId.get();
+        List<ObjectId> collItemIds = Arrays.asList(collItemId1,collItemId2);
+
+        CollectorItem item1 = new CollectorItem();
+        item1.setCollectorId(collId1);
+        item1.setEnabled(true);
+        CollectorItem item2 = new CollectorItem();
+        item2.setCollectorId(collId2);
+        item2.setEnabled(true);
+
+        Collector collector1 = new Collector();
+        collector1.setCollectorType(CollectorType.CodeQuality);
+        Collector collector2 = new Collector();
+        collector2.setCollectorType(CollectorType.LibraryPolicy);
+        Component component = new Component();
+
+        when(collectorItemRepository.findOne(collItemId1)).thenReturn(item1);
+        when(collectorItemRepository.findOne(collItemId2)).thenReturn(item2);
+        when(collectorRepository.findOne(collId1)).thenReturn(collector1);
+        when(collectorRepository.findOne(collId2)).thenReturn(collector2);
+        when(componentRepository.findOne(compId)).thenReturn(component);
+
+        dashboardService.associateCollectorToComponent(compId, collItemIds, false);
+
+        assertThat(component.getCollectorItems().get(CollectorType.CodeQuality), contains(item1));
+        assertThat(component.getCollectorItems().get(CollectorType.LibraryPolicy), contains(item2));
+
+        verify(componentRepository).save(component);
+        verify(collectorItemRepository, never()).save(item1);
+        verify(collectorItemRepository, never()).save(item2);
     }
 
     @Test
@@ -241,7 +279,7 @@ public class DashboardServiceTest {
         when(collectorRepository.findOne(collId)).thenReturn(collector);
         when(componentRepository.findOne(compId)).thenReturn(component);
 
-        dashboardService.associateCollectorToComponent(compId, collItemIds);
+        dashboardService.associateCollectorToComponent(compId, collItemIds, true);
 
         assertThat(component.getCollectorItems().get(CollectorType.Build), contains(item));
 
@@ -273,7 +311,7 @@ public class DashboardServiceTest {
         when(componentRepository.findOne(compId)).thenReturn(component1);
         when(customRepositoryQuery.findComponents(collector, item)).thenReturn(Arrays.asList(component1, component2));
 
-        dashboardService.associateCollectorToComponent(compId, collItemIds);
+        dashboardService.associateCollectorToComponent(compId, collItemIds, true);
 
         assertThat(component1.getCollectorItems().get(CollectorType.Build), contains(item));
         assertThat(item.isEnabled(), is(true));
@@ -301,7 +339,7 @@ public class DashboardServiceTest {
         when(collectorRepository.findOne(collId)).thenReturn(collector);
         when(componentRepository.findOne(compId)).thenReturn(component);
 
-        dashboardService.associateCollectorToComponent(compId, collItemIds);
+        dashboardService.associateCollectorToComponent(compId, collItemIds, true);
 
         assertThat(component.getCollectorItems().get(CollectorType.Build), contains(item));
         assertThat(item.isEnabled(), is(true));
@@ -345,7 +383,7 @@ public class DashboardServiceTest {
         when(collectorRepository.findOne(collId)).thenReturn(collector);
         when(componentRepository.findOne(compId)).thenReturn(component);
 
-        dashboardService.associateCollectorToComponent(compId, collItemIds);
+        dashboardService.associateCollectorToComponent(compId, collItemIds, true);
 
         assertThat(component.getCollectorItems().get(CollectorType.Build), contains(item2));
         assertThat(item1.isEnabled(), is(false));
@@ -393,7 +431,7 @@ public class DashboardServiceTest {
         when(componentRepository.findOne(compId)).thenReturn(component1);
         when(customRepositoryQuery.findComponents(collector, item1)).thenReturn(Arrays.asList(component1, component2));
 
-        dashboardService.associateCollectorToComponent(compId, collItemIds);
+        dashboardService.associateCollectorToComponent(compId, collItemIds, true);
 
         assertThat(component1.getCollectorItems().get(CollectorType.Build), contains(item2));
         assertThat(item1.isEnabled(), is(true));
@@ -443,7 +481,7 @@ public class DashboardServiceTest {
         when(collectorRepository.findOne(collId)).thenReturn(collector);
         when(componentRepository.findOne(compId)).thenReturn(component);
 
-        dashboardService.associateCollectorToComponent(compId, collItemIds);
+        dashboardService.associateCollectorToComponent(compId, collItemIds, true);
 
         assertThat(component.getCollectorItems().get(CollectorType.Build), contains(item2, item3));
         assertThat(item1.isEnabled(), is(false));
@@ -497,7 +535,7 @@ public class DashboardServiceTest {
         when(collectorRepository.findOne(collId)).thenReturn(collector);
         when(componentRepository.findOne(compId)).thenReturn(component);
 
-        dashboardService.associateCollectorToComponent(compId, collItemIds);
+        dashboardService.associateCollectorToComponent(compId, collItemIds, true);
 
         assertThat(component.getCollectorItems().get(CollectorType.Build), contains(item3));
         assertThat(item1.isEnabled(), is(false));
