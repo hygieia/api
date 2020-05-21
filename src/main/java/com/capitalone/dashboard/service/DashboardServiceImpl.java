@@ -319,8 +319,10 @@ public class DashboardServiceImpl implements DashboardService {
         final String METHOD_NAME = "DashboardServiceImpl.associateCollectorToComponent :";
         //First: disable all collectorItems of the Collector TYPEs that came in with the request.
         //Second: remove all the collectorItem association of the Collector Type  that came in
+        // incoming collector item collector types
         HashSet<CollectorType> incomingTypes = new HashSet<>();
         HashMap<ObjectId, CollectorItem> toSaveCollectorItems = new HashMap<>();
+        // mapping collector item ID to collector item
         HashMap<ObjectId, CollectorItem> incomingCollectorItems = new HashMap<>();
         ObjectId currentCollectorId = null;
         Collector collector = null;
@@ -337,6 +339,7 @@ public class DashboardServiceImpl implements DashboardService {
             }
             if (!incomingTypes.contains(collector.getCollectorType())) {
                 incomingTypes.add(collector.getCollectorType());
+                // get current collectorItems for a specific collector type in component
                 List<CollectorItem> cItems = component.getCollectorItems(collector.getCollectorType());
                 // Save all collector items as disabled for now
                 if (!CollectionUtils.isEmpty(cItems)) {
@@ -659,28 +662,48 @@ public class DashboardServiceImpl implements DashboardService {
 
 
     @Override
-    public void deleteWidget(Dashboard dashboard, Widget widget,ObjectId componentId) {
-        int index = dashboard.getWidgets().indexOf(widget);
-        dashboardUpdate(dashboard, index);
+    public Component deleteWidget(Dashboard dashboard, Widget widget,ObjectId componentId, List<ObjectId> collectorItemIds, boolean cleanupQuality) {
         String widgetName = widget.getName();
         List<CollectorType> collectorTypesToDelete = new ArrayList<>();
         CollectorType cType = findCollectorType(widgetName);
         collectorTypesToDelete.add(cType);
+
+        if (componentId == null) {
+            return null;
+        }
+        Component component = getComponent(componentId);
+
         if(widgetName.equalsIgnoreCase("codeanalysis")){
-            collectorTypesToDelete.add(CollectorType.CodeQuality);
-            collectorTypesToDelete.add(CollectorType.StaticSecurityScan);
-            collectorTypesToDelete.add(CollectorType.LibraryPolicy);
-            collectorTypesToDelete.add(CollectorType.Test);
-        }
-        if(componentId!=null){
-            Component component = componentRepository.findOne(componentId);
-            for (CollectorType c:collectorTypesToDelete) {
-                component.getCollectorItems().remove(c);
+            if (cleanupQuality) {
+                collectorTypesToDelete.add(CollectorType.CodeQuality);
+                collectorTypesToDelete.add(CollectorType.StaticSecurityScan);
+                collectorTypesToDelete.add(CollectorType.LibraryPolicy);
+                collectorTypesToDelete.add(CollectorType.Test);
+            } else {
+                // Find which collector item under quality widget to delete
+                // from collectorItemIds, find collectortype containing matching collector item id, then add to collectorTypesToDelete
+                CollectorType foundType = searchCollectorTypeByCollectorItemIds(component, collectorItemIds);
+                // if match found (should always be the case)
+                if (foundType != null) {
+                    collectorTypesToDelete.add(foundType);
+                }
             }
-
-            componentRepository.save(component);
         }
 
+        for (CollectorType c:collectorTypesToDelete) {
+            component.getCollectorItems().remove(c);
+        }
+
+        int index = dashboard.getWidgets().indexOf(widget);
+        // if widget is not quality, is quality for old UI, or only has one collector type in quality, then delete entire widget from dashboard
+        if (!widgetName.equalsIgnoreCase("codeanalysis")
+                || (widgetName.equalsIgnoreCase("codeanalysis") && cleanupQuality)
+                || !hasMultipleQualityComponents(component.getCollectorItems())) {
+            dashboardUpdate(dashboard, index);
+        }
+
+        componentRepository.save(component);
+        return component;
     }
 
     private void dashboardUpdate(Dashboard dashboard, int index) {
@@ -690,6 +713,24 @@ public class DashboardServiceImpl implements DashboardService {
             dashboard.setWidgets(updatedWidgets);
             dashboardRepository.save(dashboard);
         }
+    }
+
+    private CollectorType searchCollectorTypeByCollectorItemIds(Component component, List<ObjectId> collectorItemIds) {
+        Map<CollectorType, List<CollectorItem>> componentCIs = component.getCollectorItems();
+        // once find first match, return associated CollectorType
+        for (Map.Entry<CollectorType, List<CollectorItem>> componentCI : componentCIs.entrySet()) {
+            for (ObjectId colItemId : collectorItemIds) {
+                if (componentCI.getValue().stream().filter(ci -> ci.getId().equals(colItemId)).count() > 0) {
+                    return componentCI.getKey();
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private boolean hasMultipleQualityComponents(Map<CollectorType, List<CollectorItem>> componentCIs) {
+        return componentCIs.keySet().stream().anyMatch(QualityWidget::contains) ? true : false;
     }
 
     @Override
