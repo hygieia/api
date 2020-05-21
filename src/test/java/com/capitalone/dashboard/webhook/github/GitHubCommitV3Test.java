@@ -108,7 +108,7 @@ public class GitHubCommitV3Test {
         }
         when(apiSettings.getWebHook()).thenReturn(makeWebHookSettings());
         try {
-            when(gitHubCommitV3.getCommitNode(anyObject(), anyString(), anyString(), anyObject(), anyString())).thenReturn(null);
+            when(gitHubCommitV3.getCommitNode(anyObject(), anyString(), anyString())).thenReturn(null);
         } catch (Exception e) {
             LOG.error(e.getMessage());
         }
@@ -132,7 +132,7 @@ public class GitHubCommitV3Test {
         Assert.assertEquals("author1Name", commit1.getScmAuthor());
         Assert.assertEquals(7, commit1.getNumberOfChanges());
         Assert.assertEquals(collectorItemId, commit1.getCollectorItemId().toString());
-        verify(gitHubCommitV3, times(3)).getCommitNode(anyObject(), anyString(), anyString(), anyObject(), anyString());
+        verify(gitHubCommitV3, times(3)).getCommitNode(anyObject(), anyString(), anyString());
 
         Commit commit2 = commitsList.get(1);
         Assert.assertEquals(repoUrl, commit2.getScmUrl());
@@ -243,7 +243,7 @@ public class GitHubCommitV3Test {
 
         Object node = null;
         try {
-            node = gitHubCommitV3.getCommitNode(gitHubParsed, "branch", "oid1", new DateTime(), "token");
+            node = gitHubCommitV3.getCommitNode(gitHubParsed, "oid1", "token");
         } catch (Exception e){
             LOG.error(e.getMessage());
         }
@@ -427,32 +427,11 @@ public class GitHubCommitV3Test {
         JSONObject repository = new JSONObject();
         data.put("repository", repository);
 
-        JSONObject ref = new JSONObject();
-        repository.put("ref", ref);
+        JSONObject node = new JSONObject();
+        node.put("oid", "oid1");
 
-        JSONObject target = new JSONObject();
-        ref.put("target", target);
-
-        JSONObject history = new JSONObject();
-        target.put("history", history);
-
-        JSONArray edges = new JSONArray();
-        history.put("edges", edges);
-
-        JSONObject edge1 = new JSONObject();
-        edges.add(edge1);
-
-        JSONObject node1 =  new JSONObject();
-        node1.put("oid", "oid1");
-        edge1.put("node", node1);
-
-        JSONObject edge2 = new JSONObject();
-        edges.add(edge2);
-
-        JSONObject node2 =  new JSONObject();
-        node2.put("oid", "oid2");
-        edge2.put("node", node2);
-
+        repository.put("object", node);
+        
         return responseJsonObject;
     }
 
