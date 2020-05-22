@@ -1,43 +1,35 @@
 package com.capitalone.dashboard.webhook.github;
 
 public class GraphQLQuery {
-    public static final String COMMITS_GRAPHQL = "query ($owner: String!, $name: String!, $branch: String!, $since: GitTimestamp!) {" +
-    "    repository(owner: $owner, name: $name) {" +
-    "        ref(qualifiedName: $branch) {" +
-    "            target {" +
-    "               ... on Commit {" +
-    "                    history(first: 100, since: $since) {" +
-    "                        edges {" +
-    "                            cursor" +
-    "                            node {" +
-    "                                oid" +
-    "                                author {" +
-    "                                   name" +
-    "                                   date" +
-    "                                   user {" +
-    "                                       login" +
-    "                                   }" +
-    "                                }" +
-    "                                committer {" +
-    "                                   name" +
-    "                                   date" +
-    "                                   user {" +
-    "                                       login" +
-    "                                   }" +
-    "                                }" +
-    "                                parents(first: 10) {" +
-    "                                    nodes {" +
-    "                                        oid" +
-    "                                    }" +
-    "                                }" +
-    "                            }" +
-    "                        }" +
-    "                    }" +
-    "                }" +
-    "            }" +
-    "        }" +
-    "    }" +
-    "}";
+    public static final String COMMITS_GRAPHQL =
+            "query ($owner: String!, $name: String!, $oid: GitObjectID!) {" +
+            "    repository(owner: $owner, name: $name) {" +
+            "        object(oid: $oid) {" +
+            "            ... on Commit {" +
+            "                oid" +
+            "                author {" +
+            "                    name" +
+            "                    date" +
+            "                    user {" +
+            "                        login" +
+            "                    }" +
+            "                }" +
+            "                committer {" +
+            "                    name" +
+            "                    date" +
+            "                    user {" +
+            "                        login" +
+            "                    }" +
+            "                }" +
+            "                parents(first: 10) {" +
+            "                    nodes {" +
+            "                        oid" +
+            "                    }" +
+            "                }" +
+            "            }" +
+            "        }" +
+            "    }" +
+            "}";
 
     public static final String PR_GRAPHQL_BEGIN_PRE =
             "query ($owner: String!, $name: String!, $number: Int!";
