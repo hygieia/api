@@ -9,19 +9,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -48,6 +42,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -734,6 +729,8 @@ public class DashboardServiceTest {
     public void deleteWidget() {
         ObjectId widgetId = ObjectId.get();
         ObjectId compId = ObjectId.get();
+        ObjectId collId = ObjectId.get();
+        List<ObjectId> collIds = Collections.singletonList(collId);
         Dashboard d = makeTeamDashboard("template", "title", "appName", "amit",configItemBusServName, configItemBusAppName);
         d.getWidgets().add(makeWidget(widgetId, "existing"));
         Widget expected = makeWidget(widgetId, "updated");
@@ -742,8 +739,31 @@ public class DashboardServiceTest {
         c.setId(compId);
 
         when(componentRepository.findOne(compId)).thenReturn(c);
-        dashboardService.deleteWidget(d, expected,compId);
+        dashboardService.deleteWidget(d, expected, compId, collIds, true);
         verify(componentRepository, times(1)).save(any(Component.class));
+    }
+
+    @Test
+    public void deleteWidgetQuality() {
+        ObjectId widgetId = ObjectId.get();
+        ObjectId compId = ObjectId.get();
+        ObjectId collId = ObjectId.get();
+        List<ObjectId> collIds = Collections.singletonList(collId);
+        Map<CollectorType, List<CollectorItem>> componentCIs = new HashMap<>();
+        componentCIs.put(CollectorType.CodeQuality, new ArrayList<>());
+        componentCIs.put(CollectorType.LibraryPolicy, new ArrayList<>());
+
+        Dashboard d = makeTeamDashboard("template", "title", "appName", "amit",configItemBusServName, configItemBusAppName);
+        Widget quality = makeWidget(widgetId, "codeanalysis");
+        d.getWidgets().add(quality);
+
+        Component c = new Component();
+        c.setId(compId);
+        c.setCollectorItems(componentCIs);
+
+        when(componentRepository.findOne(compId)).thenReturn(c);
+        dashboardService.deleteWidget(d, quality, compId, collIds, false);
+        assertTrue(d.getWidgets().get(0).equals(quality));
     }
 
     
@@ -935,7 +955,7 @@ public class DashboardServiceTest {
     private Widget makeWidget(ObjectId id, String name) {
         Widget w = new Widget();
         w.setId(id);
-        w.setName("updated");
+        w.setName(name);
         return w;
     }
     private Cmdb getConfigItem(String name){

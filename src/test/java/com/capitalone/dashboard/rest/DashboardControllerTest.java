@@ -378,13 +378,32 @@ public class DashboardControllerTest {
         Widget widget = makeWidget(widgetId, "build", compId, options);
         when(dashboardService.get(dashId)).thenReturn(d1);
         when(dashboardService.getWidget(d1, widgetId)).thenReturn(widget);
-        dashboardService.deleteWidget(Matchers.any(Dashboard.class), Matchers.any(Widget.class),Matchers.any(ObjectId.class));
+        dashboardService.deleteWidget(Matchers.any(Dashboard.class), Matchers.any(Widget.class), Matchers.any(ObjectId.class), Matchers.anyListOf(ObjectId.class), Matchers.eq(true));
         mockMvc.perform(put("/dashboard/" + dashId.toString() + "/deleteWidget/" + widgetId.toString())
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(request)))
                 .andExpect(status().isOk());
     }
 
+    @Test
+    public void deleteWidgetQuality() throws Exception {
+        ObjectId dashId = ObjectId.get();
+        ObjectId widgetId = ObjectId.get();
+        ObjectId compId = ObjectId.get();
+        ObjectId collId = ObjectId.get();
+        List<ObjectId> collIds = Collections.singletonList(collId);
+        Map<String, Object> options = new WidgetOptionsBuilder().put("option1", 2).get();
+        WidgetRequest request = makeWidgetRequest("codeanalysis", compId, collIds, options);
+        Dashboard d1 = makeDashboard("t1", "title", "app", "comp","amit", DashboardType.Team, configItemAppName, configItemComponentName);
+        Widget widget = makeWidget(widgetId, "codeanalysis", compId, options);
+        when(dashboardService.get(dashId)).thenReturn(d1);
+        when(dashboardService.getWidget(d1, widgetId)).thenReturn(widget);
+        dashboardService.deleteWidget(Matchers.any(Dashboard.class), Matchers.any(Widget.class), Matchers.any(ObjectId.class), Matchers.anyListOf(ObjectId.class), Matchers.eq(false));
+        mockMvc.perform(put("/dashboard/" + dashId.toString() + "/deleteWidget/" + widgetId.toString())
+                .contentType(TestUtil.APPLICATION_JSON_UTF8)
+                .content(TestUtil.convertObjectToJsonBytes(request)))
+                .andExpect(status().isOk());
+    }
     
     @Test
     public void updateOwners() throws Exception {

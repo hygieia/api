@@ -343,14 +343,12 @@ public class DashboardController {
     public ResponseEntity<WidgetResponse> deleteWidget(@PathVariable ObjectId id,
                                                        @PathVariable ObjectId widgetId,
                                                        @RequestBody WidgetRequest request) {
-        Component component = dashboardService.associateCollectorToComponent(
-                request.getComponentId(), request.getCollectorItemIds(), true);
 
         Dashboard dashboard = dashboardService.get(id);
         Widget widget =dashboardService.getWidget(dashboard, widgetId);
-        dashboardService.deleteWidget(dashboard, widget,request.getComponentId());
+        Component updatedComponent = dashboardService.deleteWidget(dashboard, widget, request.getComponentId(), request.getCollectorItemIds(), true);
 
-        return ResponseEntity.ok().body(new WidgetResponse(component, null));
+        return ResponseEntity.ok().body(new WidgetResponse(updatedComponent, null));
     }
 
     @DashboardOwnerOrAdmin
@@ -359,14 +357,12 @@ public class DashboardController {
     public ResponseEntity<WidgetResponse> deleteWidgetV2(@PathVariable ObjectId id,
                                                        @PathVariable ObjectId widgetId,
                                                        @RequestBody WidgetRequest request) {
-        Component component = dashboardService.associateCollectorToComponent(
-                request.getComponentId(), request.getCollectorItemIds(), false);
 
         Dashboard dashboard = dashboardService.get(id);
         Widget widget =dashboardService.getWidget(dashboard, widgetId);
-        dashboardService.deleteWidget(dashboard, widget,request.getComponentId());
+        Component updatedComponent = dashboardService.deleteWidget(dashboard, widget, request.getComponentId(), request.getCollectorItemIds(), false);
 
-        return ResponseEntity.ok().body(new WidgetResponse(component, null));
+        return ResponseEntity.ok().body(new WidgetResponse(updatedComponent, null));
     }
 
     /**

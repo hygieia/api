@@ -118,9 +118,11 @@ public interface DashboardService {
      *
      * @param dashboard delete widget on this Dashboard
      * @param widget Widget to delete
-     *
+     * @param componentId
+     * @param collectorItemIds
+     * @param cleanupQuality flag to cleanup all Quality CollectorItem types
      */
-    void deleteWidget(Dashboard dashboard, Widget widget,ObjectId componentId);
+    Component deleteWidget(Dashboard dashboard, Widget widget,ObjectId componentId, List<ObjectId> collectorItemIds, boolean cleanupQuality);
 
     /**
      * Deletes an existing Widget.
