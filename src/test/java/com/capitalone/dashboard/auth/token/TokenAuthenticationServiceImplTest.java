@@ -63,6 +63,12 @@ public class TokenAuthenticationServiceImplTest {
 		when(request.getHeader(AUTHORIZATION)).thenReturn(null);
 		assertNull(service.getAuthentication(request));
 	}
+
+	@Test
+	public void testGetAuthentication_MalformedJWT() {
+		when(request.getHeader(AUTHORIZATION)).thenReturn("null");
+		assertNull(service.getAuthentication(request));
+	}
 	
 	@Test
 	public void testGetAuthentication_expiredToken() {

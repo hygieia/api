@@ -9,19 +9,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -48,6 +42,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -213,12 +208,50 @@ public class DashboardServiceTest {
         when(collectorRepository.findOne(collId)).thenReturn(collector);
         when(componentRepository.findOne(compId)).thenReturn(component);
 
-        dashboardService.associateCollectorToComponent(compId, collItemIds);
+        dashboardService.associateCollectorToComponent(compId, collItemIds, true);
 
         assertThat(component.getCollectorItems().get(CollectorType.Build), contains(item));
 
         verify(componentRepository).save(component);
         verify(collectorItemRepository, never()).save(item);
+    }
+
+    @Test
+    public void associateCollectorToComponentWithoutCleanUpQuality() {
+        ObjectId compId = ObjectId.get();
+        ObjectId collId1 = ObjectId.get();
+        ObjectId collId2 = ObjectId.get();
+        ObjectId collItemId1 = ObjectId.get();
+        ObjectId collItemId2 = ObjectId.get();
+        List<ObjectId> collItemIds = Arrays.asList(collItemId1,collItemId2);
+
+        CollectorItem item1 = new CollectorItem();
+        item1.setCollectorId(collId1);
+        item1.setEnabled(true);
+        CollectorItem item2 = new CollectorItem();
+        item2.setCollectorId(collId2);
+        item2.setEnabled(true);
+
+        Collector collector1 = new Collector();
+        collector1.setCollectorType(CollectorType.CodeQuality);
+        Collector collector2 = new Collector();
+        collector2.setCollectorType(CollectorType.LibraryPolicy);
+        Component component = new Component();
+
+        when(collectorItemRepository.findOne(collItemId1)).thenReturn(item1);
+        when(collectorItemRepository.findOne(collItemId2)).thenReturn(item2);
+        when(collectorRepository.findOne(collId1)).thenReturn(collector1);
+        when(collectorRepository.findOne(collId2)).thenReturn(collector2);
+        when(componentRepository.findOne(compId)).thenReturn(component);
+
+        dashboardService.associateCollectorToComponent(compId, collItemIds, false);
+
+        assertThat(component.getCollectorItems().get(CollectorType.CodeQuality), contains(item1));
+        assertThat(component.getCollectorItems().get(CollectorType.LibraryPolicy), contains(item2));
+
+        verify(componentRepository).save(component);
+        verify(collectorItemRepository, never()).save(item1);
+        verify(collectorItemRepository, never()).save(item2);
     }
 
     @Test
@@ -241,7 +274,7 @@ public class DashboardServiceTest {
         when(collectorRepository.findOne(collId)).thenReturn(collector);
         when(componentRepository.findOne(compId)).thenReturn(component);
 
-        dashboardService.associateCollectorToComponent(compId, collItemIds);
+        dashboardService.associateCollectorToComponent(compId, collItemIds, true);
 
         assertThat(component.getCollectorItems().get(CollectorType.Build), contains(item));
 
@@ -273,7 +306,7 @@ public class DashboardServiceTest {
         when(componentRepository.findOne(compId)).thenReturn(component1);
         when(customRepositoryQuery.findComponents(collector, item)).thenReturn(Arrays.asList(component1, component2));
 
-        dashboardService.associateCollectorToComponent(compId, collItemIds);
+        dashboardService.associateCollectorToComponent(compId, collItemIds, true);
 
         assertThat(component1.getCollectorItems().get(CollectorType.Build), contains(item));
         assertThat(item.isEnabled(), is(true));
@@ -301,7 +334,7 @@ public class DashboardServiceTest {
         when(collectorRepository.findOne(collId)).thenReturn(collector);
         when(componentRepository.findOne(compId)).thenReturn(component);
 
-        dashboardService.associateCollectorToComponent(compId, collItemIds);
+        dashboardService.associateCollectorToComponent(compId, collItemIds, true);
 
         assertThat(component.getCollectorItems().get(CollectorType.Build), contains(item));
         assertThat(item.isEnabled(), is(true));
@@ -345,7 +378,7 @@ public class DashboardServiceTest {
         when(collectorRepository.findOne(collId)).thenReturn(collector);
         when(componentRepository.findOne(compId)).thenReturn(component);
 
-        dashboardService.associateCollectorToComponent(compId, collItemIds);
+        dashboardService.associateCollectorToComponent(compId, collItemIds, true);
 
         assertThat(component.getCollectorItems().get(CollectorType.Build), contains(item2));
         assertThat(item1.isEnabled(), is(false));
@@ -393,7 +426,7 @@ public class DashboardServiceTest {
         when(componentRepository.findOne(compId)).thenReturn(component1);
         when(customRepositoryQuery.findComponents(collector, item1)).thenReturn(Arrays.asList(component1, component2));
 
-        dashboardService.associateCollectorToComponent(compId, collItemIds);
+        dashboardService.associateCollectorToComponent(compId, collItemIds, true);
 
         assertThat(component1.getCollectorItems().get(CollectorType.Build), contains(item2));
         assertThat(item1.isEnabled(), is(true));
@@ -443,7 +476,7 @@ public class DashboardServiceTest {
         when(collectorRepository.findOne(collId)).thenReturn(collector);
         when(componentRepository.findOne(compId)).thenReturn(component);
 
-        dashboardService.associateCollectorToComponent(compId, collItemIds);
+        dashboardService.associateCollectorToComponent(compId, collItemIds, true);
 
         assertThat(component.getCollectorItems().get(CollectorType.Build), contains(item2, item3));
         assertThat(item1.isEnabled(), is(false));
@@ -497,7 +530,7 @@ public class DashboardServiceTest {
         when(collectorRepository.findOne(collId)).thenReturn(collector);
         when(componentRepository.findOne(compId)).thenReturn(component);
 
-        dashboardService.associateCollectorToComponent(compId, collItemIds);
+        dashboardService.associateCollectorToComponent(compId, collItemIds, true);
 
         assertThat(component.getCollectorItems().get(CollectorType.Build), contains(item3));
         assertThat(item1.isEnabled(), is(false));
@@ -696,6 +729,8 @@ public class DashboardServiceTest {
     public void deleteWidget() {
         ObjectId widgetId = ObjectId.get();
         ObjectId compId = ObjectId.get();
+        ObjectId collId = ObjectId.get();
+        List<ObjectId> collIds = Collections.singletonList(collId);
         Dashboard d = makeTeamDashboard("template", "title", "appName", "amit",configItemBusServName, configItemBusAppName);
         d.getWidgets().add(makeWidget(widgetId, "existing"));
         Widget expected = makeWidget(widgetId, "updated");
@@ -704,8 +739,31 @@ public class DashboardServiceTest {
         c.setId(compId);
 
         when(componentRepository.findOne(compId)).thenReturn(c);
-        dashboardService.deleteWidget(d, expected,compId);
+        dashboardService.deleteWidget(d, expected, compId, collIds, true);
         verify(componentRepository, times(1)).save(any(Component.class));
+    }
+
+    @Test
+    public void deleteWidgetQuality() {
+        ObjectId widgetId = ObjectId.get();
+        ObjectId compId = ObjectId.get();
+        ObjectId collId = ObjectId.get();
+        List<ObjectId> collIds = Collections.singletonList(collId);
+        Map<CollectorType, List<CollectorItem>> componentCIs = new HashMap<>();
+        componentCIs.put(CollectorType.CodeQuality, new ArrayList<>());
+        componentCIs.put(CollectorType.LibraryPolicy, new ArrayList<>());
+
+        Dashboard d = makeTeamDashboard("template", "title", "appName", "amit",configItemBusServName, configItemBusAppName);
+        Widget quality = makeWidget(widgetId, "codeanalysis");
+        d.getWidgets().add(quality);
+
+        Component c = new Component();
+        c.setId(compId);
+        c.setCollectorItems(componentCIs);
+
+        when(componentRepository.findOne(compId)).thenReturn(c);
+        dashboardService.deleteWidget(d, quality, compId, collIds, false);
+        assertTrue(d.getWidgets().get(0).equals(quality));
     }
 
     
@@ -897,7 +955,7 @@ public class DashboardServiceTest {
     private Widget makeWidget(ObjectId id, String name) {
         Widget w = new Widget();
         w.setId(id);
-        w.setName("updated");
+        w.setName(name);
         return w;
     }
     private Cmdb getConfigItem(String name){

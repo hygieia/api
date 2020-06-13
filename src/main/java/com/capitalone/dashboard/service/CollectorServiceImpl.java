@@ -89,6 +89,20 @@ public class CollectorServiceImpl implements CollectorService {
         return collectorItems;
     }
 
+    @Override
+    public Page<CollectorItem> collectorItemsByTypeWithFilter(CollectorType collectorType, String searchFilterValue, String searchField, Pageable pageable) {
+        List<Collector> collectors = collectorRepository.findByCollectorType(collectorType);
+        List<ObjectId> collectorIds = Lists.newArrayList(Iterables.transform(collectors, new ToCollectorId()));
+        Page<CollectorItem> collectorItems;
+        collectorItems = collectorItemRepository.findByCollectorIdAndSearchField(collectorIds,searchField,searchFilterValue,pageable);
+        removeJobUrlAndInstanceUrl(collectorItems);
+        for (CollectorItem options : collectorItems) {
+            options.setCollector(collectorById(options.getCollectorId(), collectors));
+        }
+
+        return collectorItems;
+    }
+
     // method to remove jobUrl and instanceUrl from build collector items.
     private Page<CollectorItem> removeJobUrlAndInstanceUrl(Page<CollectorItem> collectorItems) {
         for (CollectorItem cItem : collectorItems) {
@@ -177,6 +191,20 @@ public class CollectorServiceImpl implements CollectorService {
     @Override
     public CollectorItem createCollectorItemSelectOptions(CollectorItem item, Map<String, Object> allOptions, Map<String, Object> uniqueOptions) {
         Collector collector =  collectorRepository.findOne(item.getCollectorId());
+        Map<String,Object> uniqueFieldsFromCollector = collector.getUniqueFields();
+        List<CollectorItem> existing = customRepositoryQuery.findCollectorItemsBySubsetOptions(
+                item.getCollectorId(), allOptions, uniqueOptions,uniqueFieldsFromCollector);
+
+        if (!CollectionUtils.isEmpty(existing)) {
+            CollectorItem existingItem = existing.get(0);
+            existingItem.getOptions().putAll(item.getOptions());
+            return collectorItemRepository.save(existingItem);
+        }
+        return collectorItemRepository.save(item);
+    }
+
+    @Override
+    public CollectorItem createCollectorItemSelectOptions(CollectorItem item, Collector collector, Map<String, Object> allOptions, Map<String, Object> uniqueOptions) {
         Map<String,Object> uniqueFieldsFromCollector = collector.getUniqueFields();
         List<CollectorItem> existing = customRepositoryQuery.findCollectorItemsBySubsetOptions(
                 item.getCollectorId(), allOptions, uniqueOptions,uniqueFieldsFromCollector);

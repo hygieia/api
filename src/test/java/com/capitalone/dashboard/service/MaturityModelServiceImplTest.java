@@ -237,7 +237,7 @@ public class MaturityModelServiceImplTest {
 
     @Test
     public void getAllProfiles() {
-        when(maturityModelRepository.getAllProfiles()).thenReturn(new ArrayList<String>());
+        when(maturityModelRepository.getAllProfiles()).thenReturn(new ArrayList<>());
         assertNotNull(service.getProfiles());
     }
 

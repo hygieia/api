@@ -122,6 +122,19 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
+    public Iterable<Dashboard> allTemplate(String template){
+        Iterable<Dashboard> templateDashboards = dashboardRepository.findByTemplate(template);
+        for(Dashboard dashboard: templateDashboards) {
+            String appName = dashboard.getConfigurationItemBusServName();
+            String compName = dashboard.getConfigurationItemBusAppName();
+
+            setAppAndComponentNameToDashboard(dashboard, appName, compName);
+        }
+        return templateDashboards;
+    }
+
+
+    @Override
     public Dashboard get(ObjectId id) {
         Dashboard dashboard = dashboardRepository.findOne(id);
         String appName = dashboard.getConfigurationItemBusServName();
@@ -282,41 +295,51 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    public Component associateCollectorToComponent(ObjectId componentId, List<ObjectId> collectorItemIds) {
+    public Component associateCollectorToComponent(ObjectId componentId, List<ObjectId> collectorItemIds, boolean cleanupQuality) {
         if (componentId == null || collectorItemIds == null) {
             // Not all widgets gather data from collectors
             return null;
         }
         com.capitalone.dashboard.model.Component component = componentRepository.findOne(componentId); //NOPMD - using fully qualified name for clarity
-        associateCollectorItemsToComponent(collectorItemIds, true, component);
+        associateCollectorItemsToComponent(collectorItemIds, true, component, cleanupQuality);
         return component;
     }
 
     @Override
-    public Component associateCollectorToComponent(ObjectId componentId, List<ObjectId> collectorItemIds,Component component) {
+    public Component associateCollectorToComponent(ObjectId componentId, List<ObjectId> collectorItemIds,Component component, boolean cleanupQuality) {
         if (componentId == null || collectorItemIds == null) {
             // Not all widgets gather data from collectors
             return null;
         }
-        associateCollectorItemsToComponent(collectorItemIds, false, component);
+        associateCollectorItemsToComponent(collectorItemIds, false, component, cleanupQuality);
         return component;
     }
 
-    private void associateCollectorItemsToComponent(List<ObjectId> collectorItemIds, boolean save, Component component) {
+    private void associateCollectorItemsToComponent(List<ObjectId> collectorItemIds, boolean save, Component component, boolean cleanupQuality) {
         final String METHOD_NAME = "DashboardServiceImpl.associateCollectorToComponent :";
         //First: disable all collectorItems of the Collector TYPEs that came in with the request.
         //Second: remove all the collectorItem association of the Collector Type  that came in
+        // incoming collector item collector types
         HashSet<CollectorType> incomingTypes = new HashSet<>();
         HashMap<ObjectId, CollectorItem> toSaveCollectorItems = new HashMap<>();
+        // mapping collector item ID to collector item
+        HashMap<ObjectId, CollectorItem> incomingCollectorItems = new HashMap<>();
+        ObjectId currentCollectorId = null;
+        Collector collector = null;
         for (ObjectId collectorItemId : collectorItemIds) {
             CollectorItem collectorItem = collectorItemRepository.findOne(collectorItemId);
+            incomingCollectorItems.put(collectorItemId, collectorItem);
             if(collectorItem == null) {
                 LOG.warn(METHOD_NAME + " Bad CollectorItemId passed in the request : " + collectorItemId);
                 continue;
             }
-            Collector collector = collectorRepository.findOne(collectorItem.getCollectorId());
+            if(collector == null || currentCollectorId != collectorItem.getCollectorId()) {
+                collector = collectorRepository.findOne(collectorItem.getCollectorId());
+                currentCollectorId = collector.getId();
+            }
             if (!incomingTypes.contains(collector.getCollectorType())) {
                 incomingTypes.add(collector.getCollectorType());
+                // get current collectorItems for a specific collector type in component
                 List<CollectorItem> cItems = component.getCollectorItems(collector.getCollectorType());
                 // Save all collector items as disabled for now
                 if (!CollectionUtils.isEmpty(cItems)) {
@@ -332,7 +355,7 @@ public class DashboardServiceImpl implements DashboardService {
         }
 
         // If a collector type is within the code analysis widget, check to see if any of the remaining fields were passed values
-        if(incomingTypes.stream().anyMatch(QualityWidget::contains)){
+        if(incomingTypes.stream().anyMatch(QualityWidget::contains) && cleanupQuality){
             if(!incomingTypes.contains(CollectorType.Test)){
                 component.getCollectorItems().remove(CollectorType.Test);
             }
@@ -347,9 +370,11 @@ public class DashboardServiceImpl implements DashboardService {
             }
         }
 
+        currentCollectorId = null;
+        collector = null;
         //Last step: add collector items that came in
         for (ObjectId collectorItemId : collectorItemIds) {
-            CollectorItem collectorItem = collectorItemRepository.findOne(collectorItemId);
+            CollectorItem collectorItem = incomingCollectorItems.get(collectorItemId);
             if(collectorItem == null) {
                 LOG.warn(METHOD_NAME + " Bad CollectorItemId passed in the incoming request : " + collectorItemId);
                 continue;
@@ -361,23 +386,25 @@ public class DashboardServiceImpl implements DashboardService {
                     || compareMaps(collectorItem.getOptions(), existingCollectorItem.getOptions()) ) {
                 collectorItem.setLastUpdated(System.currentTimeMillis());
             }
-            Collector collector = collectorRepository.findOne(collectorItem.getCollectorId());
+            if(collector == null || currentCollectorId != collectorItem.getCollectorId()) {
+                collector = collectorRepository.findOne(collectorItem.getCollectorId());
+                currentCollectorId = collector.getId();
+            }
             component.addCollectorItem(collector.getCollectorType(), collectorItem);
             toSaveCollectorItems.put(collectorItemId, collectorItem);
             // set transient collector property
             collectorItem.setCollector(collector);
         }
 
-        Set<CollectorItem> deleteSet = new HashSet<>();
-        for (ObjectId id : toSaveCollectorItems.keySet()) {
-            deleteSet.add(toSaveCollectorItems.get(id));
-        }
-        collectorItemRepository.save(deleteSet);
+        collectorItemRepository.save(new HashSet<>(toSaveCollectorItems.values()));
         if(save){
             componentRepository.save(component);
         }
     }
 
+    /*
+        Return true if two maps are different
+     */
     protected boolean compareMaps (Map<String, Object> map1, Map<String, Object> map2) {
         if (map1 == null || map2 == null)
             return true;
@@ -416,6 +443,8 @@ public class DashboardServiceImpl implements DashboardService {
     public Widget updateWidget(Dashboard dashboard, Widget widget) {
         int index = dashboard.getWidgets().indexOf(widget);
         dashboard.getWidgets().set(index, widget);
+        // update dashboard updateAt timestamp
+        dashboard.setUpdatedAt(System.currentTimeMillis());
         dashboardRepository.save(dashboard);
         return widget;
     }
@@ -633,28 +662,48 @@ public class DashboardServiceImpl implements DashboardService {
 
 
     @Override
-    public void deleteWidget(Dashboard dashboard, Widget widget,ObjectId componentId) {
-        int index = dashboard.getWidgets().indexOf(widget);
-        dashboardUpdate(dashboard, index);
+    public Component deleteWidget(Dashboard dashboard, Widget widget,ObjectId componentId, List<ObjectId> collectorItemIds, boolean cleanupQuality) {
         String widgetName = widget.getName();
         List<CollectorType> collectorTypesToDelete = new ArrayList<>();
         CollectorType cType = findCollectorType(widgetName);
         collectorTypesToDelete.add(cType);
+
+        if (componentId == null) {
+            return null;
+        }
+        Component component = getComponent(componentId);
+
         if(widgetName.equalsIgnoreCase("codeanalysis")){
-            collectorTypesToDelete.add(CollectorType.CodeQuality);
-            collectorTypesToDelete.add(CollectorType.StaticSecurityScan);
-            collectorTypesToDelete.add(CollectorType.LibraryPolicy);
-            collectorTypesToDelete.add(CollectorType.Test);
-        }
-        if(componentId!=null){
-            Component component = componentRepository.findOne(componentId);
-            for (CollectorType c:collectorTypesToDelete) {
-                component.getCollectorItems().remove(c);
+            if (cleanupQuality) {
+                collectorTypesToDelete.add(CollectorType.CodeQuality);
+                collectorTypesToDelete.add(CollectorType.StaticSecurityScan);
+                collectorTypesToDelete.add(CollectorType.LibraryPolicy);
+                collectorTypesToDelete.add(CollectorType.Test);
+            } else {
+                // Find which collector item under quality widget to delete
+                // from collectorItemIds, find collectortype containing matching collector item id, then add to collectorTypesToDelete
+                CollectorType foundType = searchCollectorTypeByCollectorItemIds(component, collectorItemIds);
+                // if match found (should always be the case)
+                if (foundType != null) {
+                    collectorTypesToDelete.add(foundType);
+                }
             }
-
-            componentRepository.save(component);
         }
 
+        for (CollectorType c:collectorTypesToDelete) {
+            component.getCollectorItems().remove(c);
+        }
+
+        int index = dashboard.getWidgets().indexOf(widget);
+        // if widget is not quality, is quality for old UI, or only has one collector type in quality, then delete entire widget from dashboard
+        if (!widgetName.equalsIgnoreCase("codeanalysis")
+                || (widgetName.equalsIgnoreCase("codeanalysis") && cleanupQuality)
+                || !hasMultipleQualityComponents(component.getCollectorItems())) {
+            dashboardUpdate(dashboard, index);
+        }
+
+        componentRepository.save(component);
+        return component;
     }
 
     private void dashboardUpdate(Dashboard dashboard, int index) {
@@ -664,6 +713,24 @@ public class DashboardServiceImpl implements DashboardService {
             dashboard.setWidgets(updatedWidgets);
             dashboardRepository.save(dashboard);
         }
+    }
+
+    private CollectorType searchCollectorTypeByCollectorItemIds(Component component, List<ObjectId> collectorItemIds) {
+        Map<CollectorType, List<CollectorItem>> componentCIs = component.getCollectorItems();
+        // once find first match, return associated CollectorType
+        for (Map.Entry<CollectorType, List<CollectorItem>> componentCI : componentCIs.entrySet()) {
+            for (ObjectId colItemId : collectorItemIds) {
+                if (componentCI.getValue().stream().filter(ci -> ci.getId().equals(colItemId)).count() > 0) {
+                    return componentCI.getKey();
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private boolean hasMultipleQualityComponents(Map<CollectorType, List<CollectorItem>> componentCIs) {
+        return componentCIs.keySet().stream().anyMatch(QualityWidget::contains) ? true : false;
     }
 
     @Override
@@ -778,8 +845,10 @@ public class DashboardServiceImpl implements DashboardService {
     /**
      * Get all dashboards filtered by title and Pageable ( default page size = 10)
      *
-     * @param title, pageable
-     * @return Page<Dashboard>
+     * @param title Title of Dashboard
+     * @param type Type of Dashboard
+     * @param pageable Pagination Object
+     * @return Page<Dashboard> Page of Dashboards
      */
     @Override
     public Page<Dashboard> getDashboardByTitleWithFilter(String title, String type, Pageable pageable) {
@@ -796,8 +865,9 @@ public class DashboardServiceImpl implements DashboardService {
     /**
      * Get count of all dashboards filtered by title
      *
-     * @param title
-     * @return Integer
+     * @param title Title of Dashboard
+     * @param type Type of Dashboard
+     * @return Integer Count of Dashboards
      */
     @Override
     public Integer getAllDashboardsByTitleCount(String title, String type) {
@@ -813,7 +883,7 @@ public class DashboardServiceImpl implements DashboardService {
     /**
      * Get count of all dashboards, use dashboard type if supplied
      *
-     * @param
+     * @param type Type of the Dashboard
      * @return long
      */
     @Override
@@ -828,6 +898,7 @@ public class DashboardServiceImpl implements DashboardService {
     /**
      * Get all dashboards with page size (default = 10)
      *
+     * @param type Type of Dashboard
      * @param page size
      * @return List of dashboards
      */
@@ -842,7 +913,6 @@ public class DashboardServiceImpl implements DashboardService {
     /**
      * Get page size
      *
-     * @param
      * @return Integer
      */
     @Override

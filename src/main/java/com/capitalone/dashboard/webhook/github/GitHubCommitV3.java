@@ -89,6 +89,10 @@ public class GitHubCommitV3 extends GitHubV3 {
             branch = ref.replace("refs/heads/", "");
         }
 
+        if(!isRegistered(repoUrl, branch)) {
+            return "Repo: <" + repoUrl + "> Branch: <" + branch + "> is not registered in Hygieia";
+        }
+
         Object senderObj = jsonObject.get("sender");
         String senderLogin = restClient.getString(senderObj,"login");
         String senderLDAPDN = restClient.getString(senderObj,"ldap_dn");
@@ -161,12 +165,13 @@ public class GitHubCommitV3 extends GitHubV3 {
             commit.setScmBranch(branch);
 
             DateTime commitTimestamp = new DateTime(restClient.getString(cObj, "timestamp"));
-            DateTime commitTimestampStepBack = commitTimestamp.minusMinutes(gitHubWebHookSettings.getCommitTimestampOffset());
 
             commit.setScmCommitTimestamp(commitTimestamp.getMillis());
 
-            Object node = getCommitNode(gitHubParsed, branch, commitId, commitTimestampStepBack, gitHubWebHookToken);
-            if (node != null) {
+            Object node = getCommitNode(gitHubParsed, commitId, gitHubWebHookToken);
+            if (node == null) {
+                LOG.debug("Commit node not found for " + commitId);
+            } else  {
                 List<String> parentShas = getParentShas(node);
                 commit.setScmParentRevisionNumbers(parentShas);
                 commit.setFirstEverCommit(CollectionUtils.isEmpty(parentShas));
@@ -247,16 +252,12 @@ public class GitHubCommitV3 extends GitHubV3 {
     }
 
     private boolean checkCommitsWithPullNumber(List<Commit> commitsWithPullNumber) {
-        if (!CollectionUtils.isEmpty(commitsWithPullNumber)
-                && (commitsWithPullNumber.size() == 1)) { return true; }
-
-        return false;
+        return !CollectionUtils.isEmpty(commitsWithPullNumber)
+                && (commitsWithPullNumber.size() == 1);
     }
 
     private boolean checkCommitsListForSettingPullNumber(List<Commit> commitsList) {
-        if (!CollectionUtils.isEmpty(commitsList) && (commitsList.size() > 1)) { return true; }
-
-        return false;
+        return !CollectionUtils.isEmpty(commitsList) && (commitsList.size() > 1);
     }
 
     protected void setCommitPullNumber (Commit commit) {
@@ -287,16 +288,23 @@ public class GitHubCommitV3 extends GitHubV3 {
         }
     }
 
-    protected Object getCommitNode(GitHubParsed gitHubParsed, String branch, String commitId,
-                                       DateTime timeStamp, String token) throws HygieiaException, ParseException {
+    protected Object getCommitNode(GitHubParsed gitHubParsed, String commitId, String token) throws HygieiaException, ParseException {
 
-        JSONObject postBody = getQuery(gitHubParsed, branch, timeStamp.toString(), GraphQLQuery.COMMITS_GRAPHQL);
+        JSONObject postBody = getQuery(gitHubParsed, commitId, GraphQLQuery.COMMITS_GRAPHQL);
 
         ResponseEntity<String> response = null;
-        try {
-            response = restClient.makeRestCallPostGraphQL(gitHubParsed.getGraphQLUrl(), "token", token, postBody);
-        } catch (Exception e) {
-            throw new HygieiaException(e);
+        int retryCount = 0;
+        while(true) {
+            try {
+                response = restClient.makeRestCallPost(gitHubParsed.getGraphQLUrl(), "token", token, postBody);
+                break;
+            } catch (Exception e) {
+                retryCount++;
+                if(retryCount > apiSettings.getWebHook().getGitHub().getMaxRetries()) {
+                    LOG.error("Unable to get COMMIT from " + gitHubParsed.getUrl() + " after " + apiSettings.getWebHook().getGitHub().getMaxRetries() + " tries!");
+                    throw new HygieiaException(e);
+                }
+            }
         }
 
         JSONObject responseJsonObject = restClient.parseAsObject(response);
@@ -310,29 +318,7 @@ public class GitHubCommitV3 extends GitHubV3 {
         JSONObject repoData = (JSONObject) commitData.get("repository");
         if (repoData == null) { return null; }
 
-        JSONObject refObject = (JSONObject) repoData.get("ref");
-        if (refObject == null) { return null; }
-
-        JSONObject target = (JSONObject) refObject.get("target");
-        if (target == null) { return null; }
-
-        JSONObject history = (JSONObject) target.get("history");
-        if (history == null) { return null; }
-
-        JSONArray edges = (JSONArray) history.get("edges");
-        if (CollectionUtils.isEmpty(edges)) { return null; }
-
-        Object nodeFound = null;
-        for (Object o : edges) {
-            Object node = restClient.getAsObject(o, "node");
-            String sha = restClient.getString(node, "oid");
-            if (commitId.equalsIgnoreCase(sha)) {
-                nodeFound = node;
-                break;
-            }
-        }
-
-        return nodeFound;
+        return repoData.get("object");
     }
 
     protected List<String> getParentShas(Object commit) {
@@ -366,15 +352,15 @@ public class GitHubCommitV3 extends GitHubV3 {
         return CommitType.New;
     }
 
-    protected JSONObject getQuery (GitHubParsed gitHubParsed, String branch, String timeStamp, String queryString) {
+    protected JSONObject getQuery (GitHubParsed gitHubParsed, String commitId, String queryString) {
         JSONObject query = new JSONObject();
         JSONObject variableJSON = new JSONObject();
         variableJSON.put("owner", gitHubParsed.getOrgName());
         variableJSON.put("name", gitHubParsed.getRepoName());
-        variableJSON.put("branch", branch);
-        variableJSON.put("since", timeStamp);
+        variableJSON.put("oid", commitId);
         query.put("query", queryString);
         query.put("variables", variableJSON.toString());
         return query;
     }
+
 }

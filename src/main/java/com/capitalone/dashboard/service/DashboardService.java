@@ -71,18 +71,20 @@ public interface DashboardService {
      *
      * @param componentId unique identifier of the Component
      * @param collectorItemIds List of unique identifier of the CollectorItem
+     * @param cleanupQuality flag to cleanup remaining empty fields for Quality CollectorItem types
      * @return Component
      */
-    Component associateCollectorToComponent(ObjectId componentId, List<ObjectId> collectorItemIds);
+    Component associateCollectorToComponent(ObjectId componentId, List<ObjectId> collectorItemIds, boolean cleanupQuality);
 
     /**
      * Associate a CollectorItem to a Component
      *
      * @param componentId unique identifier of the Component
      * @param collectorItemIds List of unique identifier of the CollectorItem
+     * @param cleanupQuality flag to cleanup remaining empty fields for Quality CollectorItem types
      * @return Component
      */
-    Component associateCollectorToComponent(ObjectId componentId, List<ObjectId> collectorItemIds,Component component);
+    Component associateCollectorToComponent(ObjectId componentId, List<ObjectId> collectorItemIds,Component component, boolean cleanupQuality);
 
     /**
      * Creates a new Widget and adds it to the Dashboard indicated by the dashboardId parameter.
@@ -116,9 +118,11 @@ public interface DashboardService {
      *
      * @param dashboard delete widget on this Dashboard
      * @param widget Widget to delete
-     *
+     * @param componentId
+     * @param collectorItemIds
+     * @param cleanupQuality flag to cleanup all Quality CollectorItem types
      */
-    void deleteWidget(Dashboard dashboard, Widget widget,ObjectId componentId);
+    Component deleteWidget(Dashboard dashboard, Widget widget,ObjectId componentId, List<ObjectId> collectorItemIds, boolean cleanupQuality);
 
     /**
      * Deletes an existing Widget.
@@ -238,6 +242,7 @@ public interface DashboardService {
 
     Dashboard updateScoreSettings(ObjectId dashboardId, boolean scoreEnabled, ScoreDisplayType scoreDisplay);
 
+    Iterable<Dashboard> allTemplate(String template);
 }
 
 

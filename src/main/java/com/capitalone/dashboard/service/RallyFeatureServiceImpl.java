@@ -1,21 +1,5 @@
 package com.capitalone.dashboard.service;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.function.Predicate;
-
-import org.bson.types.ObjectId;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.capitalone.dashboard.model.Collector;
 import com.capitalone.dashboard.model.CollectorItem;
 import com.capitalone.dashboard.model.CollectorType;
@@ -28,6 +12,18 @@ import com.capitalone.dashboard.repository.RallyBurnDownRepository;
 import com.capitalone.dashboard.repository.RallyFeatureRepository;
 import com.capitalone.dashboard.request.RallyFeatureRequest;
 import com.capitalone.dashboard.response.RallyBurnDownResponse;
+import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class RallyFeatureServiceImpl implements RallyFeatureService {
@@ -100,7 +96,7 @@ public class RallyFeatureServiceImpl implements RallyFeatureService {
 		List<Double> taskEstimateArray = new ArrayList<>();
 
 		RallyBurnDownData burnDownData = rallyBurnDownRepository.findByIterationIdAndProjectId(request.getIterationId(),
-				request.getProjectId().toString());
+				request.getProjectId());
 		if(burnDownData!=null) {
 		for (Map<String, String> burnDownDetail : burnDownData.getBurnDownData()) {
 			iterationDates.add(burnDownDetail.get(RallyBurnDownData.ITERATION_DATE).substring(5, 10));
@@ -108,8 +104,8 @@ public class RallyFeatureServiceImpl implements RallyFeatureService {
 			acceptedPoints.add(Double.parseDouble(burnDownDetail.get(RallyBurnDownData.ACCEPTED_POINTS)));
 		}
 
-		Double maximumTotalEstimate = burnDownData.getTotalEstimate();
-		Double estimateDiff = maximumTotalEstimate / (burnDownData.getBurnDownData().size() - 1);
+		double maximumTotalEstimate = burnDownData.getTotalEstimate();
+		double estimateDiff = maximumTotalEstimate / (burnDownData.getBurnDownData().size() - 1);
 
 		for (int j = 0; j < burnDownData.getBurnDownData().size(); j++) {
 			if (burnDownData.getBurnDownData().size() - j == 1) {
@@ -128,11 +124,6 @@ public class RallyFeatureServiceImpl implements RallyFeatureService {
 		}
 		return rallyBurnDownResponse;
 
-	}
-
-	public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
-		Set<Object> seen = ConcurrentHashMap.newKeySet();
-		return t -> seen.add(keyExtractor.apply(t));
 	}
 
 }

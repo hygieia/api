@@ -6,8 +6,8 @@ import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.AutoDiscoveredEntry;
 import com.capitalone.dashboard.model.AutoDiscovery;
 import com.capitalone.dashboard.model.AutoDiscoveryMetaData;
-import com.capitalone.dashboard.model.AutoDiscoveryStatusType;
 import com.capitalone.dashboard.model.AutoDiscoveryRemoteRequest;
+import com.capitalone.dashboard.model.AutoDiscoveryStatusType;
 import com.capitalone.dashboard.model.Collector;
 import com.capitalone.dashboard.repository.AutoDiscoveryRepository;
 import com.capitalone.dashboard.repository.CollectorRepository;
@@ -29,11 +29,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.bson.types.ObjectId;
-
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -53,7 +49,7 @@ public class AutoDiscoveryRemoteServiceTest {
     private static List<AutoDiscoveredEntry> artifactEntries = null;
     private static List<AutoDiscoveredEntry> staticCodeEntries = null;
     private static List<AutoDiscoveredEntry> featureEntries = null;
-
+    private static List<AutoDiscoveredEntry> performanceEntries = null; // Additional entry for CollectorType Test
     @Autowired
     private AutoDiscoveryService autoSvc;
 
@@ -75,6 +71,8 @@ public class AutoDiscoveryRemoteServiceTest {
         artifactEntries = new ArrayList<>();
         staticCodeEntries = new ArrayList<>();
         featureEntries = new ArrayList<>();
+        performanceEntries = new ArrayList<>();
+
 
         adMeta0 = new AutoDiscoveryMetaData();
         adMeta0.setApplicationName("DummyApp");
@@ -85,7 +83,7 @@ public class AutoDiscoveryRemoteServiceTest {
         adMeta0.setType("Product");
 
         ad0 = new AutoDiscoveryRemoteRequest(adMeta0, codeRepoEntries, buildEntries, securityScanEntries, deploymentEntries,
-                libraryScanEntries, functionalTestEntries, artifactEntries, staticCodeEntries, featureEntries, "17458071acd72450923475bb");
+                libraryScanEntries, functionalTestEntries, artifactEntries, staticCodeEntries, featureEntries,performanceEntries, "17458071acd72450923475bb");
 
         AutoDiscoveredEntry codeRepoEntry = new AutoDiscoveredEntry();
         codeRepoEntry.setDescription("Hygieia GitHub");
@@ -104,7 +102,7 @@ public class AutoDiscoveryRemoteServiceTest {
         adMeta1.setType("Team");
 
         ad1 = new AutoDiscoveryRemoteRequest(adMeta1, codeRepoEntries, buildEntries, securityScanEntries, deploymentEntries,
-                libraryScanEntries, functionalTestEntries, artifactEntries, staticCodeEntries, featureEntries, "5d67f7b5066a8b0fe6cbfb61");
+                libraryScanEntries, functionalTestEntries, artifactEntries, staticCodeEntries, featureEntries,performanceEntries, "5d67f7b5066a8b0fe6cbfb61");
 
         AutoDiscoveredEntry artifactEntry = new AutoDiscoveredEntry();
         artifactEntry.setDescription("Hygieia Artifactory");
@@ -124,7 +122,7 @@ public class AutoDiscoveryRemoteServiceTest {
         adMeta2.setType("Team");
 
         ad2 = new AutoDiscoveryRemoteRequest(adMeta2, codeRepoEntries, buildEntries, securityScanEntries, deploymentEntries,
-                libraryScanEntries, functionalTestEntries, artifactEntries, staticCodeEntries, featureEntries, "5d67f7b5066a8b0fe6cbfb99");
+                libraryScanEntries, functionalTestEntries, artifactEntries, staticCodeEntries, featureEntries,performanceEntries, "5d67f7b5066a8b0fe6cbfb99");
 
         loadCollector(collectorRepository);
     }
@@ -168,45 +166,6 @@ public class AutoDiscoveryRemoteServiceTest {
         // we should not update anything else other than the status for the AutoDiscoveredEntry
         assertEquals(ad.getMetaData().getTitle(), "testAUTO_DISCOVERY");
         assertEquals(ad.getMetaData().getTemplate(), "template");
-    }
-
-    @Test
-    public void testUpdateStatusOnly() throws HygieiaException {
-        autoSvc.save(ad2);
-        assertEquals(autoRepo.count(), 1);
-
-        AutoDiscovery ad = autoRepo.findAll().iterator().next();
-        ObjectId id2 = ad.getId();
-
-        autoSvc.save(ad1);
-        assertEquals(autoRepo.count(), 2);
-        ad = autoRepo.findOne(id2);
-        assertNotNull(ad);
-        assertNotNull(ad.getCodeRepoEntries());
-        assertEquals(ad.getCodeRepoEntries().size(),1);
-        assertFalse(ad.getArtifactEntries().isEmpty());
-
-        // now try to update ad2
-        ad2.setAutoDiscoveryId(id2.toHexString());
-        ad2.setCodeRepoEntries(new ArrayList<>());
-        AutoDiscoveredEntry artifactEntry = ad2.getArtifactEntries().iterator().next();
-        artifactEntry.setStatus(AutoDiscoveryStatusType.AWAITING_USER_RESPONSE); // this should persist
-        artifactEntry.setDescription("new artifactory descriptions blah blah"); // this should not persist
-        autoSvc.save(ad2);
-        assertEquals(autoRepo.count(), 2);
-        ad = autoRepo.findOne(id2);
-        assertFalse(ad.getCodeRepoEntries().isEmpty());
-        assertFalse(ad.getArtifactEntries().isEmpty());
-        assertNotNull(ad.getModifiedTimestamp());
-
-        artifactEntry = ad.getArtifactEntries().iterator().next();
-        assertEquals(artifactEntry.getStatus(), AutoDiscoveryStatusType.AWAITING_USER_RESPONSE);
-        // we should not update anything else other than the status for the AutoDiscoveredEntry, so description should not change
-        assertEquals(artifactEntry.getDescription(), "Hygieia Artifactory");
-
-        AutoDiscoveredEntry codeRepoEntry = ad.getCodeRepoEntries().iterator().next();
-        assertEquals(codeRepoEntry.getStatus(), AutoDiscoveryStatusType.USER_REJECTED);
-        assertEquals(codeRepoEntry.getDescription(), "Hygieia GitHub");
     }
 
     @Test
