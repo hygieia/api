@@ -405,7 +405,7 @@ public class GitHubPullRequestV3 extends GitHubV3 {
             int changedFiles = NumberUtils.toInt(restClient.getString(commit, "changedFiles"));
             int deletions = NumberUtils.toInt(restClient.getString(commit, "deletions"));
             int additions = NumberUtils.toInt(restClient.getString(commit, "additions"));
-            newCommit.setNumberOfChanges(changedFiles+deletions+additions);
+            newCommit.setNumberOfChanges((long) changedFiles + deletions + additions);
 
             newCommit.setScmCommitTimestamp(getTimeStampMills(restClient.getString(author, "date")));
             JSONObject statusObj = (JSONObject) commit.get("status");

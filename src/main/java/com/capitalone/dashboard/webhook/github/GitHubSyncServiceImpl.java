@@ -64,7 +64,7 @@ import java.util.stream.Collectors;
 public class GitHubSyncServiceImpl implements GitHubSyncService {
     public static final String GIT_HUB = "GitHub";
     private static final Log LOG = LogFactory.getLog(GitHubSyncServiceImpl.class);
-    private static final long ONE_DAY_IN_MILLISECONDS = 24 * 60 * 60 * 1000;
+    private static final long ONE_DAY_IN_MILLISECONDS = (long) 24 * 60 * 60 * 1000;
 
     private final CommitRepository commitRepository;
     private final GitRequestRepository gitRequestRepository;
@@ -729,7 +729,7 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
             commit.setScmAuthorLDAPDN(getLDAPDN(repo, authorLogin));
             commit.setScmCommitLog(message);
             commit.setScmCommitTimestamp(getTimeStampMills(str(authorJSON, "date")));
-            commit.setNumberOfChanges(changedFiles + deletions + additions);
+            commit.setNumberOfChanges((long) changedFiles + deletions + additions);
             List<String> parentShas = getParentShas(node);
             commit.setScmParentRevisionNumbers(parentShas);
             commit.setFirstEverCommit(CollectionUtils.isEmpty(parentShas));
@@ -946,7 +946,7 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
             int changedFiles = NumberUtils.toInt(str(commit, "changedFiles"));
             int deletions = NumberUtils.toInt(str(commit, "deletions"));
             int additions = NumberUtils.toInt(str(commit, "additions"));
-            newCommit.setNumberOfChanges(changedFiles + deletions + additions);
+            newCommit.setNumberOfChanges((long) changedFiles + deletions + additions);
             prCommits.add(newCommit);
         }
 
@@ -1135,7 +1135,7 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
         return paging;
     }
 
-    public void fireGraphQL(GitHubRepo repo, boolean firstRun, Map<Long, String> existingPRMap, Map<Long, String> existingIssueMap) throws RestClientException, MalformedURLException, HygieiaException {
+    public void fireGraphQL(GitHubRepo repo, boolean firstRun, Map<Long, String> existingPRMap, Map<Long, String> existingIssueMap) throws RestClientException, MalformedURLException, HygieiaException, NullPointerException {
         // format URL
         String repoUrl = (String) repo.getOptions().get("url");
         GitHubParsed gitHubParsed = new GitHubParsed(repoUrl);
