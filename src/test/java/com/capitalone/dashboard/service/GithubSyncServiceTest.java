@@ -104,7 +104,7 @@ public class GithubSyncServiceTest {
                 eq(null), eq(String.class)))
                 .thenReturn(new ResponseEntity<>("", HttpStatus.OK));
         String ldapUser = gitHubSyncService.getLDAPDN(getGitRepo(),user);
-        assertEquals(ldapUser, "");
+        assertEquals(ldapUser, null);
         assertEquals(gitHubSyncService.getLdapMap().containsKey(user), false);
     }
 

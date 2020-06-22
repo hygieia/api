@@ -1,5 +1,6 @@
 package com.capitalone.dashboard.webhook.github;
 
+import com.capitalone.dashboard.model.AuthorType;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.client.RestClient;
@@ -18,6 +19,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.jackson.map.util.JSONPObject;
 import org.joda.time.DateTime;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -40,8 +42,6 @@ public class GitHubCommitV3 extends GitHubV3 {
     private final CommitRepository commitRepository;
     private final GitRequestRepository gitRequestRepository;
     private final CollectorItemRepository collectorItemRepository;
-
-    private Map<String, String> ldapDNMap = new HashMap<>();
 
     public GitHubCommitV3(CollectorService collectorService,
                           RestClient restClient,
@@ -94,10 +94,7 @@ public class GitHubCommitV3 extends GitHubV3 {
         }
 
         Object senderObj = jsonObject.get("sender");
-        String senderLogin = restClient.getString(senderObj,"login");
-        String senderLDAPDN = restClient.getString(senderObj,"ldap_dn");
-
-        List<Commit> commitList = getCommits(commitsObjectList, repoUrl, branch, senderLogin, senderLDAPDN);
+        List<Commit> commitList = getCommits(commitsObjectList, repoUrl, branch, senderObj);
 
         commitRepository.save(commitList);
 
@@ -105,8 +102,7 @@ public class GitHubCommitV3 extends GitHubV3 {
     }
 
     protected List<Commit> getCommits(List<Map> commitsObjectList, String repoUrl,
-                                      String branch, String senderLogin,
-                                      String senderLDAPDN) throws MalformedURLException, HygieiaException, ParseException {
+                                      String branch, Object senderObj) throws MalformedURLException, HygieiaException, ParseException {
         List<Commit> commitsList = new ArrayList<>();
 
         GitHubParsed gitHubParsed = new GitHubParsed(repoUrl);
@@ -165,7 +161,6 @@ public class GitHubCommitV3 extends GitHubV3 {
             commit.setScmBranch(branch);
 
             DateTime commitTimestamp = new DateTime(restClient.getString(cObj, "timestamp"));
-
             commit.setScmCommitTimestamp(commitTimestamp.getMillis());
 
             Object node = getCommitNode(gitHubParsed, commitId, gitHubWebHookToken);
@@ -181,25 +176,18 @@ public class GitHubCommitV3 extends GitHubV3 {
                 Object userObject = restClient.getAsObject(authorObject, "user");
                 String authorLogin = (userObject == null) ? "unknown" : restClient.getString(userObject, "login");
                 commit.setScmAuthorLogin(authorLogin);
-                commit.setScmAuthorLDAPDN(senderLDAPDN);
-                if (!StringUtils.isEmpty(senderLDAPDN) && !senderLogin.equalsIgnoreCase(authorLogin)) {
+
+                if (senderObj != null && authorLogin.equalsIgnoreCase(restClient.getString(senderObj, "login"))) {
+                    commit.setScmAuthorType(AuthorType.fromString(restClient.getString(senderObj, "type")));
+                    commit.setScmAuthorLDAPDN(restClient.getString(senderObj, "ldap_dn"));
+                } else {
                     start = System.currentTimeMillis();
 
-                    String key = repoUrl+authorLogin;
-                    String userLDAP = ldapDNMap.get(key);
-                    if (StringUtils.isEmpty(userLDAP)) {
-                        userLDAP = getLDAPDN(repoUrl, authorLogin, gitHubWebHookToken);
-                        if (!StringUtils.isEmpty(userLDAP)) {
-                            ldapDNMap.put(key, userLDAP);
-                        }
-                    }
-
-                    String authorLDAPDNFetched = StringUtils.isEmpty(authorLogin) ? null : userLDAP;
+                    commit.setScmAuthorType(getAuthorType(repoUrl, authorLogin, gitHubWebHookToken));
+                    commit.setScmAuthorLDAPDN(getLDAPDN(repoUrl, authorLogin, gitHubWebHookToken));
 
                     end = System.currentTimeMillis();
                     LOG.debug("Time to fetch LDAPDN = "+(end-start));
-
-                    commit.setScmAuthorLDAPDN(authorLDAPDNFetched);
                 }
 
                 // Set the Committer details. This in the case of a merge commit is the user who merges the PR.
