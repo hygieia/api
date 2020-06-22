@@ -536,7 +536,10 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
                     pull.setScmMergeEventRevisionNumber(mergeEvent.getMergeSha());
                     pull.setMergeAuthor(mergeEvent.getMergeAuthor());
                     pull.setMergeAuthorType(getAuthorType(repo, mergeEvent.getMergeAuthor()));
-                    pull.setMergeAuthorLDAPDN(getLDAPDN(repo, mergeEvent.getMergeAuthor()));
+                    String mergeAuthorLDAPDN = getLDAPDN(repo, mergeEvent.getMergeAuthor());
+                    if (!StringUtils.isEmpty(mergeAuthorLDAPDN)) {
+                        pull.setMergeAuthorLDAPDN(mergeAuthorLDAPDN);
+                    }
                 }
             }
             // commit etc details
@@ -726,7 +729,10 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
             commit.setScmAuthor(authorName);
             commit.setScmAuthorLogin(authorLogin);
             commit.setScmAuthorType(getAuthorType(repo, authorLogin));
-            commit.setScmAuthorLDAPDN(getLDAPDN(repo, authorLogin));
+            String authorLDAPDN = getLDAPDN(repo, authorLogin);
+            if (!StringUtils.isEmpty(authorLDAPDN)) {
+                commit.setScmAuthorLDAPDN(authorLDAPDN);
+            }
             commit.setScmCommitLog(message);
             commit.setScmCommitTimestamp(getTimeStampMills(str(authorJSON, "date")));
             commit.setNumberOfChanges((long) changedFiles + deletions + additions);
@@ -890,7 +896,10 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
             comment.setBody(str(node, "bodyText"));
             comment.setUser(str((JSONObject) node.get("author"), "login"));
             comment.setUserType(getAuthorType(repo, comment.getUser()));
-            comment.setUserLDAPDN(getLDAPDN(repo, comment.getUser()));
+            String userLDAPDN = getLDAPDN(repo, comment.getUser());
+            if (!StringUtils.isEmpty(userLDAPDN)) {
+                comment.setUserLDAPDN(userLDAPDN);
+            }
             comment.setCreatedAt(getTimeStampMills(str(node, "createdAt")));
             comment.setUpdatedAt(getTimeStampMills(str(node, "updatedAt")));
             comment.setStatus(str(node, "state"));
@@ -1007,7 +1016,10 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
             JSONObject authorObj = (JSONObject) node.get("author");
             review.setAuthor(str(authorObj, "login"));
             review.setAuthorType(getAuthorType(repo, review.getAuthor()));
-            review.setAuthorLDAPDN(getLDAPDN(repo, review.getAuthor()));
+            String authorLDAPDN = getLDAPDN(repo, review.getAuthor());
+            if (!StringUtils.isEmpty(authorLDAPDN)) {
+                review.setAuthorLDAPDN(authorLDAPDN);
+            }
             review.setCreatedAt(getTimeStampMills(str(node, "createdAt")));
             review.setUpdatedAt(getTimeStampMills(str(node, "updatedAt")));
             reviews.add(review);

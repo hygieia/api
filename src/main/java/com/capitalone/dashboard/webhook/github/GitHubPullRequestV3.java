@@ -257,7 +257,10 @@ public class GitHubPullRequestV3 extends GitHubV3 {
             Object mergedBy = restClient.getAsObject(pullRequestObject,"merged_by");
             pull.setMergeAuthor(restClient.getString(mergedBy, "login"));
             pull.setMergeAuthorType(getAuthorType(repoUrl, pull.getMergeAuthor(), token));
-            pull.setMergeAuthorLDAPDN(getLDAPDN(repoUrl, pull.getMergeAuthor(), token));
+            String mergeAuthorLDAPDN = getLDAPDN(repoUrl, pull.getMergeAuthor(), token);
+            if (!StringUtils.isEmpty(mergeAuthorLDAPDN)) {
+                pull.setMergeAuthorLDAPDN(mergeAuthorLDAPDN);
+            }
         }
 
         setCollectorItemId(pull);
@@ -340,7 +343,10 @@ public class GitHubPullRequestV3 extends GitHubV3 {
             review.setBody(restClient.getString(node, "bodyText"));
             JSONObject authorObj = (JSONObject) node.get("author");
             review.setAuthor(restClient.getString(authorObj, "login"));
-            review.setAuthorLDAPDN(getLDAPDN(repoUrl, review.getAuthor(), token));
+            String authorLDAPDN = getLDAPDN(repoUrl, review.getAuthor(), token);
+            if (!StringUtils.isEmpty(authorLDAPDN)) {
+                review.setAuthorLDAPDN(authorLDAPDN);
+            }
             review.setAuthorType(getAuthorType(repoUrl, review.getAuthor(), token));
             review.setCreatedAt(getTimeStampMills(restClient.getString(node, "createdAt")));
             review.setUpdatedAt(getTimeStampMills(restClient.getString(node, "updatedAt")));
@@ -364,7 +370,10 @@ public class GitHubPullRequestV3 extends GitHubV3 {
             comment.setBody(restClient.getString(node, "bodyText"));
             comment.setUser(restClient.getString((JSONObject) node.get("author"), "login"));
             comment.setUserType(getAuthorType(repoUrl, comment.getUser(), token));
-            comment.setUserLDAPDN(getLDAPDN(repoUrl, comment.getUser(), token));
+            String userLDAPDN = getLDAPDN(repoUrl, comment.getUser(), token);
+            if (!StringUtils.isEmpty(userLDAPDN)) {
+                comment.setUserLDAPDN(userLDAPDN);
+            }
             comment.setCreatedAt(getTimeStampMills(restClient.getString(node, "createdAt")));
             comment.setUpdatedAt(getTimeStampMills(restClient.getString(node, "updatedAt")));
             comment.setStatus(restClient.getString(node, "state"));
@@ -400,7 +409,10 @@ public class GitHubPullRequestV3 extends GitHubV3 {
             newCommit.setScmAuthor(restClient.getString(author, "name"));
             newCommit.setScmAuthorLogin((authorUserJSON == null) ? "unknown" : restClient.getString(authorUserJSON, "login"));
             newCommit.setScmAuthorType(getAuthorType(repoUrl, newCommit.getScmAuthorLogin(), token));
-            newCommit.setScmAuthorLDAPDN(getLDAPDN(repoUrl, newCommit.getScmAuthorLogin(), token));
+            String authorLDAPDN = getLDAPDN(repoUrl, newCommit.getScmAuthorLogin(), token);
+            if (!StringUtils.isEmpty(authorLDAPDN)) {
+                newCommit.setScmAuthorLDAPDN(authorLDAPDN);
+            }
 
             int changedFiles = NumberUtils.toInt(restClient.getString(commit, "changedFiles"));
             int deletions = NumberUtils.toInt(restClient.getString(commit, "deletions"));

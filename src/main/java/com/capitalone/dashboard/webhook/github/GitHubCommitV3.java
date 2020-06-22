@@ -182,7 +182,10 @@ public class GitHubCommitV3 extends GitHubV3 {
                     start = System.currentTimeMillis();
 
                     commit.setScmAuthorType(getAuthorType(repoUrl, authorLogin, gitHubWebHookToken));
-                    commit.setScmAuthorLDAPDN(getLDAPDN(repoUrl, authorLogin, gitHubWebHookToken));
+                    String authorLDAPDN = getLDAPDN(repoUrl, authorLogin, gitHubWebHookToken);
+                    if (!StringUtils.isEmpty(authorLDAPDN)) {
+                        commit.setScmAuthorLDAPDN(authorLDAPDN);
+                    }
 
                     end = System.currentTimeMillis();
                     LOG.debug("Time to fetch LDAPDN = "+(end-start));
