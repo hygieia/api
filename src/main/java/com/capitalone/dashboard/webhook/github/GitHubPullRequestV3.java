@@ -422,20 +422,10 @@ public class GitHubPullRequestV3 extends GitHubV3 {
             newCommit.setScmCommitTimestamp(getTimeStampMills(restClient.getString(author, "date")));
             JSONObject statusObj = (JSONObject) commit.get("status");
 
-            if (statusObj != null) {
-                if (lastCommitTime <= newCommit.getScmCommitTimestamp()) {
-                    lastCommitTime = newCommit.getScmCommitTimestamp();
-                    lastCommitStatusObject = statusObj;
-                }
-                if (Objects.equals(newCommit.getScmRevisionNumber(), prHeadSha)) {
-                    List<CommitStatus> commitStatuses = getCommitStatuses(statusObj);
-                    List<CommitStatus> existingCommitStatusList = pull.getCommitStatuses();
-                    if (!CollectionUtils.isEmpty(commitStatuses) && !CollectionUtils.isEmpty(existingCommitStatusList)) {
-                        existingCommitStatusList.addAll(commitStatuses);
-                    } else {
-                        pull.setCommitStatuses(commitStatuses);
-                    }
-                }
+            if (statusObj != null && lastCommitTime <= newCommit.getScmCommitTimestamp()) {
+                lastCommitTime = newCommit.getScmCommitTimestamp();
+                lastCommitStatusObject = statusObj;
+                setPRCommitStatus(statusObj, newCommit, pull);
             }
 
             // Relies mostly on an open pr to find commits from other repos, branches in the database.
@@ -457,6 +447,20 @@ public class GitHubPullRequestV3 extends GitHubV3 {
         }
 
         return prCommits;
+    }
+
+    private void setPRCommitStatus(JSONObject statusObj, Commit newCommit, GitRequest pull) {
+        String prHeadSha = pull.getHeadSha();
+        if (Objects.equals(newCommit.getScmRevisionNumber(), prHeadSha)) {
+            List<CommitStatus> commitStatuses = getCommitStatuses(statusObj);
+            List<CommitStatus> existingCommitStatusList = pull.getCommitStatuses();
+            if (!CollectionUtils.isEmpty(commitStatuses) && !CollectionUtils.isEmpty(existingCommitStatusList)) {
+                existingCommitStatusList.addAll(commitStatuses);
+            } else {
+                pull.setCommitStatuses(commitStatuses);
+            }
+        }
+
     }
 
     protected void updateMatchingCommitsInDb(Commit commit, GitRequest pull) {
