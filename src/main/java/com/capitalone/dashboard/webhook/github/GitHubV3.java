@@ -1,5 +1,6 @@
 package com.capitalone.dashboard.webhook.github;
 
+import com.capitalone.dashboard.model.AuthorType;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.client.RestClient;
@@ -41,12 +42,17 @@ public abstract class GitHubV3 {
     protected final RestClient restClient;
     protected final ApiSettings apiSettings;
 
+    private Map<String, String> ldapMap;
+    private Map<String, AuthorType> authorTypeMap;
+
     public GitHubV3(CollectorService collectorService,
                     RestClient restClient,
                     ApiSettings apiSettings) {
         this.collectorService = collectorService;
         this.restClient = restClient;
         this.apiSettings = apiSettings;
+        ldapMap = new HashMap<>();
+        authorTypeMap = new HashMap<>();
     }
 
     protected Collector getCollector() {
@@ -137,36 +143,71 @@ public abstract class GitHubV3 {
         return tokenValue;
     }
 
-    protected String getLDAPDN(String repoUrl, String user, String token) {
-        if (StringUtils.isEmpty(user)) return null;
+    protected void getUser(String repoUrl, String user, String token) {
+        if (StringUtils.isEmpty(user)) return;
         // This is weird. Github does replace the _ in commit author with - in the user api!!!
         String formattedUser = user.replace("_", "-");
-        String ldapLdn = null;
-        String queryUrl = null;
         int retryCount = 0;
         ResponseEntity<String> response;
         while(true) {
             try {
+                long start = System.currentTimeMillis();
+
                 GitHubParsed gitHubParsed = new GitHubParsed(repoUrl);
                 String apiUrl = gitHubParsed.getBaseApiUrl();
-                queryUrl = apiUrl.concat("users/").concat(formattedUser);
+                String queryUrl = apiUrl.concat("users/").concat(formattedUser);
                 response = restClient.makeRestCallGet(queryUrl, "token", token);
-                JSONObject jsonObject = restClient.parseAsObject(response);
-                ldapLdn = restClient.getString(jsonObject, "ldap_dn");
-                break;
+                JSONObject userJson = restClient.parseAsObject(response);
+                String ldapDN = restClient.getString(userJson, "ldap_dn");
+                String authorTypeStr = restClient.getString(userJson, "type");
+                if (StringUtils.isNotEmpty(ldapDN)) {
+                    ldapMap.put(user, ldapDN);
+                }
+                if (StringUtils.isNotEmpty(authorTypeStr)) {
+                    authorTypeMap.put(user, AuthorType.fromString(authorTypeStr));
+                }
+
+                long end = System.currentTimeMillis();
+                LOG.info("Time to make the LDAP call = "+(end-start));
+                return;
             } catch (ResourceAccessException e) {
                 retryCount++;
                 if (retryCount > apiSettings.getWebHook().getGitHub().getMaxRetries()) {
                     LOG.error("Error getting LDAP_DN For user " + user + " after " + apiSettings.getWebHook().getGitHub().getMaxRetries() + " tries.", e);
-                    break;
+                    return;
                 }
-            } catch (MalformedURLException | HygieiaException | RestClientException |ParseException e) {
+            } catch (MalformedURLException | HygieiaException | ParseException | RestClientException e) {
                 LOG.error("LDAP user not found " + user, e);
-                break;
+                return;
             }
         }
-        return ldapLdn;
     }
+
+    protected String getLDAPDN(String repoUrl, String user, String token) {
+        if (StringUtils.isEmpty(user) || "unknown".equalsIgnoreCase(user)) return null;
+        if (ldapMap == null) { ldapMap = new HashMap<>(); }
+        //This is weird. Github does replace the _ in commit author with - in the user api!!!
+        String formattedUser = user.replace("_", "-");
+        if(ldapMap.containsKey(formattedUser)) {
+            return ldapMap.get(formattedUser);
+        }
+        this.getUser(repoUrl, formattedUser, token);
+        return ldapMap.get(formattedUser);
+    }
+
+    protected AuthorType getAuthorType(String repoUrl, String user, String token) {
+        if (StringUtils.isEmpty(user) || "unknown".equalsIgnoreCase(user)) return null;
+        if (authorTypeMap == null) { authorTypeMap = new HashMap<>(); }
+        //This is weird. Github does replace the _ in commit author with - in the user api!!!
+        String formattedUser = user.replace("_", "-");
+        if(authorTypeMap.containsKey(formattedUser)) {
+            return authorTypeMap.get(formattedUser);
+        }
+        this.getUser(repoUrl, formattedUser, token);
+        return authorTypeMap.get(formattedUser);
+    }
+
+
 
     protected void checkForErrors(JSONObject responseJsonObject) throws HygieiaException, ParseException {
         JSONArray errors = restClient.getArray(responseJsonObject, "errors");

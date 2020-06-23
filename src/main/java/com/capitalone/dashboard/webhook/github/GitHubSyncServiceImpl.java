@@ -3,6 +3,7 @@ package com.capitalone.dashboard.webhook.github;
 import com.capitalone.dashboard.client.RestClient;
 import com.capitalone.dashboard.client.RestUserInfo;
 import com.capitalone.dashboard.misc.HygieiaException;
+import com.capitalone.dashboard.model.AuthorType;
 import com.capitalone.dashboard.model.CollectionError;
 import com.capitalone.dashboard.model.CollectionMode;
 import com.capitalone.dashboard.model.Collector;
@@ -63,7 +64,7 @@ import java.util.stream.Collectors;
 public class GitHubSyncServiceImpl implements GitHubSyncService {
     public static final String GIT_HUB = "GitHub";
     private static final Log LOG = LogFactory.getLog(GitHubSyncServiceImpl.class);
-    private static final long ONE_DAY_IN_MILLISECONDS = 24 * 60 * 60 * 1000;
+    private static final long ONE_DAY_IN_MILLISECONDS = (long) 24 * 60 * 60 * 1000;
 
     private final CommitRepository commitRepository;
     private final GitRequestRepository gitRequestRepository;
@@ -76,6 +77,7 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
     List<GitRequest> pullRequests;
     List<GitRequest> issues;
     Map<String, String> ldapMap;
+    Map<String, AuthorType> authorTypeMap;
     private final List<Pattern> commitExclusionPatterns = new ArrayList<>();
 
 
@@ -533,7 +535,11 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
                 if (mergeEvent != null) {
                     pull.setScmMergeEventRevisionNumber(mergeEvent.getMergeSha());
                     pull.setMergeAuthor(mergeEvent.getMergeAuthor());
-                    pull.setMergeAuthorLDAPDN(mergeEvent.getMergeAuthorLDAPDN());
+                    pull.setMergeAuthorType(getAuthorType(repo, mergeEvent.getMergeAuthor()));
+                    String mergeAuthorLDAPDN = getLDAPDN(repo, mergeEvent.getMergeAuthor());
+                    if (!StringUtils.isEmpty(mergeAuthorLDAPDN)) {
+                        pull.setMergeAuthorLDAPDN(mergeAuthorLDAPDN);
+                    }
                 }
             }
             // commit etc details
@@ -715,7 +721,6 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
             String message = str(node, "message");
             String authorName = str(authorJSON, "name");
             String authorLogin = authorUserJSON == null ? "unknown" : str(authorUserJSON, "login");
-            String authorLDAPDN = "unknown".equalsIgnoreCase(authorLogin) ? null : getLDAPDN(repo, authorLogin);
             Commit commit = new Commit();
             commit.setTimestamp(System.currentTimeMillis());
             commit.setScmUrl(repo.getRepoUrl());
@@ -723,12 +728,14 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
             commit.setScmRevisionNumber(sha);
             commit.setScmAuthor(authorName);
             commit.setScmAuthorLogin(authorLogin);
+            commit.setScmAuthorType(getAuthorType(repo, authorLogin));
+            String authorLDAPDN = getLDAPDN(repo, authorLogin);
             if (!StringUtils.isEmpty(authorLDAPDN)) {
                 commit.setScmAuthorLDAPDN(authorLDAPDN);
             }
             commit.setScmCommitLog(message);
             commit.setScmCommitTimestamp(getTimeStampMills(str(authorJSON, "date")));
-            commit.setNumberOfChanges(changedFiles + deletions + additions);
+            commit.setNumberOfChanges((long) changedFiles + deletions + additions);
             List<String> parentShas = getParentShas(node);
             commit.setScmParentRevisionNumbers(parentShas);
             commit.setFirstEverCommit(CollectionUtils.isEmpty(parentShas));
@@ -825,31 +832,52 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
     }
 
 
-    public String getLDAPDN(GitHubRepo repo, String user) {
-        if (StringUtils.isEmpty(user)) return null;
+    public void getUser(GitHubRepo repo, String user) {
+        if (StringUtils.isEmpty(user)) return;
         //This is weird. Github does replace the _ in commit author with - in the user api!!!
         String formattedUser = user.replace("_", "-");
-        if (ldapMap.get(formattedUser) != null) {
-            return ldapMap.get(formattedUser);
-        }
         String repoUrl = (String) repo.getOptions().get("url");
         try {
             GitHubParsed gitHubParsed = new GitHubParsed(repoUrl);
             String apiUrl = gitHubParsed.getBaseApiUrl();
-
             String queryUrl = apiUrl.concat("users/").concat(formattedUser);
-
             ResponseEntity<String> response = makeRestCallGet(queryUrl);
             JSONObject jsonObject = parseAsObject(response);
             String ldapDN = str(jsonObject, "ldap_dn");
-            if (!StringUtils.isEmpty(ldapDN)) {
-                ldapMap.put(formattedUser, ldapDN);
+            String authorTypeStr = str(jsonObject, "type");
+            if (StringUtils.isNotEmpty(ldapDN)) {
+                ldapMap.put(user, ldapDN);
             }
-            return str(jsonObject, "ldap_dn");
+            if (StringUtils.isNotEmpty(authorTypeStr)) {
+                authorTypeMap.put(user, AuthorType.fromString(authorTypeStr));
+            }
         } catch (MalformedURLException | HygieiaException | RestClientException e) {
             LOG.error("Error getting LDAP_DN For user " + user, e);
         }
-        return null;
+    }
+
+    public String getLDAPDN(GitHubRepo repo, String user) {
+        if (StringUtils.isEmpty(user) || "unknown".equalsIgnoreCase(user)) return null;
+        if (ldapMap == null) { ldapMap = new HashMap<>(); }
+        //This is weird. Github does replace the _ in commit author with - in the user api!!!
+        String formattedUser = user.replace("_", "-");
+        if(ldapMap.containsKey(formattedUser)) {
+            return ldapMap.get(formattedUser);
+        }
+        this.getUser(repo, formattedUser);
+        return ldapMap.get(formattedUser);
+    }
+
+    public AuthorType getAuthorType(GitHubRepo repo, String user) {
+        if (StringUtils.isEmpty(user) || "unknown".equalsIgnoreCase(user)) return null;
+        if (authorTypeMap == null) { authorTypeMap = new HashMap<>(); }
+        //This is weird. Github does replace the _ in commit author with - in the user api!!!
+        String formattedUser = user.replace("_", "-");
+        if(authorTypeMap.containsKey(formattedUser)) {
+            return authorTypeMap.get(formattedUser);
+        }
+        this.getUser(repo, formattedUser);
+        return authorTypeMap.get(formattedUser);
     }
 
     private List<Comment> getComments(GitHubRepo repo, JSONObject commentsJSON) throws RestClientException {
@@ -867,9 +895,10 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
             Comment comment = new Comment();
             comment.setBody(str(node, "bodyText"));
             comment.setUser(str((JSONObject) node.get("author"), "login"));
-            String userLDAP = getLDAPDN(repo, comment.getUser());
-            if (!StringUtils.isEmpty(userLDAP)) {
-                comment.setUserLDAPDN(userLDAP);
+            comment.setUserType(getAuthorType(repo, comment.getUser()));
+            String userLDAPDN = getLDAPDN(repo, comment.getUser());
+            if (!StringUtils.isEmpty(userLDAPDN)) {
+                comment.setUserLDAPDN(userLDAPDN);
             }
             comment.setCreatedAt(getTimeStampMills(str(node, "createdAt")));
             comment.setUpdatedAt(getTimeStampMills(str(node, "updatedAt")));
@@ -926,7 +955,7 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
             int changedFiles = NumberUtils.toInt(str(commit, "changedFiles"));
             int deletions = NumberUtils.toInt(str(commit, "deletions"));
             int additions = NumberUtils.toInt(str(commit, "additions"));
-            newCommit.setNumberOfChanges(changedFiles + deletions + additions);
+            newCommit.setNumberOfChanges((long) changedFiles + deletions + additions);
             prCommits.add(newCommit);
         }
 
@@ -986,6 +1015,7 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
             review.setBody(str(node, "bodyText"));
             JSONObject authorObj = (JSONObject) node.get("author");
             review.setAuthor(str(authorObj, "login"));
+            review.setAuthorType(getAuthorType(repo, review.getAuthor()));
             String authorLDAPDN = getLDAPDN(repo, review.getAuthor());
             if (!StringUtils.isEmpty(authorLDAPDN)) {
                 review.setAuthorLDAPDN(authorLDAPDN);
@@ -1117,7 +1147,7 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
         return paging;
     }
 
-    public void fireGraphQL(GitHubRepo repo, boolean firstRun, Map<Long, String> existingPRMap, Map<Long, String> existingIssueMap) throws RestClientException, MalformedURLException, HygieiaException {
+    public void fireGraphQL(GitHubRepo repo, boolean firstRun, Map<Long, String> existingPRMap, Map<Long, String> existingIssueMap) throws RestClientException, MalformedURLException, HygieiaException, NullPointerException {
         // format URL
         String repoUrl = (String) repo.getOptions().get("url");
         GitHubParsed gitHubParsed = new GitHubParsed(repoUrl);
@@ -1126,7 +1156,7 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
         pullRequests = new LinkedList<>();
         issues = new LinkedList<>();
         ldapMap = new HashMap<>();
-
+        authorTypeMap = new HashMap<>();
 
         long historyTimeStamp = getTimeStampMills(getRunDate(repo, firstRun, false));
 

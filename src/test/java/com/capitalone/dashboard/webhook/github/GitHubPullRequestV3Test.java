@@ -177,7 +177,7 @@ public class GitHubPullRequestV3Test {
 
         GitRequest pull = null;
         try {
-            pull = gitHubPullRequestV3.buildGitRequestFromPayload(repoUrl, branch, pullRequest);
+            pull = gitHubPullRequestV3.buildGitRequestFromPayload(repoUrl, branch, pullRequest, "token");
         } catch(Exception e) {
             LOG.error(e.getMessage());
         }

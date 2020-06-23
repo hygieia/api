@@ -34,7 +34,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Optional;
 import java.util.Collections;
 
 public class GitHubPullRequestV3 extends GitHubV3 {
@@ -43,8 +42,6 @@ public class GitHubPullRequestV3 extends GitHubV3 {
     private final GitRequestRepository gitRequestRepository;
     private final CollectorItemRepository collectorItemRepository;
     private final CommitRepository commitRepository;
-
-    private Map<String, String> ldapDNMap = new HashMap<>();
 
     public GitHubPullRequestV3(CollectorService collectorService,
                                RestClient restClient,
@@ -144,7 +141,7 @@ public class GitHubPullRequestV3 extends GitHubV3 {
             return "Repo: <" + repoUrl + "> Branch: <" + branch + "> is not registered in Hygieia";
         }
 
-        GitRequest pull = buildGitRequestFromPayload(repoUrl, branch, pullRequestObject);
+        GitRequest pull = buildGitRequestFromPayload(repoUrl, branch, pullRequestObject, token);
 
         updateGitRequestWithGraphQLData(pull, repoUrl, branch, prData, token);
 
@@ -196,7 +193,7 @@ public class GitHubPullRequestV3 extends GitHubV3 {
         return query;
     }
 
-    protected GitRequest buildGitRequestFromPayload(String repoUrl, String branch, Object pullRequestObject) throws HygieiaException, MalformedURLException {
+    protected GitRequest buildGitRequestFromPayload(String repoUrl, String branch, Object pullRequestObject, String token) throws HygieiaException, MalformedURLException {
         GitRequest pull = new GitRequest();
         GitHubParsed gitHubParsed = new GitHubParsed(repoUrl);
 
@@ -259,7 +256,11 @@ public class GitHubPullRequestV3 extends GitHubV3 {
             pull.setScmMergeEventRevisionNumber(mergeSha);
             Object mergedBy = restClient.getAsObject(pullRequestObject,"merged_by");
             pull.setMergeAuthor(restClient.getString(mergedBy, "login"));
-            pull.setMergeAuthorLDAPDN(restClient.getString(mergedBy, "ldap_dn"));
+            pull.setMergeAuthorType(getAuthorType(repoUrl, pull.getMergeAuthor(), token));
+            String mergeAuthorLDAPDN = getLDAPDN(repoUrl, pull.getMergeAuthor(), token);
+            if (!StringUtils.isEmpty(mergeAuthorLDAPDN)) {
+                pull.setMergeAuthorLDAPDN(mergeAuthorLDAPDN);
+            }
         }
 
         setCollectorItemId(pull);
@@ -342,22 +343,11 @@ public class GitHubPullRequestV3 extends GitHubV3 {
             review.setBody(restClient.getString(node, "bodyText"));
             JSONObject authorObj = (JSONObject) node.get("author");
             review.setAuthor(restClient.getString(authorObj, "login"));
-            String key = repoUrl+review.getAuthor();
-            String authorLDAPDN = ldapDNMap.get(key);
-            review.setAuthorLDAPDN(authorLDAPDN);
-            if (StringUtils.isEmpty(authorLDAPDN)) {
-                long start = System.currentTimeMillis();
-
-                authorLDAPDN = getLDAPDN(repoUrl, review.getAuthor(), token);
-
-                long end = System.currentTimeMillis();
-                LOG.info("Time to make the LDAP call = "+(end-start));
-
-                if (!StringUtils.isEmpty(authorLDAPDN)) {
-                    ldapDNMap.put(key, authorLDAPDN);
-                    review.setAuthorLDAPDN(authorLDAPDN);
-                }
+            String authorLDAPDN = getLDAPDN(repoUrl, review.getAuthor(), token);
+            if (!StringUtils.isEmpty(authorLDAPDN)) {
+                review.setAuthorLDAPDN(authorLDAPDN);
             }
+            review.setAuthorType(getAuthorType(repoUrl, review.getAuthor(), token));
             review.setCreatedAt(getTimeStampMills(restClient.getString(node, "createdAt")));
             review.setUpdatedAt(getTimeStampMills(restClient.getString(node, "updatedAt")));
             reviews.add(review);
@@ -379,21 +369,10 @@ public class GitHubPullRequestV3 extends GitHubV3 {
             Comment comment = new Comment();
             comment.setBody(restClient.getString(node, "bodyText"));
             comment.setUser(restClient.getString((JSONObject) node.get("author"), "login"));
-            String key = repoUrl+comment.getUser();
-            String userLDAP = ldapDNMap.get(key);
-            comment.setUserLDAPDN(userLDAP);
-            if (StringUtils.isEmpty(userLDAP)) {
-                long start = System.currentTimeMillis();
-
-                userLDAP = getLDAPDN(repoUrl, comment.getUser(), token);
-
-                long end = System.currentTimeMillis();
-                LOG.debug("Time to make the LDAP call = "+(end-start));
-
-                if (!StringUtils.isEmpty(userLDAP)) {
-                    ldapDNMap.put(key, userLDAP);
-                    comment.setUserLDAPDN(userLDAP);
-                }
+            comment.setUserType(getAuthorType(repoUrl, comment.getUser(), token));
+            String userLDAPDN = getLDAPDN(repoUrl, comment.getUser(), token);
+            if (!StringUtils.isEmpty(userLDAPDN)) {
+                comment.setUserLDAPDN(userLDAPDN);
             }
             comment.setCreatedAt(getTimeStampMills(restClient.getString(node, "createdAt")));
             comment.setUpdatedAt(getTimeStampMills(restClient.getString(node, "updatedAt")));
@@ -429,47 +408,24 @@ public class GitHubPullRequestV3 extends GitHubV3 {
             JSONObject authorUserJSON = (JSONObject) author.get("user");
             newCommit.setScmAuthor(restClient.getString(author, "name"));
             newCommit.setScmAuthorLogin((authorUserJSON == null) ? "unknown" : restClient.getString(authorUserJSON, "login"));
-
-            if (!"unknown".equalsIgnoreCase(newCommit.getScmAuthorLogin())) {
-                String key = repoUrl+newCommit.getScmAuthorLogin();
-                String authorLDAPDN = ldapDNMap.get(key);
+            newCommit.setScmAuthorType(getAuthorType(repoUrl, newCommit.getScmAuthorLogin(), token));
+            String authorLDAPDN = getLDAPDN(repoUrl, newCommit.getScmAuthorLogin(), token);
+            if (!StringUtils.isEmpty(authorLDAPDN)) {
                 newCommit.setScmAuthorLDAPDN(authorLDAPDN);
-                if (StringUtils.isEmpty(authorLDAPDN)) {
-                    long start = System.currentTimeMillis();
-
-                    authorLDAPDN = getLDAPDN(repoUrl, newCommit.getScmAuthorLogin(), token);
-
-                    long end = System.currentTimeMillis();
-                    LOG.debug("Time to make the LDAP call = "+(end-start));
-
-                    if (!StringUtils.isEmpty(authorLDAPDN)) {
-                        ldapDNMap.put(key, authorLDAPDN);
-                        newCommit.setScmAuthorLDAPDN(authorLDAPDN);
-                    }
-                }
             }
+
             int changedFiles = NumberUtils.toInt(restClient.getString(commit, "changedFiles"));
             int deletions = NumberUtils.toInt(restClient.getString(commit, "deletions"));
             int additions = NumberUtils.toInt(restClient.getString(commit, "additions"));
-            newCommit.setNumberOfChanges(changedFiles+deletions+additions);
+            newCommit.setNumberOfChanges((long) changedFiles + deletions + additions);
 
             newCommit.setScmCommitTimestamp(getTimeStampMills(restClient.getString(author, "date")));
             JSONObject statusObj = (JSONObject) commit.get("status");
 
-            if (statusObj != null) {
-                if (lastCommitTime <= newCommit.getScmCommitTimestamp()) {
-                    lastCommitTime = newCommit.getScmCommitTimestamp();
-                    lastCommitStatusObject = statusObj;
-                }
-                if (Objects.equals(newCommit.getScmRevisionNumber(), prHeadSha)) {
-                    List<CommitStatus> commitStatuses = getCommitStatuses(statusObj);
-                    List<CommitStatus> existingCommitStatusList = pull.getCommitStatuses();
-                    if (!CollectionUtils.isEmpty(commitStatuses) && !CollectionUtils.isEmpty(existingCommitStatusList)) {
-                        existingCommitStatusList.addAll(commitStatuses);
-                    } else {
-                        pull.setCommitStatuses(commitStatuses);
-                    }
-                }
+            if (statusObj != null && lastCommitTime <= newCommit.getScmCommitTimestamp()) {
+                lastCommitTime = newCommit.getScmCommitTimestamp();
+                lastCommitStatusObject = statusObj;
+                setPRCommitStatus(statusObj, newCommit, pull);
             }
 
             // Relies mostly on an open pr to find commits from other repos, branches in the database.
@@ -491,6 +447,20 @@ public class GitHubPullRequestV3 extends GitHubV3 {
         }
 
         return prCommits;
+    }
+
+    private void setPRCommitStatus(JSONObject statusObj, Commit newCommit, GitRequest pull) {
+        String prHeadSha = pull.getHeadSha();
+        if (Objects.equals(newCommit.getScmRevisionNumber(), prHeadSha)) {
+            List<CommitStatus> commitStatuses = getCommitStatuses(statusObj);
+            List<CommitStatus> existingCommitStatusList = pull.getCommitStatuses();
+            if (!CollectionUtils.isEmpty(commitStatuses) && !CollectionUtils.isEmpty(existingCommitStatusList)) {
+                existingCommitStatusList.addAll(commitStatuses);
+            } else {
+                pull.setCommitStatuses(commitStatuses);
+            }
+        }
+
     }
 
     protected void updateMatchingCommitsInDb(Commit commit, GitRequest pull) {

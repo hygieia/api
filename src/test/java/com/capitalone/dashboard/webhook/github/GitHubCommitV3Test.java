@@ -114,8 +114,11 @@ public class GitHubCommitV3Test {
         }
 
         List<Commit> commitsList = null;
+        JSONObject senderObj = new JSONObject();
+        senderObj.put("senderLogin", "senderLogin");
+        senderObj.put("authorLDAPDN", "authorLDAPDN");
         try {
-            commitsList = gitHubCommitV3.getCommits(commitsMapList, repoUrl, branch, "senderLogin", "authorLDAPDN");
+            commitsList = gitHubCommitV3.getCommits(commitsMapList, repoUrl, branch, senderObj);
         } catch (Exception e) {
             LOG.error(e.getMessage());
         }
