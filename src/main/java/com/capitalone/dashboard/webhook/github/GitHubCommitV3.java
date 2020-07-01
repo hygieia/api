@@ -1,6 +1,5 @@
 package com.capitalone.dashboard.webhook.github;
 
-import com.capitalone.dashboard.model.AuthorType;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.client.RestClient;
@@ -176,12 +175,21 @@ public class GitHubCommitV3 extends GitHubV3 {
                 commit.setScmAuthorLogin(authorLogin);
 
                 if (senderObj != null && authorLogin.equalsIgnoreCase(restClient.getString(senderObj, "login"))) {
-                    commit.setScmAuthorType(AuthorType.fromString(restClient.getString(senderObj, "type")));
-                    commit.setScmAuthorLDAPDN(restClient.getString(senderObj, "ldap_dn"));
+                    String authorType = restClient.getString(senderObj, "type");
+                    if (!StringUtils.isEmpty(authorType)) {
+                        commit.setScmAuthorType(authorType);
+                    }
+                    String authorLDAPDN = restClient.getString(senderObj, "ldap_dn");
+                    if (!StringUtils.isEmpty(authorLDAPDN)) {
+                        commit.setScmAuthorLDAPDN(authorLDAPDN);
+                    }
                 } else {
                     start = System.currentTimeMillis();
 
-                    commit.setScmAuthorType(getAuthorType(repoUrl, authorLogin, gitHubWebHookToken));
+                    String authorType = getAuthorType(repoUrl, authorLogin, gitHubWebHookToken);
+                    if (!StringUtils.isEmpty(authorType)) {
+                        commit.setScmAuthorType(authorType);
+                    }
                     String authorLDAPDN = getLDAPDN(repoUrl, authorLogin, gitHubWebHookToken);
                     if (!StringUtils.isEmpty(authorLDAPDN)) {
                         commit.setScmAuthorLDAPDN(authorLDAPDN);
