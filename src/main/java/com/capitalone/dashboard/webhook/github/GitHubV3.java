@@ -1,6 +1,5 @@
 package com.capitalone.dashboard.webhook.github;
 
-import com.capitalone.dashboard.model.AuthorType;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.client.RestClient;
@@ -43,7 +42,7 @@ public abstract class GitHubV3 {
     protected final ApiSettings apiSettings;
 
     private Map<String, String> ldapMap;
-    private Map<String, AuthorType> authorTypeMap;
+    private Map<String, String> authorTypeMap;
 
     public GitHubV3(CollectorService collectorService,
                     RestClient restClient,
@@ -164,7 +163,7 @@ public abstract class GitHubV3 {
                     ldapMap.put(user, ldapDN);
                 }
                 if (StringUtils.isNotEmpty(authorTypeStr)) {
-                    authorTypeMap.put(user, AuthorType.fromString(authorTypeStr));
+                    authorTypeMap.put(user, authorTypeStr);
                 }
 
                 long end = System.currentTimeMillis();
@@ -195,7 +194,7 @@ public abstract class GitHubV3 {
         return ldapMap.get(formattedUser);
     }
 
-    protected AuthorType getAuthorType(String repoUrl, String user, String token) {
+    protected String getAuthorType(String repoUrl, String user, String token) {
         if (StringUtils.isEmpty(user) || "unknown".equalsIgnoreCase(user)) return null;
         if (authorTypeMap == null) { authorTypeMap = new HashMap<>(); }
         //This is weird. Github does replace the _ in commit author with - in the user api!!!

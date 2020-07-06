@@ -3,7 +3,6 @@ package com.capitalone.dashboard.webhook.github;
 import com.capitalone.dashboard.client.RestClient;
 import com.capitalone.dashboard.client.RestUserInfo;
 import com.capitalone.dashboard.misc.HygieiaException;
-import com.capitalone.dashboard.model.AuthorType;
 import com.capitalone.dashboard.model.CollectionError;
 import com.capitalone.dashboard.model.CollectionMode;
 import com.capitalone.dashboard.model.Collector;
@@ -77,7 +76,7 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
     List<GitRequest> pullRequests;
     List<GitRequest> issues;
     Map<String, String> ldapMap;
-    Map<String, AuthorType> authorTypeMap;
+    Map<String, String> authorTypeMap;
     private final List<Pattern> commitExclusionPatterns = new ArrayList<>();
 
 
@@ -535,7 +534,10 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
                 if (mergeEvent != null) {
                     pull.setScmMergeEventRevisionNumber(mergeEvent.getMergeSha());
                     pull.setMergeAuthor(mergeEvent.getMergeAuthor());
-                    pull.setMergeAuthorType(getAuthorType(repo, mergeEvent.getMergeAuthor()));
+                    String mergeAuthorType = getAuthorType(repo, mergeEvent.getMergeAuthor());
+                    if (!StringUtils.isEmpty(mergeAuthorType)) {
+                        pull.setMergeAuthorType(mergeAuthorType);
+                    }
                     String mergeAuthorLDAPDN = getLDAPDN(repo, mergeEvent.getMergeAuthor());
                     if (!StringUtils.isEmpty(mergeAuthorLDAPDN)) {
                         pull.setMergeAuthorLDAPDN(mergeAuthorLDAPDN);
@@ -728,7 +730,10 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
             commit.setScmRevisionNumber(sha);
             commit.setScmAuthor(authorName);
             commit.setScmAuthorLogin(authorLogin);
-            commit.setScmAuthorType(getAuthorType(repo, authorLogin));
+            String authorType = getAuthorType(repo, authorLogin);
+            if (!StringUtils.isEmpty(authorType)) {
+                commit.setScmAuthorType(authorType);
+            }
             String authorLDAPDN = getLDAPDN(repo, authorLogin);
             if (!StringUtils.isEmpty(authorLDAPDN)) {
                 commit.setScmAuthorLDAPDN(authorLDAPDN);
@@ -849,7 +854,7 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
                 ldapMap.put(user, ldapDN);
             }
             if (StringUtils.isNotEmpty(authorTypeStr)) {
-                authorTypeMap.put(user, AuthorType.fromString(authorTypeStr));
+                authorTypeMap.put(user, authorTypeStr);
             }
         } catch (MalformedURLException | HygieiaException | RestClientException e) {
             LOG.error("Error getting LDAP_DN For user " + user, e);
@@ -868,7 +873,7 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
         return ldapMap.get(formattedUser);
     }
 
-    public AuthorType getAuthorType(GitHubRepo repo, String user) {
+    public String getAuthorType(GitHubRepo repo, String user) {
         if (StringUtils.isEmpty(user) || "unknown".equalsIgnoreCase(user)) return null;
         if (authorTypeMap == null) { authorTypeMap = new HashMap<>(); }
         //This is weird. Github does replace the _ in commit author with - in the user api!!!
@@ -895,7 +900,10 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
             Comment comment = new Comment();
             comment.setBody(str(node, "bodyText"));
             comment.setUser(str((JSONObject) node.get("author"), "login"));
-            comment.setUserType(getAuthorType(repo, comment.getUser()));
+            String userType = getAuthorType(repo, comment.getUser());
+            if (!StringUtils.isEmpty(userType)) {
+                comment.setUserType(userType);
+            }
             String userLDAPDN = getLDAPDN(repo, comment.getUser());
             if (!StringUtils.isEmpty(userLDAPDN)) {
                 comment.setUserLDAPDN(userLDAPDN);
@@ -933,6 +941,10 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
             newCommit.setScmAuthor(str(author, "name"));
             newCommit.setScmAuthorLogin(authorUserJSON == null ? "unknown" : str(authorUserJSON, "login"));
             String authorLDAPDN = "unknown".equalsIgnoreCase(newCommit.getScmAuthorLogin()) ? null : getLDAPDN(repo, newCommit.getScmAuthorLogin());
+            String authorType = getAuthorType(repo, newCommit.getScmAuthorLogin());
+            if (!StringUtils.isEmpty(authorType)) {
+                newCommit.setScmAuthorType(authorType);
+            }
             if (!StringUtils.isEmpty(authorLDAPDN)) {
                 newCommit.setScmAuthorLDAPDN(authorLDAPDN);
             }
@@ -1015,7 +1027,10 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
             review.setBody(str(node, "bodyText"));
             JSONObject authorObj = (JSONObject) node.get("author");
             review.setAuthor(str(authorObj, "login"));
-            review.setAuthorType(getAuthorType(repo, review.getAuthor()));
+            String authorType = getAuthorType(repo, review.getAuthor());
+            if (!StringUtils.isEmpty(authorType)) {
+                review.setAuthorType(authorType);
+            }
             String authorLDAPDN = getLDAPDN(repo, review.getAuthor());
             if (!StringUtils.isEmpty(authorLDAPDN)) {
                 review.setAuthorLDAPDN(authorLDAPDN);
