@@ -7,7 +7,6 @@ import com.capitalone.dashboard.model.CollectorType;
 import org.bson.types.ObjectId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
 import java.util.List;
 import java.util.Map;
 
@@ -105,7 +104,6 @@ public interface CollectorService {
      */
     Collector createCollector(Collector collector);
 
-
     /**
      * Gets a list of collectorItems for a given component id
      * @param id id
@@ -119,4 +117,10 @@ public interface CollectorService {
      * @param deleteFromComponent
      */
     void deleteCollectorItem(String id, boolean deleteFromComponent) throws HygieiaException;
+
+    /**
+     * Delete properties section of Collector
+     * @param id
+     */
+    void deletePropertiesInCollectorById(String id);
 }

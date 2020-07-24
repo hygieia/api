@@ -2,17 +2,11 @@ package com.capitalone.dashboard.rest;
 
 import com.capitalone.dashboard.auth.access.Admin;
 import com.capitalone.dashboard.misc.HygieiaException;
-import com.capitalone.dashboard.model.ApiToken;
-import com.capitalone.dashboard.model.FeatureFlag;
-import com.capitalone.dashboard.model.ServiceAccount;
-import com.capitalone.dashboard.model.UserInfo;
+import com.capitalone.dashboard.model.*;
 import com.capitalone.dashboard.request.ApiTokenRequest;
 import com.capitalone.dashboard.request.FeatureFlagRequest;
 import com.capitalone.dashboard.request.ServiceAccountRequest;
-import com.capitalone.dashboard.service.ApiTokenService;
-import com.capitalone.dashboard.service.FeatureFlagService;
-import com.capitalone.dashboard.service.ServiceAccountService;
-import com.capitalone.dashboard.service.UserInfoService;
+import com.capitalone.dashboard.service.*;
 import com.capitalone.dashboard.util.EncryptionException;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PathVariable;
-
 import javax.validation.Valid;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -43,12 +35,17 @@ public class AdminController {
 
     private final FeatureFlagService featureFlagService;
 
+    private final CollectorService collectorService;
+
     @Autowired
-    public AdminController(UserInfoService userInfoService, ApiTokenService apiTokenService,ServiceAccountService serviceAccountService,FeatureFlagService featureFlagService) {
+    public AdminController(UserInfoService userInfoService, ApiTokenService apiTokenService,
+                           ServiceAccountService serviceAccountService, FeatureFlagService featureFlagService,
+                           CollectorService collectorService) {
         this.userInfoService = userInfoService;
         this.apiTokenService = apiTokenService;
         this.serviceAccountService = serviceAccountService;
         this.featureFlagService = featureFlagService;
+        this.collectorService = collectorService;
     }
     
     @RequestMapping(path = "/users/addAdmin", method = RequestMethod.POST)
@@ -172,5 +169,25 @@ public class AdminController {
         return ResponseEntity.<Void>noContent().build();
     }
 
+    @RequestMapping(path = "/allCollectorsByType/{type}", method = RequestMethod.GET)
+    public List<Collector> getAllCollectorsByType(@PathVariable CollectorType type) {
+        List<Collector> collectors = collectorService.collectorsByType(type);
+        return collectors;
+    }
 
+    @RequestMapping(value = "/addOrUpdateCollector/{name}/{collectorType}", method = RequestMethod.POST)
+    public ResponseEntity<Collector> addOrUpdateCollector(@PathVariable String name, @PathVariable String collectorType, @Valid @RequestBody HashMap propertiesObj) {
+        CollectorType collectorTypeUse = CollectorType.fromString(collectorType);
+        Collector collector = new Collector();
+        collector.setName(name);
+        collector.setCollectorType(collectorTypeUse);
+        collector.setProperties((propertiesObj));
+        return ResponseEntity.status(HttpStatus.OK).body(collectorService.createCollector(collector));
+    }
+
+    @RequestMapping(path = "/deletePropertiesCase/{id}", method = RequestMethod.DELETE)
+    public ResponseEntity<Void> deletePropertiesCase(@PathVariable String id) throws HygieiaException {
+        collectorService.deletePropertiesInCollectorById(id);
+        return ResponseEntity.<Void>noContent().build();
+    }
 }
