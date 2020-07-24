@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PathVariable;
 import javax.validation.Valid;
-import java.util.*;
+
+import java.util.Collection;
+import java.util.List;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -35,17 +37,13 @@ public class AdminController {
 
     private final FeatureFlagService featureFlagService;
 
-    private final CollectorService collectorService;
-
     @Autowired
     public AdminController(UserInfoService userInfoService, ApiTokenService apiTokenService,
-                           ServiceAccountService serviceAccountService, FeatureFlagService featureFlagService,
-                           CollectorService collectorService) {
+                           ServiceAccountService serviceAccountService, FeatureFlagService featureFlagService) {
         this.userInfoService = userInfoService;
         this.apiTokenService = apiTokenService;
         this.serviceAccountService = serviceAccountService;
         this.featureFlagService = featureFlagService;
-        this.collectorService = collectorService;
     }
     
     @RequestMapping(path = "/users/addAdmin", method = RequestMethod.POST)
@@ -166,28 +164,6 @@ public class AdminController {
     @RequestMapping(path = "/deleteFeatureFlags/{id}", method = RequestMethod.DELETE)
     public ResponseEntity<Void> deleteFeatureFlags(@PathVariable ObjectId id) {
         featureFlagService.deleteFlags(id);
-        return ResponseEntity.<Void>noContent().build();
-    }
-
-    @RequestMapping(path = "/allCollectorsByType/{type}", method = RequestMethod.GET)
-    public List<Collector> getAllCollectorsByType(@PathVariable CollectorType type) {
-        List<Collector> collectors = collectorService.collectorsByType(type);
-        return collectors;
-    }
-
-    @RequestMapping(value = "/addOrUpdateCollector/{name}/{collectorType}", method = RequestMethod.POST)
-    public ResponseEntity<Collector> addOrUpdateCollector(@PathVariable String name, @PathVariable String collectorType, @Valid @RequestBody HashMap propertiesObj) {
-        CollectorType collectorTypeUse = CollectorType.fromString(collectorType);
-        Collector collector = new Collector();
-        collector.setName(name);
-        collector.setCollectorType(collectorTypeUse);
-        collector.setProperties((propertiesObj));
-        return ResponseEntity.status(HttpStatus.OK).body(collectorService.createCollector(collector));
-    }
-
-    @RequestMapping(path = "/deletePropertiesCase/{id}", method = RequestMethod.DELETE)
-    public ResponseEntity<Void> deletePropertiesCase(@PathVariable String id) throws HygieiaException {
-        collectorService.deletePropertiesInCollectorById(id);
         return ResponseEntity.<Void>noContent().build();
     }
 }

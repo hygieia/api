@@ -18,14 +18,10 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -135,5 +131,25 @@ public class CollectorController {
                 .body(pageOfCollectorItems.getContent());
     }
 
+    @RequestMapping(path = "/collector/allCollectorsByType/{type}", method = RequestMethod.GET)
+    public List<Collector> getAllCollectorsByType(@PathVariable CollectorType type) {
+        List<Collector> collectors = collectorService.collectorsByType(type);
+        return collectors;
+    }
 
+    @RequestMapping(value = "/collector/addOrUpdateCollector/{name}/{collectorType}", method = RequestMethod.POST)
+    public ResponseEntity<Collector> addOrUpdateCollector(@PathVariable String name, @PathVariable String collectorType, @Valid @RequestBody HashMap propertiesObj) {
+        CollectorType collectorTypeUse = CollectorType.fromString(collectorType);
+        Collector collector = new Collector();
+        collector.setName(name);
+        collector.setCollectorType(collectorTypeUse);
+        collector.setProperties(propertiesObj);
+        return ResponseEntity.status(HttpStatus.OK).body(collectorService.createCollector(collector));
+    }
+
+    @RequestMapping(path = "/collector/deletePropertiesCase/{id}", method = RequestMethod.DELETE)
+    public ResponseEntity<Void> deletePropertiesCase(@PathVariable String id) throws HygieiaException {
+        collectorService.deletePropertiesInCollectorById(id);
+        return ResponseEntity.<Void>noContent().build();
+    }
 }

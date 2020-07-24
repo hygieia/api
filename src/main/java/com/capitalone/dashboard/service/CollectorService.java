@@ -67,9 +67,6 @@ public interface CollectorService {
      */
     CollectorItem createCollectorItem(CollectorItem item);
 
-
-
-
     /**
      * Creates a new CollectorItem. If a CollectorItem already exists with the
      * same collector id and niceName, that CollectorItem will be returned instead
