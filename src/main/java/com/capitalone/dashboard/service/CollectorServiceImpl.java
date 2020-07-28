@@ -63,7 +63,7 @@ public class CollectorServiceImpl implements CollectorService {
     }
 
     @Override
-    public List<Collector> collectorsById(ObjectId id) {
+    public Collector collectorsById(ObjectId id) {
         return collectorRepository.findById(id);
     }
 
@@ -291,14 +291,12 @@ public class CollectorServiceImpl implements CollectorService {
     @Override
     public void deletePropertiesInCollectorById(String id) {
         ObjectId objectId = new ObjectId(id);
-        List<Collector> collectors = collectorsById(objectId);
+        Collector collectorById = collectorsById(objectId);
         HashMap<String, Object> blankHash = new HashMap<>();
 
-        for (Collector collector : collectors) {
-            if(collector.getProperties().size() > 0) {
-                collector.setProperties(blankHash);
-            }
-            collectorRepository.save(collector);
+        if(collectorById.getProperties().size() > 0) {
+            collectorById.setProperties(blankHash);
+            collectorRepository.save(collectorById);
         }
     }
 

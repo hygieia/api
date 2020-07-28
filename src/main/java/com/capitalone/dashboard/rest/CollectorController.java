@@ -67,7 +67,7 @@ public class CollectorController {
 
     @RequestMapping(value = "/collector/collectorId/{id}",
             method = GET, produces = APPLICATION_JSON_VALUE)
-    public List<Collector> collectorsByType(@PathVariable ObjectId id) {
+    public Collector collectorsByType(@PathVariable ObjectId id) {
         return collectorService.collectorsById(id);
     }
 
@@ -135,12 +135,6 @@ public class CollectorController {
                 .ok()
                 .headers(paginationHeaderUtility.buildPaginationHeaders(pageOfCollectorItems))
                 .body(pageOfCollectorItems.getContent());
-    }
-
-    @RequestMapping(path = "/collector/allCollectorsByType/{type}", method = RequestMethod.GET)
-    public List<Collector> getAllCollectorsByType(@PathVariable CollectorType type) {
-        List<Collector> collectors = collectorService.collectorsByType(type);
-        return collectors;
     }
 
     @RequestMapping(value = "/collector/addOrUpdateCollector/{name}/{collectorType}", method = RequestMethod.POST)

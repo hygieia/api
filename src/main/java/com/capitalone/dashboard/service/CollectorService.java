@@ -22,12 +22,12 @@ public interface CollectorService {
 
 
     /**
-     * Finds all Collectors of a given id.
+     * Finds Collector of given id (only one)
      *
      * @param id
-     * @return Collectors matching the specified type
+     * @return Collector matching the specified type
      */
-    List<Collector>  collectorsById(ObjectId id);
+    Collector collectorsById(ObjectId id);
 
     /**
      * Finds paged results of CollectorItems of a given type.

@@ -97,7 +97,7 @@ public class CollectorControllerTest {
     @Test
     public void getCollectorById() throws Exception {
         Collector collector = makeCollector("Hudson", CollectorType.Build);
-        when(collectorService.collectorsById(collector.getId())).thenReturn(Collections.singletonList(collector));
+        when(collectorService.collectorsById(collector.getId())).thenReturn(collector);
         mockMvc.perform(get("/collector/collectorId/" + collector.getId().toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id", is(collector.getId().toString())))
