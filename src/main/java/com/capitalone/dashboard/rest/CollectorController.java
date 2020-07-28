@@ -27,8 +27,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.validation.Valid;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
@@ -138,7 +138,7 @@ public class CollectorController {
     }
 
     @RequestMapping(value = "/collector/addOrUpdateCollector/{name}/{collectorType}", method = RequestMethod.POST)
-    public ResponseEntity<Collector> addOrUpdateCollector(@PathVariable String name, @PathVariable String collectorType, @Valid @RequestBody HashMap propertiesObj) {
+    public ResponseEntity<Collector> addOrUpdateCollector(@PathVariable String name, @PathVariable String collectorType, @Valid @RequestBody Map propertiesObj) {
         CollectorType collectorTypeUse = CollectorType.fromString(collectorType);
         Collector collector = new Collector();
         collector.setName(name);
@@ -148,7 +148,7 @@ public class CollectorController {
     }
 
     @RequestMapping(path = "/collector/deletePropertiesCase/{id}", method = RequestMethod.DELETE)
-    public ResponseEntity<Void> deletePropertiesCase(@PathVariable String id) throws HygieiaException {
+    public ResponseEntity<Void> deletePropertiesCase(@PathVariable String id) {
         collectorService.deletePropertiesInCollectorById(id);
         return ResponseEntity.<Void>noContent().build();
     }

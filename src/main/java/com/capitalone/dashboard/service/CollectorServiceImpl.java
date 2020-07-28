@@ -32,9 +32,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -292,10 +292,10 @@ public class CollectorServiceImpl implements CollectorService {
     public void deletePropertiesInCollectorById(String id) {
         ObjectId objectId = new ObjectId(id);
         Collector collectorById = collectorRepository.findOne(objectId);
-        HashMap<String, Object> blankHash = new HashMap<>();
+        Map<String, Object> blankMap = new HashMap<>();
 
         if(collectorById.getProperties().size() > 0) {
-            collectorById.setProperties(blankHash);
+            collectorById.setProperties(blankMap);
             collectorRepository.save(collectorById);
         }
     }
