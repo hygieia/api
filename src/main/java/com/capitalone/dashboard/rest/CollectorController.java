@@ -67,7 +67,7 @@ public class CollectorController {
 
     @RequestMapping(value = "/collector/collectorId/{id}",
             method = GET, produces = APPLICATION_JSON_VALUE)
-    public Collector collectorsByType(@PathVariable ObjectId id) {
+    public List<Collector> collectorsByType(@PathVariable ObjectId id) {
         return collectorService.collectorsById(id);
     }
 
