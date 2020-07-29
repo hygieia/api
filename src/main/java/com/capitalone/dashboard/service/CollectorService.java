@@ -7,7 +7,6 @@ import com.capitalone.dashboard.model.CollectorType;
 import org.bson.types.ObjectId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
 import java.util.List;
 import java.util.Map;
 
@@ -23,12 +22,12 @@ public interface CollectorService {
 
 
     /**
-     * Finds all Collectors of a given id.
+     * Finds all Collectors of given id
      *
      * @param id
      * @return Collectors matching the specified type
      */
-    List<Collector>  collectorsById(ObjectId id);
+    List<Collector> collectorsById(ObjectId id);
 
     /**
      * Finds paged results of CollectorItems of a given type.
@@ -68,9 +67,6 @@ public interface CollectorService {
      */
     CollectorItem createCollectorItem(CollectorItem item);
 
-
-
-
     /**
      * Creates a new CollectorItem. If a CollectorItem already exists with the
      * same collector id and niceName, that CollectorItem will be returned instead
@@ -105,7 +101,6 @@ public interface CollectorService {
      */
     Collector createCollector(Collector collector);
 
-
     /**
      * Gets a list of collectorItems for a given component id
      * @param id id
@@ -119,4 +114,10 @@ public interface CollectorService {
      * @param deleteFromComponent
      */
     void deleteCollectorItem(String id, boolean deleteFromComponent) throws HygieiaException;
+
+    /**
+     * Delete properties section of Collector
+     * @param id
+     */
+    void deletePropertiesInCollectorById(String id);
 }

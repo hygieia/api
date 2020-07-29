@@ -3,8 +3,8 @@ package com.capitalone.dashboard.rest;
 import com.capitalone.dashboard.auth.access.Admin;
 import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.ApiToken;
-import com.capitalone.dashboard.model.FeatureFlag;
 import com.capitalone.dashboard.model.ServiceAccount;
+import com.capitalone.dashboard.model.FeatureFlag;
 import com.capitalone.dashboard.model.UserInfo;
 import com.capitalone.dashboard.request.ApiTokenRequest;
 import com.capitalone.dashboard.request.FeatureFlagRequest;
@@ -23,8 +23,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PathVariable;
-
 import javax.validation.Valid;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -44,7 +44,8 @@ public class AdminController {
     private final FeatureFlagService featureFlagService;
 
     @Autowired
-    public AdminController(UserInfoService userInfoService, ApiTokenService apiTokenService,ServiceAccountService serviceAccountService,FeatureFlagService featureFlagService) {
+    public AdminController(UserInfoService userInfoService, ApiTokenService apiTokenService,
+                           ServiceAccountService serviceAccountService, FeatureFlagService featureFlagService) {
         this.userInfoService = userInfoService;
         this.apiTokenService = apiTokenService;
         this.serviceAccountService = serviceAccountService;
@@ -171,6 +172,4 @@ public class AdminController {
         featureFlagService.deleteFlags(id);
         return ResponseEntity.<Void>noContent().build();
     }
-
-
 }

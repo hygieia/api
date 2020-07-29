@@ -4,14 +4,15 @@ import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.Collector;
 import com.capitalone.dashboard.model.CollectorItem;
 import com.capitalone.dashboard.model.CollectorType;
-import com.capitalone.dashboard.model.Component;
-import com.capitalone.dashboard.model.Dashboard;
 import com.capitalone.dashboard.model.MultiSearchFilter;
+import com.capitalone.dashboard.model.Dashboard;
+import com.capitalone.dashboard.model.Component;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.repository.CollectorRepository;
 import com.capitalone.dashboard.repository.ComponentRepository;
-import com.capitalone.dashboard.repository.CustomRepositoryQuery;
 import com.capitalone.dashboard.repository.DashboardRepository;
+import com.capitalone.dashboard.repository.CustomRepositoryQuery;
+
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -26,13 +27,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 @Service
@@ -259,6 +261,8 @@ public class CollectorServiceImpl implements CollectorService {
             existing.setEnabled(true);
             existing.setOnline(true);
             existing.setLastExecuted(System.currentTimeMillis());
+            existing.setProperties(collector.getProperties());
+
             return collectorRepository.save(existing);
         }
         /*
@@ -282,6 +286,18 @@ public class CollectorServiceImpl implements CollectorService {
             ids.add(item.getId());
         }
         return (List<CollectorItem>) collectorItemRepository.findAll(ids);
+    }
+
+    @Override
+    public void deletePropertiesInCollectorById(String id) {
+        ObjectId objectId = new ObjectId(id);
+        Collector collectorById = collectorRepository.findOne(objectId);
+        Map<String, Object> blankMap = new HashMap<>();
+
+        if(collectorById.getProperties().size() > 0) {
+            collectorById.setProperties(blankMap);
+            collectorRepository.save(collectorById);
+        }
     }
 
     @Override
