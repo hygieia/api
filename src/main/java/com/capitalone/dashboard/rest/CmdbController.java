@@ -6,6 +6,8 @@ import com.capitalone.dashboard.request.CmdbRequest;
 import com.capitalone.dashboard.service.CmdbRemoteService;
 import com.capitalone.dashboard.service.CmdbService;
 import com.capitalone.dashboard.util.PaginationHeaderUtility;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +32,8 @@ public class CmdbController {
     private final CmdbService cmdbService;
     private final CmdbRemoteService cmdbRemoteService;
     private PaginationHeaderUtility paginationHeaderUtility;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CmdbController.class);
 
     @Autowired
     public CmdbController(CmdbService cmdbService, PaginationHeaderUtility paginationHeaderUtility, CmdbRemoteService cmdbRemoteService ) {
@@ -62,6 +66,7 @@ public class CmdbController {
                     .status( HttpStatus.CREATED )
                     .body( cmdbRemoteService.remoteCreate( request ) );
         } catch (HygieiaException he) {
+            LOGGER.error("Failed to create cmdb entry", he);
             return ResponseEntity
                     .status( HttpStatus.BAD_REQUEST )
                     .body( he.getMessage() );

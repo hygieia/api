@@ -40,9 +40,10 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {ApiTestConfig.class, FongoConfig.class})
@@ -210,18 +211,15 @@ public class DashboardRemoteServiceTest {
         }
     }
     @Test
-    public void remoteCreateDuplicateDashboard() throws IOException {
+    public void remoteCreateDuplicateDashboard() throws HygieiaException, IOException {
         DashboardRemoteRequest request = getRemoteRequest("./dashboardRemoteRequests/0-Remote-Update-Repo.json");
         Dashboard dashboard = dashboardRepository.findByTitle(request.getMetaData().getTitle()).get(0);
         Throwable t = new Throwable();
         RuntimeException excep = new RuntimeException("Dashboard "+dashboard.getTitle()+" (id =" + dashboard.getId() + ") already exists", t);
 
-        try {
-            dashboardRemoteService.remoteCreate(request, false);
-            fail("Should throw RuntimeException");
-        } catch(Exception e) {
-            assertEquals(excep.getMessage(), e.getMessage());
-        }
+        Dashboard found = dashboardRemoteService.remoteCreate(request, false);
+        assertEquals(dashboard.getId(), found.getId());
+        assertTrue(found.getUpdatedAt()>dashboard.getUpdatedAt());
     }
     @Test
     public void remoteCreate() throws HygieiaException, IOException  {

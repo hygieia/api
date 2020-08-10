@@ -16,6 +16,9 @@ public class CmdbRequest {
     private String assignmentGroup;
     @NotNull
     private String ownerDept;
+
+    private String businessService;
+
     /**
      * commonName Human readable value of the configurationItem
      */
@@ -92,4 +95,11 @@ public class CmdbRequest {
     public void setToolName(String toolName) {
         this.toolName = toolName;
     }
+
+    public String getBusinessService() {
+        return businessService;
+    }
+
+    public void setBusinessService(String businessService) { this.businessService = businessService; }
+
 }
