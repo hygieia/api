@@ -44,6 +44,8 @@ public class CmdbRemoteServiceImpl implements CmdbRemoteService {
     @Override
     public Cmdb remoteCreate(CmdbRequest request ) throws HygieiaException {
 
+        Cmdb businessService = findBusinessService(request);
+
         validateRequest(request);
 
         updateRelationship(request);
@@ -77,18 +79,33 @@ public class CmdbRemoteServiceImpl implements CmdbRemoteService {
         }
     }
 
+    private Cmdb findBusinessService(CmdbRequest request) throws HygieiaException {
+        String businessService = request.getBusinessService();
+        String busServiceName = request.getConfigurationItemBusServName();
+        Cmdb cmdb = null;
+        if (!StringUtils.isEmpty(businessService)) {
+            cmdb = cmdbRepository.findByConfigurationItemAndItemType(businessService, APP_TYPE);
+            if (cmdb == null) {
+                throw new HygieiaException("Configuration Item " + businessService + " does not exist", HygieiaException.BAD_DATA);
+            }
+        } else if (!StringUtils.isEmpty(busServiceName)) {
+            cmdb = cmdbRepository.findByConfigurationItemAndItemType(busServiceName, APP_TYPE);
+            if (cmdb == null) {
+                throw new HygieiaException("Configuration Item " + busServiceName + " does not exist", HygieiaException.BAD_DATA);
+            }
+        }
+        return cmdb;
+    }
+
     /**
      * Validates CmdbRequest for errors
      * @param request
      * @throws HygieiaException
      */
     private void validateRequest(CmdbRequest request) throws HygieiaException {
-        String busServiceName = request.getConfigurationItemBusServName();
-        if(!StringUtils.isEmpty( busServiceName ) && cmdbRepository.findByConfigurationItemAndItemType( busServiceName, APP_TYPE ) == null){
-            throw new HygieiaException("Configuration Item " + busServiceName + " does not exist", HygieiaException.BAD_DATA);
-        }
 
         Cmdb cmdb = cmdbRepository.findByConfigurationItemIgnoreCaseOrCommonNameIgnoreCase(request.getConfigurationItem(), request.getCommonName());
+
         if(cmdb != null){
             throw new HygieiaException("Configuration Item " + cmdb.getConfigurationItem() + " already exists", HygieiaException.DUPLICATE_DATA);
         }

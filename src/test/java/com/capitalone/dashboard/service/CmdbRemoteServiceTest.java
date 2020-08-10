@@ -49,7 +49,7 @@ public class CmdbRemoteServiceTest {
         ObjectId objectId = ObjectId.get();
         expected.setId(objectId);
         CmdbRequest request = makeCmdbRequest("BAPTEST", "subtype",
-                "type", "assignmentgroup","owner", "BAPTEST", "", "cmdbCollector");
+                "type", "assignmentgroup","owner", "BAPTEST", null, "", "cmdbCollector");
         when(cmdbRepository.findByConfigurationItemAndItemType("","" )).thenReturn(null);
         when(collectorService.createCollectorItem(Matchers.any(CollectorItem.class) )).thenReturn(makeCollectorItem());
         when(collectorRepository.findByCollectorTypeAndName(CollectorType.CMDB, request.getToolName())).thenReturn(makeCollector( request.getToolName(), CollectorType.CMDB));
@@ -69,7 +69,7 @@ public class CmdbRemoteServiceTest {
         ObjectId objectId = ObjectId.get();
         expected.setId(objectId);
         CmdbRequest request = makeCmdbRequest("BAPTEST", "subtype",
-                "type", "assignmentgroup","owner", "BAPTEST", "ASVTEST", "cmdbCollector");
+                "type", "assignmentgroup","owner", "BAPTEST", null,"ASVTEST", "cmdbCollector");
         when(cmdbRepository.findByConfigurationItemAndItemType("","" )).thenReturn(null);
         when(collectorService.createCollectorItem(Matchers.any(CollectorItem.class) )).thenReturn(makeCollectorItem());
         when(collectorRepository.findByCollectorTypeAndName(CollectorType.CMDB, request.getToolName())).thenReturn(makeCollector( request.getToolName(), CollectorType.CMDB));
@@ -84,6 +84,29 @@ public class CmdbRemoteServiceTest {
             assertEquals(excep.getMessage(), e.getMessage());
         }
     }
+
+    /**
+     * Test the use of businessService instead of configurationItemBusServName in the request.
+     * @throws HygieiaException
+     */
+    @Test
+    public void remoteCreateUsingBusinessService() throws HygieiaException {
+        Cmdb businessServiceItem = makeCmdbItem("CI123456", "subtype",
+                "type", "assignmentgroup","owner", "ASVTEST");
+        Cmdb expected = makeCmdbItem("BAPTEST", "subtype",
+                "type", "assignmentgroup","owner", "BAPTEST");
+        ObjectId objectId = ObjectId.get();
+        expected.setId(objectId);
+        CmdbRequest request = makeCmdbRequest("BAPTEST", "subtype",
+                "type", "assignmentgroup","owner", "BAPTEST", "CI123456", "", "cmdbCollector");
+        when(cmdbRepository.findByConfigurationItemAndItemType("CI123456","app" )).thenReturn(businessServiceItem);
+        when(collectorService.createCollectorItem(Matchers.any(CollectorItem.class) )).thenReturn(makeCollectorItem());
+        when(collectorRepository.findByCollectorTypeAndName(CollectorType.CMDB, request.getToolName())).thenReturn(makeCollector( request.getToolName(), CollectorType.CMDB));
+        when(cmdbRepository.save(Matchers.any(Cmdb.class))).thenReturn(expected);
+
+        assertThat(cmdbRemoteService.remoteCreate(request), is(expected));
+    }
+
     /**
      * Tests remoteCreate functionality ConfigurationItemBusServName doesn't have existing relationships
      * @throws HygieiaException
@@ -97,7 +120,7 @@ public class CmdbRemoteServiceTest {
         ObjectId objectId = ObjectId.get();
         expected.setId(objectId);
         CmdbRequest request = makeCmdbRequest("BAPTEST", "subtype",
-                "type", "assignmentgroup","owner", "BAPTEST", "ASVTEST", "cmdbCollector");
+                "type", "assignmentgroup","owner", "BAPTEST", null,"ASVTEST", "cmdbCollector");
         when(cmdbRepository.findByConfigurationItemAndItemType("","" )).thenReturn(null);
         when(collectorService.createCollectorItem(Matchers.any(CollectorItem.class) )).thenReturn(makeCollectorItem());
         when(collectorRepository.findByCollectorTypeAndName(CollectorType.CMDB, request.getToolName())).thenReturn(makeCollector( request.getToolName(), CollectorType.CMDB));
@@ -122,7 +145,7 @@ public class CmdbRemoteServiceTest {
         ObjectId objectId = ObjectId.get();
         expected.setId(objectId);
         CmdbRequest request = makeCmdbRequest("BAPTEST", "subtype",
-                "type", "assignmentgroup","owner", "BAPTEST", "ASVTEST", "cmdbCollector");
+                "type", "assignmentgroup","owner", "BAPTEST",  null,"ASVTEST", "cmdbCollector");
         when(cmdbRepository.findByConfigurationItemAndItemType("","" )).thenReturn(null);
         when(collectorService.createCollectorItem(Matchers.any(CollectorItem.class) )).thenReturn(makeCollectorItem());
         when(collectorRepository.findByCollectorTypeAndName(CollectorType.CMDB, request.getToolName())).thenReturn(makeCollector( request.getToolName(), CollectorType.CMDB));
@@ -154,6 +177,7 @@ public class CmdbRemoteServiceTest {
                                         String assignmentGroup,
                                         String ownerDept,
                                         String commonName,
+                                        String businessService,
                                         String configurationItemBusServName,
                                         String toolName){
 
@@ -164,6 +188,7 @@ public class CmdbRemoteServiceTest {
         request.setAssignmentGroup(assignmentGroup);
         request.setOwnerDept(ownerDept);
         request.setCommonName(commonName);
+        request.setBusinessService(businessService);
         request.setConfigurationItemBusServName(configurationItemBusServName);
         request.setToolName(toolName);
         return request;

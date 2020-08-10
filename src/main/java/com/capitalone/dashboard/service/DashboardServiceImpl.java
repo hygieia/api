@@ -181,10 +181,10 @@ public class DashboardServiceImpl implements DashboardService {
         Iterable<Component> components = null;
 
         if(!isUpdate) {
+            dashboard.setCreatedAt(System.currentTimeMillis());
             components = componentRepository.save(dashboard.getApplication().getComponents());
-        } else {
-            dashboard.setUpdatedAt(System.currentTimeMillis());
         }
+        dashboard.setUpdatedAt(System.currentTimeMillis());
 
         try {
             duplicateDashboardErrorCheck(dashboard);

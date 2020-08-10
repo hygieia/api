@@ -5,6 +5,9 @@ import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.Dashboard;
 import com.capitalone.dashboard.request.DashboardRemoteRequest;
 import com.capitalone.dashboard.service.DashboardRemoteService;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,9 +23,9 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 @RestController
 public class DashboardRemoteController {
 
-//    private static final Logger LOGGER = LoggerFactory.getLogger(DashboardRemoteController.class);
-    private final DashboardRemoteService dashboardRemoteService;
+    private static final Logger LOGGER = LoggerFactory.getLogger(DashboardRemoteController.class);
 
+    private final DashboardRemoteService dashboardRemoteService;
 
     @Autowired
     public DashboardRemoteController(DashboardRemoteService dashboardRemoteService) {
@@ -37,7 +40,8 @@ public class DashboardRemoteController {
             return ResponseEntity
                     .status(HttpStatus.CREATED)
                     .body("Successfully created dashboard: id =" + dashboard.getId());
-        } catch (HygieiaException he) {
+        } catch (Exception he) {
+            LOGGER.error("RemoteCreate receives exception", he);
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body("Failed to create dashboard. Error: " + he.getMessage());
@@ -52,7 +56,8 @@ public class DashboardRemoteController {
             return ResponseEntity
                     .status(HttpStatus.CREATED)
                     .body("Successfully updated dashboard: id =" + dashboard.getId());
-        } catch (HygieiaException he) {
+        } catch (Exception he) {
+            LOGGER.error("RemoteUpdate receives exception", he);
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body("Failed to update dashboard. Error: " + he.getMessage());

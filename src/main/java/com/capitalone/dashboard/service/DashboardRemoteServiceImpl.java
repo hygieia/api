@@ -115,15 +115,19 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
 
         List<Dashboard> dashboards = findExistingDashboardsFromRequest( request );
         if (!CollectionUtils.isEmpty(dashboards)) {
-            dashboard = dashboards.get(0);
+            if (dashboards.size()==1) {
+                dashboard = dashboards.get(0);
+            } else {
+                dashboard = chooseDashboard(dashboards, request);
+            }
             Set<Owner> uniqueOwners = new HashSet<Owner>(validOwners);
             uniqueOwners.addAll(dashboard.getOwners());
             dashboard.setOwners(new ArrayList<Owner>(uniqueOwners));
             dashboard.setConfigurationItemBusAppName(request.getMetaData().getBusinessApplication());
             dashboard.setConfigurationItemBusServName(request.getMetaData().getBusinessService());
-            if (!isUpdate) {
-                throw new HygieiaException("Dashboard " + dashboard.getTitle() + " (id =" + dashboard.getId() + ") already exists", HygieiaException.DUPLICATE_DATA);
-            }
+//            if (!isUpdate) {
+//                throw new HygieiaException("Dashboard " + dashboard.getTitle() + " (id =" + dashboard.getId() + ") already exists", HygieiaException.DUPLICATE_DATA);
+//            }
             dashboardService.update(dashboard);
             //Save the widgets
             for (Widget w : dashboard.getWidgets()) {
@@ -194,6 +198,27 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
         return (dashboard != null) ? dashboardService.get(dashboard.getId()) : null;
     }
 
+    private Dashboard chooseDashboard(List<Dashboard> dashboards, DashboardRemoteRequest request) {
+        Dashboard dashboard = null;
+        String businessService = request.getMetaData().getBusinessService();
+        String businessApplication = request.getMetaData().getBusinessApplication();
+        String title = request.getMetaData().getTitle();
+        for (Dashboard one : dashboards) {
+            if (dashboard==null) {
+                dashboard = one;
+            } else if (one.getUpdatedAt()>dashboard.getUpdatedAt()) {
+                dashboard = one;
+            } else if (one.getUpdatedAt()==dashboard.getUpdatedAt()) {
+                if (one.getCreatedAt()>dashboard.getCreatedAt()) {
+                    dashboard = one;
+                }
+            }
+        }
+        LOG.warn(String.format("MultipleDashboards=%d, businessService=%s, businessApplication=%s, title=%s, selected=%s",
+                dashboards.size(), businessService, businessApplication, title, dashboard.getId()));
+        return dashboard;
+    }
+
     /**
      * Generates a Widget Request list of Widgets to be created from the request
      * @param entries
@@ -244,7 +269,7 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
         List<Dashboard> existing = new ArrayList<>();
         if( !StringUtils.isEmpty( businessService ) && !StringUtils.isEmpty( businessApplication ) ){
            existing.addAll(dashboardRepository.findAllByConfigurationItemBusServNameContainingIgnoreCaseAndConfigurationItemBusAppNameContainingIgnoreCase( businessService, businessApplication ));
-        }if(StringUtils.isNotEmpty(title)) {
+        } else if (StringUtils.isNotEmpty(title)) {
            existing.addAll(dashboardRepository.findByTitle( request.getMetaData().getTitle() ));
         }
         return existing;
