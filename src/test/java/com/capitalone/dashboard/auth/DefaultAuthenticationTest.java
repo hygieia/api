@@ -13,7 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -31,7 +31,7 @@ import com.capitalone.dashboard.repository.AuthenticationRepository;
 import com.capitalone.dashboard.repository.UserInfoRepository;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = {TestAuthConfig.class, WebMVCConfig.class, WebSecurityConfig.class})
+@SpringBootTest(classes = {TestAuthConfig.class, WebMVCConfig.class, WebSecurityConfig.class})
 @WebAppConfiguration
 @Rollback(true)
 public class DefaultAuthenticationTest {

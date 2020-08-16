@@ -14,7 +14,7 @@ import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.util.TestResultConstants;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
-import com.mysema.query.BooleanBuilder;
+import com.querydsl.core.BooleanBuilder;
 import hygieia.transformer.CucumberJsonToTestCapabilityTransformer;
 import hygieia.transformer.JunitXmlToTestCapabilityTransformer;
 import org.apache.commons.lang.StringUtils;

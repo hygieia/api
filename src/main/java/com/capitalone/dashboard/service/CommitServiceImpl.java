@@ -12,7 +12,7 @@ import com.capitalone.dashboard.repository.CollectorRepository;
 import com.capitalone.dashboard.repository.CommitRepository;
 import com.capitalone.dashboard.repository.ComponentRepository;
 import com.capitalone.dashboard.request.CommitRequest;
-import com.mysema.query.BooleanBuilder;
+import com.querydsl.core.BooleanBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;

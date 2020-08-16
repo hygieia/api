@@ -12,7 +12,7 @@ import com.capitalone.dashboard.repository.CollectorRepository;
 import com.capitalone.dashboard.repository.ComponentRepository;
 import com.capitalone.dashboard.repository.FeatureRepository;
 import com.capitalone.dashboard.util.FeatureCollectorConstants;
-import com.mysema.query.BooleanBuilder;
+import com.querydsl.core.BooleanBuilder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

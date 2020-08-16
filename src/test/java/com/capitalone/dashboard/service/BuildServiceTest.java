@@ -25,7 +25,7 @@ import com.capitalone.dashboard.response.BuildDataCreateResponse;
 import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.webhook.settings.JenkinsBuildWebHookSettings;
 import com.capitalone.dashboard.webhook.settings.WebHookSettings;
-import com.mysema.query.types.Predicate;
+import com.querydsl.core.types.Predicate;
 import org.bson.types.ObjectId;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;

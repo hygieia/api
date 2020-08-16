@@ -16,9 +16,10 @@ import com.capitalone.dashboard.repository.ComponentRepository;
 import com.capitalone.dashboard.request.CodeQualityCreateRequest;
 import com.capitalone.dashboard.request.CodeQualityRequest;
 import com.capitalone.dashboard.request.CollectorRequest;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
-import com.mysema.query.BooleanBuilder;
+import com.querydsl.core.BooleanBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.bson.types.ObjectId;
 import org.joda.time.LocalDate;
@@ -115,7 +116,7 @@ public class CodeQualityServiceImpl implements CodeQualityService {
             return null;
         }
 
-        CodeQualityType qualityType = Objects.firstNonNull(request.getType(), CodeQualityType.StaticAnalysis);
+        CodeQualityType qualityType = MoreObjects.firstNonNull(request.getType(), CodeQualityType.StaticAnalysis);
 
         return component.getLastUpdatedCollectorItemForType(qualityType.collectorType());
     }

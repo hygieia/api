@@ -24,7 +24,7 @@ import com.capitalone.dashboard.request.CollectorRequest;
 import com.capitalone.dashboard.response.BuildDataCreateResponse;
 import com.capitalone.dashboard.settings.ApiSettings;
 import com.google.common.collect.Sets;
-import com.mysema.query.BooleanBuilder;
+import com.querydsl.core.BooleanBuilder;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bson.types.ObjectId;
