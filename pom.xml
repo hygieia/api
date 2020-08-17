@@ -58,7 +58,7 @@
     </parent>
 
     <properties>
-        <com.capitalone.dashboard.core.version>3.7.19</com.capitalone.dashboard.core.version>
+        <com.capitalone.dashboard.core.version>3.7.24</com.capitalone.dashboard.core.version>
         <apache.rat.plugin.version>0.13</apache.rat.plugin.version>
         <coveralls.maven.plugin.version>4.3.0</coveralls.maven.plugin.version>
         <guava.version>19.0</guava.version>
@@ -81,8 +81,8 @@
         <maven.project-info.version>3.0.0</maven.project-info.version>
         <maven.scm.publish.plugin.version>3.0.0</maven.scm.publish.plugin.version>
         <maven.site.plugin.version>3.7.1</maven.site.plugin.version>
-        <mongo>3.0.2</mongo>
-        <mongodb.version>3.0.2</mongodb.version>
+        <mongo>3.6.4</mongo>
+        <mongodb.version>3.6.4</mongodb.version>
         <pmd.version>3.6</pmd.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <site.publish.url>https://github.com/Hygieia/api</site.publish.url>
