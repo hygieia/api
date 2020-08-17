@@ -1,5 +1,7 @@
 package com.capitalone.dashboard.webhook.github;
 
+import com.capitalone.dashboard.client.RestClientSettings;
+import com.capitalone.dashboard.client.RestOperationsSupplier;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.client.RestClient;
@@ -14,7 +16,6 @@ import com.capitalone.dashboard.model.webhook.github.GitHubRepo;
 import com.capitalone.dashboard.repository.CommitRepository;
 import com.capitalone.dashboard.repository.GitRequestRepository;
 import com.capitalone.dashboard.service.CollectorService;
-import com.capitalone.dashboard.util.Supplier;
 import com.capitalone.dashboard.webhook.settings.GitHubWebHookSettings;
 import com.capitalone.dashboard.webhook.settings.WebHookSettings;
 import com.google.common.io.Resources;
@@ -69,14 +70,16 @@ public class GitHubCommitV3Test {
     @Mock
     private ApiSettings apiSettings;
     @Mock
-    private Supplier<RestOperations> restOperationsSupplier;
+    private RestOperationsSupplier restOperationsSupplier;
+    @Mock
+    private RestClientSettings restClientSettings;
 
     private GitHubCommitV3 gitHubCommitV3;
     private RestClient restClient;
 
     @Before
     public void init() {
-        RestClient restClientTemp = new RestClient(restOperationsSupplier);
+        RestClient restClientTemp = new RestClient(restOperationsSupplier, restClientSettings);
         restClient = Mockito.spy(restClientTemp);
         gitHubCommitV3 = new GitHubCommitV3 (collectorService, restClient, commitRepository, gitRequestRepository, collectorItemRepository, apiSettings);
     }

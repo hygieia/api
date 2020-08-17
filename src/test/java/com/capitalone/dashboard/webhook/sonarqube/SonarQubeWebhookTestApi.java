@@ -1,13 +1,14 @@
 package com.capitalone.dashboard.webhook.sonarqube;
 
 import com.capitalone.dashboard.client.RestClient;
+import com.capitalone.dashboard.client.RestClientSettings;
+import com.capitalone.dashboard.client.RestOperationsSupplier;
 import com.capitalone.dashboard.model.Collector;
 import com.capitalone.dashboard.repository.CodeQualityRepository;
 import com.capitalone.dashboard.repository.CollectorRepository;
 import com.capitalone.dashboard.repository.ComponentRepository;
 import com.capitalone.dashboard.repository.SonarProjectRepository;
 import com.capitalone.dashboard.settings.ApiSettings;
-import com.capitalone.dashboard.util.Supplier;
 import com.google.common.io.Resources;
 import org.apache.commons.io.IOUtils;
 import org.bson.types.ObjectId;
@@ -33,7 +34,9 @@ public class SonarQubeWebhookTestApi {
     @Mock private ComponentRepository componentRepository;
 
     @Mock
-    private Supplier<RestOperations> restOperationsSupplier;
+    private RestOperationsSupplier restOperationsSupplier;
+    @Mock
+    private RestClientSettings restClientSettings;
 
     @Mock
     private ApiSettings apiSettings;
@@ -44,7 +47,7 @@ public class SonarQubeWebhookTestApi {
 
     @Before
     public void init() {
-        RestClient restClientTemp = new RestClient(restOperationsSupplier);
+        RestClient restClientTemp = new RestClient(restOperationsSupplier, restClientSettings);
         restClient = Mockito.spy(restClientTemp);
         sonarQubeHookService = new SonarQubeHookServiceImpl(codeQualityRepository,sonarProjectRepository,collectorRepository, componentRepository,apiSettings,restClient);
     }
