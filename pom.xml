@@ -60,13 +60,16 @@
     <properties>
         <com.capitalone.dashboard.core.version>3.8.1</com.capitalone.dashboard.core.version>
         <apache.rat.plugin.version>0.13</apache.rat.plugin.version>
+        <commons-lang.version>2.6</commons-lang.version>
         <coveralls.maven.plugin.version>4.3.0</coveralls.maven.plugin.version>
         <guava.version>29.0-jre</guava.version>
+        <jackson-core.version>1.9.13</jackson-core.version>
         <jacoco.maven.plugin.version>0.8.3</jacoco.maven.plugin.version>
         <jacoco.coverage.percentage.minimum>0.200</jacoco.coverage.percentage.minimum>
         <jacoco.classes.missed.minimum>300</jacoco.classes.missed.minimum>
         <java.compilation.source>1.8</java.compilation.source>
         <java.compilation.target>1.8</java.compilation.target>
+        <jjwt.version>0.6.0</jjwt.version>
         <maven.compiler.plugin.version>3.1</maven.compiler.plugin.version>
         <maven.changes.plugin.version>2.12.1</maven.changes.plugin.version>
         <maven.checkstyle.plugin.version>3.0.0</maven.checkstyle.plugin.version>
@@ -83,6 +86,7 @@
         <site.publish.checkout.directory>site-content</site.publish.checkout.directory>
         <spotbugs.plugin.version>3.1.11</spotbugs.plugin.version>
         <spring-data-releasetrain.version>Ingalls-SR23</spring-data-releasetrain.version>
+        <springfox.version>2.4.0</springfox.version>
         <application.version.number>${project.version}</application.version.number>
         <sonar.projectKey>Hygieia_api</sonar.projectKey>
         <sonar.organization>hygieia-oss</sonar.organization>
@@ -151,7 +155,7 @@
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt</artifactId>
-            <version>0.6.0</version>
+            <version>${jjwt.version}</version>
         </dependency>
 
         <!-- Jackson -->
@@ -173,13 +177,13 @@
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-core-asl</artifactId>
-            <version>1.9.13</version>
+            <version>${jackson-core.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>
-            <version>1.9.13</version>
+            <version>${jackson-core.version}</version>
         </dependency>
 
         <!-- Logging dependencies> -->
@@ -192,7 +196,7 @@
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
-            <version>2.6</version>
+            <version>${commons-lang.version}</version>
         </dependency>
 
         <dependency>
@@ -210,12 +214,12 @@
         <dependency>
             <groupId>io.springfox</groupId>
             <artifactId>springfox-swagger2</artifactId>
-            <version>2.4.0</version>
+            <version>${springfox.version}</version>
         </dependency>
         <dependency>
             <groupId>io.springfox</groupId>
             <artifactId>springfox-swagger-ui</artifactId>
-            <version>2.4.0</version>
+            <version>${springfox.version}</version>
         </dependency>
 
         <!-- Test Deps -->
@@ -223,11 +227,6 @@
             <groupId>com.jayway.jsonpath</groupId>
             <artifactId>json-path</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.1</version>
         </dependency>
         <dependency>
             <groupId>commons-beanutils</groupId>
