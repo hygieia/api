@@ -1,9 +1,8 @@
 package com.capitalone.dashboard.webhook.github;
 
-import com.capitalone.dashboard.repository.CollectorItemRepository;
-import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.client.RestClient;
-import com.capitalone.dashboard.model.webhook.github.GitHubParsed;
+import com.capitalone.dashboard.client.RestClientSettings;
+import com.capitalone.dashboard.client.RestOperationsSupplier;
 import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.Collector;
 import com.capitalone.dashboard.model.CollectorItem;
@@ -12,10 +11,12 @@ import com.capitalone.dashboard.model.Commit;
 import com.capitalone.dashboard.model.CommitStatus;
 import com.capitalone.dashboard.model.GitRequest;
 import com.capitalone.dashboard.model.Review;
+import com.capitalone.dashboard.model.webhook.github.GitHubParsed;
+import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.repository.CommitRepository;
 import com.capitalone.dashboard.repository.GitRequestRepository;
 import com.capitalone.dashboard.service.CollectorService;
-import com.capitalone.dashboard.util.Supplier;
+import com.capitalone.dashboard.settings.ApiSettings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bson.types.ObjectId;
@@ -29,7 +30,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.web.client.RestOperations;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -46,18 +46,13 @@ import static org.mockito.Mockito.when;
 public class GitHubPullRequestV3Test {
     private static final Log LOG = LogFactory.getLog(GitHubPullRequestV3Test.class);
 
-    @Mock
-    private CollectorService collectorService;
-    @Mock
-    private GitRequestRepository gitRequestRepository;
-    @Mock
-    private CollectorItemRepository collectorItemRepository;
-    @Mock
-    private CommitRepository commitRepository;
-    @Mock
-    private ApiSettings apiSettings;
-    @Mock
-    private Supplier<RestOperations> restOperationsSupplier;
+    @Mock private CollectorService collectorService;
+    @Mock private GitRequestRepository gitRequestRepository;
+    @Mock private CollectorItemRepository collectorItemRepository;
+    @Mock private CommitRepository commitRepository;
+    @Mock private ApiSettings apiSettings;
+    @Mock private RestOperationsSupplier restOperationsSupplier;
+    @Mock private RestClientSettings restClientSettings;
 
     private GitHubPullRequestV3 gitHubPullRequestV3;
     private RestClient restClient;
@@ -65,7 +60,7 @@ public class GitHubPullRequestV3Test {
 
     @Before
     public void init() {
-        restClient = new RestClient(restOperationsSupplier);
+        restClient = new RestClient(restOperationsSupplier,restClientSettings);
         gitHubPullRequestV3 = new GitHubPullRequestV3 (collectorService, restClient, gitRequestRepository, commitRepository, collectorItemRepository, apiSettings);
         payLoadJsonObject = makePullRequestPayloadObject();
     }
@@ -82,7 +77,7 @@ public class GitHubPullRequestV3Test {
         Object repository = payLoadJsonObject.get("repository");
         Object pullRequest = restClient.getAsObject(repository,"pullRequest");
 
-        StringBuilder queryBuilder = new StringBuilder("");
+        StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append(GraphQLQuery.PR_GRAPHQL_BEGIN_PRE);
         queryBuilder.append(GraphQLQuery.PR_GRAPHQL_COMMITS_BEGIN);
         queryBuilder.append(GraphQLQuery.PR_GRAPHQL_COMMENTS_BEGIN);
@@ -125,7 +120,7 @@ public class GitHubPullRequestV3Test {
         JSONObject pullRequest = (JSONObject)restClient.getAsObject(repository,"pullRequest");
         pullRequest.put("comments", "0");
 
-        StringBuilder queryBuilder = new StringBuilder("");
+        StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append(GraphQLQuery.PR_GRAPHQL_BEGIN_PRE);
         queryBuilder.append(GraphQLQuery.PR_GRAPHQL_COMMITS_BEGIN);
         queryBuilder.append(GraphQLQuery.PR_GRAPHQL_BEGIN_POST);
