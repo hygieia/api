@@ -39,7 +39,6 @@ public class SonarQubeWebhookTestApi {
 
     @Before
     public void init() {
-        //restClient = Mockito.spy(restClientTemp);
         sonarQubeHookService = new SonarQubeHookServiceImpl(codeQualityRepository,sonarProjectRepository,collectorRepository, componentRepository,apiSettings,restClient);
     }
 
