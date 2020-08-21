@@ -60,7 +60,7 @@ public class GitHubPullRequestV3Test {
 
     @Before
     public void init() {
-        restClient = new RestClient(restOperationsSupplier,restClientSettings);
+        restClient = new RestClient(restOperationsSupplier, restClientSettings);
         gitHubPullRequestV3 = new GitHubPullRequestV3 (collectorService, restClient, gitRequestRepository, commitRepository, collectorItemRepository, apiSettings);
         payLoadJsonObject = makePullRequestPayloadObject();
     }
