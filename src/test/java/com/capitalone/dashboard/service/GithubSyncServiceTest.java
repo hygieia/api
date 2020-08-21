@@ -2,6 +2,8 @@ package com.capitalone.dashboard.service;
 
 
 import com.capitalone.dashboard.client.RestClient;
+import com.capitalone.dashboard.client.RestClientSettings;
+import com.capitalone.dashboard.client.RestOperationsSupplier;
 import com.capitalone.dashboard.model.webhook.github.GitHubRepo;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.repository.CollectorRepository;
@@ -9,7 +11,6 @@ import com.capitalone.dashboard.repository.CommitRepository;
 import com.capitalone.dashboard.repository.GitHubRepoRepository;
 import com.capitalone.dashboard.repository.GitRequestRepository;
 import com.capitalone.dashboard.settings.ApiSettings;
-import com.capitalone.dashboard.util.Supplier;
 import com.capitalone.dashboard.webhook.github.GitHubSyncServiceImpl;
 import com.capitalone.dashboard.webhook.settings.GithubSyncSettings;
 import org.junit.Before;
@@ -33,9 +34,10 @@ import static org.mockito.Mockito.when;
 public class GithubSyncServiceTest {
 
     private static final String URL_USER = "http://mygithub.com/api/v3/users/";
-    @Mock
-    private Supplier<RestOperations> restOperationsSupplier;
+
+    @Mock private RestOperationsSupplier restOperationsSupplier;
     @Mock private RestOperations rest;
+    @Mock private RestClientSettings restClientSettings;
     private ApiSettings settings;
     private GithubSyncSettings githubSyncSettings;
     private GitHubSyncServiceImpl gitHubSyncService;
@@ -47,11 +49,11 @@ public class GithubSyncServiceTest {
 
     @Before
     public void init() {
-        when(restOperationsSupplier.get()).thenReturn(rest);
+        when(restOperationsSupplier.get(restClientSettings)).thenReturn(rest);
         settings = new ApiSettings();
         githubSyncSettings = new GithubSyncSettings();
         settings.setGithubSyncSettings(githubSyncSettings);
-        gitHubSyncService = new GitHubSyncServiceImpl(commitRepository,gitRequestRepository,collectorItemRepository,gitHubRepoRepository,collectorRepository,settings, new RestClient(restOperationsSupplier));
+        gitHubSyncService = new GitHubSyncServiceImpl(commitRepository,gitRequestRepository,collectorItemRepository,gitHubRepoRepository,collectorRepository,settings, new RestClient(restOperationsSupplier,restClientSettings));
         gitHubSyncService.setLdapMap(new HashMap<>());
 
     }
