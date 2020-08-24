@@ -34,11 +34,10 @@ import static org.mockito.Mockito.when;
 public class GithubSyncServiceTest {
 
     private static final String URL_USER = "http://mygithub.com/api/v3/users/";
-    @Mock
-    private RestOperationsSupplier restOperationsSupplier;
-    @Mock
-    private RestClientSettings restClientSettings;
+
+    @Mock private RestOperationsSupplier restOperationsSupplier;
     @Mock private RestOperations rest;
+    @Mock private RestClientSettings restClientSettings;
     private ApiSettings settings;
     private GithubSyncSettings githubSyncSettings;
     private GitHubSyncServiceImpl gitHubSyncService;
@@ -54,7 +53,7 @@ public class GithubSyncServiceTest {
         settings = new ApiSettings();
         githubSyncSettings = new GithubSyncSettings();
         settings.setGithubSyncSettings(githubSyncSettings);
-        gitHubSyncService = new GitHubSyncServiceImpl(commitRepository,gitRequestRepository,collectorItemRepository,gitHubRepoRepository,collectorRepository,settings, new RestClient(restOperationsSupplier, restClientSettings));
+        gitHubSyncService = new GitHubSyncServiceImpl(commitRepository,gitRequestRepository,collectorItemRepository,gitHubRepoRepository,collectorRepository,settings, new RestClient(restOperationsSupplier,restClientSettings));
         gitHubSyncService.setLdapMap(new HashMap<>());
 
     }

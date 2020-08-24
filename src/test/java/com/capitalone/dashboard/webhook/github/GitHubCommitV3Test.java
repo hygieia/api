@@ -1,21 +1,21 @@
 package com.capitalone.dashboard.webhook.github;
 
+import com.capitalone.dashboard.client.RestClient;
 import com.capitalone.dashboard.client.RestClientSettings;
 import com.capitalone.dashboard.client.RestOperationsSupplier;
-import com.capitalone.dashboard.repository.CollectorItemRepository;
-import com.capitalone.dashboard.settings.ApiSettings;
-import com.capitalone.dashboard.client.RestClient;
-import com.capitalone.dashboard.model.webhook.github.GitHubParsed;
 import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.Collector;
 import com.capitalone.dashboard.model.CollectorItem;
 import com.capitalone.dashboard.model.Commit;
 import com.capitalone.dashboard.model.CommitType;
 import com.capitalone.dashboard.model.GitRequest;
+import com.capitalone.dashboard.model.webhook.github.GitHubParsed;
 import com.capitalone.dashboard.model.webhook.github.GitHubRepo;
+import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.repository.CommitRepository;
 import com.capitalone.dashboard.repository.GitRequestRepository;
 import com.capitalone.dashboard.service.CollectorService;
+import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.webhook.settings.GitHubWebHookSettings;
 import com.capitalone.dashboard.webhook.settings.WebHookSettings;
 import com.google.common.io.Resources;
@@ -23,7 +23,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bson.types.ObjectId;
-import org.joda.time.DateTime;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -35,10 +34,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.web.client.RestOperations;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,20 +55,13 @@ import static org.mockito.Mockito.when;
 public class GitHubCommitV3Test {
     private static final Log LOG = LogFactory.getLog(GitHubCommitV3Test.class);
 
-    @Mock
-    private CollectorService collectorService;
-    @Mock
-    private CommitRepository commitRepository;
-    @Mock
-    private GitRequestRepository gitRequestRepository;
-    @Mock
-    private CollectorItemRepository collectorItemRepository;
-    @Mock
-    private ApiSettings apiSettings;
-    @Mock
-    private RestOperationsSupplier restOperationsSupplier;
-    @Mock
-    private RestClientSettings restClientSettings;
+    @Mock private CollectorService collectorService;
+    @Mock private CommitRepository commitRepository;
+    @Mock private GitRequestRepository gitRequestRepository;
+    @Mock private CollectorItemRepository collectorItemRepository;
+    @Mock private ApiSettings apiSettings;
+    @Mock private RestOperationsSupplier restOperationsSupplier;
+    @Mock private RestClientSettings restClientSettings;
 
     private GitHubCommitV3 gitHubCommitV3;
     private RestClient restClient;

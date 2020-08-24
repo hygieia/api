@@ -18,9 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.web.client.RestOperations;
 
 import java.util.Random;
 
@@ -34,21 +32,15 @@ public class SonarQubeWebhookTestApi {
     @Mock private ComponentRepository componentRepository;
 
     @Mock
-    private RestOperationsSupplier restOperationsSupplier;
-    @Mock
-    private RestClientSettings restClientSettings;
-
-    @Mock
     private ApiSettings apiSettings;
 
     private SonarQubeHookService sonarQubeHookService;
+    @Mock
     private RestClient restClient;
 
 
     @Before
     public void init() {
-        RestClient restClientTemp = new RestClient(restOperationsSupplier, restClientSettings);
-        restClient = Mockito.spy(restClientTemp);
         sonarQubeHookService = new SonarQubeHookServiceImpl(codeQualityRepository,sonarProjectRepository,collectorRepository, componentRepository,apiSettings,restClient);
     }
 
