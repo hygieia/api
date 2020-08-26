@@ -6,7 +6,7 @@ import com.capitalone.dashboard.repository.RequestLogRepository;
 import com.capitalone.dashboard.settings.ApiSettings;
 import com.mongodb.util.JSON;
 import org.apache.commons.io.output.TeeOutputStream;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;

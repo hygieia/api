@@ -17,7 +17,7 @@ import com.google.gson.Gson;
 import com.querydsl.core.BooleanBuilder;
 import hygieia.transformer.CucumberJsonToTestCapabilityTransformer;
 import hygieia.transformer.JunitXmlToTestCapabilityTransformer;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.joda.time.format.DateTimeFormat;
 import org.springframework.beans.factory.annotation.Autowired;

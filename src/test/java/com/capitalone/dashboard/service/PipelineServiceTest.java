@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.capitalone.dashboard.model.*;
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 import org.bson.types.ObjectId;
 import org.junit.Ignore;
 import org.junit.Test;

@@ -26,7 +26,7 @@ import com.capitalone.dashboard.settings.ApiSettings;
 import com.google.common.collect.Sets;
 import com.querydsl.core.BooleanBuilder;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;

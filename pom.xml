@@ -59,11 +59,9 @@
 
     <properties>
         <com.capitalone.dashboard.core.version>3.10.0</com.capitalone.dashboard.core.version>
+        <commons-codec.version>1.14</commons-codec.version>
         <apache.rat.plugin.version>0.13</apache.rat.plugin.version>
-        <commons-lang.version>2.6</commons-lang.version>
         <coveralls.maven.plugin.version>4.3.0</coveralls.maven.plugin.version>
-        <guava.version>29.0-jre</guava.version>
-        <jackson-core.version>1.9.13</jackson-core.version>
         <jacoco.maven.plugin.version>0.8.3</jacoco.maven.plugin.version>
         <jacoco.coverage.percentage.minimum>0.200</jacoco.coverage.percentage.minimum>
         <jacoco.classes.missed.minimum>300</jacoco.classes.missed.minimum>
@@ -146,11 +144,6 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-validator</artifactId>
-        </dependency>
-
         <!-- JWT -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
@@ -174,42 +167,6 @@
             <artifactId>jackson-dataformat-xml</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-core-asl</artifactId>
-            <version>${jackson-core.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-mapper-asl</artifactId>
-            <version>${jackson-core.version}</version>
-        </dependency>
-
-        <!-- Logging dependencies> -->
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-        </dependency>
-
-        <!-- Misc Deps -->
-        <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>${commons-lang.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-        </dependency>
-
         <!-- Swagger API -->
         <dependency>
             <groupId>io.springfox</groupId>
@@ -224,22 +181,9 @@
 
         <!-- Test Deps -->
         <dependency>
-            <groupId>com.jayway.jsonpath</groupId>
-            <artifactId>json-path</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>commons-beanutils</groupId>
-            <artifactId>commons-beanutils</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
         </dependency>
     </dependencies>
 
