@@ -16,15 +16,6 @@
 
 package com.capitalone.dashboard.config;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.FilterType;
-import org.springframework.core.annotation.Order;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.repository.DashboardRepository;
 import com.capitalone.dashboard.repository.PipelineRepository;
@@ -32,9 +23,17 @@ import com.capitalone.dashboard.service.BinaryArtifactService;
 import com.capitalone.dashboard.service.BuildService;
 import com.capitalone.dashboard.service.CommitService;
 import com.capitalone.dashboard.service.DeployService;
-import com.capitalone.dashboard.service.PipelineService;
 import com.capitalone.dashboard.service.DynamicPipelineServiceImpl;
+import com.capitalone.dashboard.service.PipelineService;
 import com.capitalone.dashboard.service.PipelineServiceImpl;
+import com.capitalone.dashboard.settings.ApiSettings;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.core.annotation.Order;
+import org.springframework.web.bind.annotation.RestController;
 
 @Order(1)
 @Configuration
@@ -67,4 +66,4 @@ public class RestApiAppConfig {
 				|| "enabled".equalsIgnoreCase(featureValue)
 				|| "true".equalsIgnoreCase(featureValue);
 	}
-}
+ }

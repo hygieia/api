@@ -2,7 +2,6 @@ package com.capitalone.dashboard.service;
 
 
 import com.capitalone.dashboard.client.RestClient;
-import com.capitalone.dashboard.client.RestClientSettings;
 import com.capitalone.dashboard.client.RestOperationsSupplier;
 import com.capitalone.dashboard.model.webhook.github.GitHubRepo;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
@@ -37,7 +36,6 @@ public class GithubSyncServiceTest {
 
     @Mock private RestOperationsSupplier restOperationsSupplier;
     @Mock private RestOperations rest;
-    @Mock private RestClientSettings restClientSettings;
     private ApiSettings settings;
     private GithubSyncSettings githubSyncSettings;
     private GitHubSyncServiceImpl gitHubSyncService;
@@ -49,11 +47,11 @@ public class GithubSyncServiceTest {
 
     @Before
     public void init() {
-        when(restOperationsSupplier.get(restClientSettings)).thenReturn(rest);
+        when(restOperationsSupplier.get()).thenReturn(rest);
         settings = new ApiSettings();
         githubSyncSettings = new GithubSyncSettings();
         settings.setGithubSyncSettings(githubSyncSettings);
-        gitHubSyncService = new GitHubSyncServiceImpl(commitRepository,gitRequestRepository,collectorItemRepository,gitHubRepoRepository,collectorRepository,settings, new RestClient(restOperationsSupplier,restClientSettings));
+        gitHubSyncService = new GitHubSyncServiceImpl(commitRepository,gitRequestRepository,collectorItemRepository,gitHubRepoRepository,collectorRepository,settings, new RestClient(restOperationsSupplier));
         gitHubSyncService.setLdapMap(new HashMap<>());
 
     }
