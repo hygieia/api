@@ -24,7 +24,7 @@ public class PipelineController {
     }
 
     @RequestMapping(value = "/pipeline", method = GET, produces = APPLICATION_JSON_VALUE)
-    public Iterable<PipelineResponse> searchPipelines(@Valid @RequestBody PipelineSearchRequest searchRequest) throws HygieiaException {
+    public Iterable<PipelineResponse> searchPipelines(@Valid PipelineSearchRequest searchRequest) throws HygieiaException {
         return pipelineService.search(searchRequest);
     }
 }
