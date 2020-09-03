@@ -1,7 +1,6 @@
 package com.capitalone.dashboard.webhook.github;
 
 import com.capitalone.dashboard.client.RestClient;
-import com.capitalone.dashboard.client.RestClientSettings;
 import com.capitalone.dashboard.client.RestOperationsSupplier;
 import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.Collector;
@@ -61,14 +60,13 @@ public class GitHubCommitV3Test {
     @Mock private CollectorItemRepository collectorItemRepository;
     @Mock private ApiSettings apiSettings;
     @Mock private RestOperationsSupplier restOperationsSupplier;
-    @Mock private RestClientSettings restClientSettings;
 
     private GitHubCommitV3 gitHubCommitV3;
     private RestClient restClient;
 
     @Before
     public void init() {
-        RestClient restClientTemp = new RestClient(restOperationsSupplier, restClientSettings);
+        RestClient restClientTemp = new RestClient(restOperationsSupplier);
         restClient = Mockito.spy(restClientTemp);
         gitHubCommitV3 = new GitHubCommitV3 (collectorService, restClient, commitRepository, gitRequestRepository, collectorItemRepository, apiSettings);
     }

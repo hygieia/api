@@ -1,7 +1,6 @@
 package com.capitalone.dashboard.webhook.github;
 
 import com.capitalone.dashboard.client.RestClient;
-import com.capitalone.dashboard.client.RestClientSettings;
 import com.capitalone.dashboard.client.RestOperationsSupplier;
 import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.Collector;
@@ -53,7 +52,6 @@ public class GitHubPullRequestV3Test {
     @Mock private CommitRepository commitRepository;
     @Mock private ApiSettings apiSettings;
     @Mock private RestOperationsSupplier restOperationsSupplier;
-    @Mock private RestClientSettings restClientSettings;
 
     private GitHubPullRequestV3 gitHubPullRequestV3;
     private RestClient restClient;
@@ -61,7 +59,7 @@ public class GitHubPullRequestV3Test {
 
     @Before
     public void init() {
-        restClient = new RestClient(restOperationsSupplier, restClientSettings);
+        restClient = new RestClient(restOperationsSupplier);
         gitHubPullRequestV3 = new GitHubPullRequestV3 (collectorService, restClient, gitRequestRepository, commitRepository, collectorItemRepository, apiSettings);
         payLoadJsonObject = makePullRequestPayloadObject();
     }

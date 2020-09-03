@@ -1,8 +1,6 @@
 package com.capitalone.dashboard.webhook.sonarqube;
 
 import com.capitalone.dashboard.client.RestClient;
-import com.capitalone.dashboard.client.RestClientSettings;
-import com.capitalone.dashboard.client.RestOperationsSupplier;
 import com.capitalone.dashboard.model.Collector;
 import com.capitalone.dashboard.repository.CodeQualityRepository;
 import com.capitalone.dashboard.repository.CollectorRepository;

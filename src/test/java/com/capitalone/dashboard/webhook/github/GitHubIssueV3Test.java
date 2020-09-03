@@ -1,7 +1,6 @@
 package com.capitalone.dashboard.webhook.github;
 
 import com.capitalone.dashboard.client.RestClient;
-import com.capitalone.dashboard.client.RestClientSettings;
 import com.capitalone.dashboard.client.RestOperationsSupplier;
 import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.Collector;
@@ -41,13 +40,12 @@ public class GitHubIssueV3Test {
     @Mock private CollectorItemRepository collectorItemRepository;
     @Mock private ApiSettings apiSettings;
     @Mock private RestOperationsSupplier restOperationsSupplier;
-    @Mock private RestClientSettings restClientSettings;
 
     private GitHubIssueV3 gitHubIssueV3;
 
     @Before
     public void init() {
-        RestClient restClient = new RestClient(restOperationsSupplier, restClientSettings);
+        RestClient restClient = new RestClient(restOperationsSupplier);
         gitHubIssueV3 = new GitHubIssueV3 (collectorService, restClient, gitRequestRepository, collectorItemRepository, apiSettings);
     }
 
