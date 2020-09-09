@@ -54,6 +54,10 @@ public class LoggingFilter implements Filter {
 
     private static final Logger LOGGER = Logger.getLogger("LoggingFilter");
 
+    private static final String API_USER_KEY = "apiUser";
+
+    private static final String UNKNOWN_USER = "unknown";
+
     @Autowired
     private RequestLogRepository requestLogRepository;
 
@@ -80,6 +84,7 @@ public class LoggingFilter implements Filter {
             Map<String, String> requestMap = this.getTypesafeRequestMap(httpServletRequest);
             BufferedRequestWrapper bufferedRequest = new BufferedRequestWrapper(httpServletRequest);
             BufferedResponseWrapper bufferedResponse = new BufferedResponseWrapper(httpServletResponse);
+            String apiUser = bufferedRequest.getHeader(API_USER_KEY);
 
             long startTime = System.currentTimeMillis();
             RequestLog requestLog = new RequestLog();
@@ -87,6 +92,7 @@ public class LoggingFilter implements Filter {
             requestLog.setEndpoint(httpServletRequest.getRequestURI());
             requestLog.setMethod(httpServletRequest.getMethod());
             requestLog.setParameter(requestMap.toString());
+            requestLog.setApiUser(org.apache.commons.lang3.StringUtils.isNotEmpty(apiUser) ? apiUser : UNKNOWN_USER);
             requestLog.setRequestSize(httpServletRequest.getContentLengthLong());
             requestLog.setRequestContentType(httpServletRequest.getContentType());
 
@@ -170,7 +176,7 @@ public class LoggingFilter implements Filter {
             // Read InputStream and store its content in a buffer.
 
             this.baos = new ByteArrayOutputStream();
-            byte buf[] = new byte[1024];
+            byte[] buf = new byte[1024];
             int letti;
             try (InputStream is = req.getInputStream()) {
                 while ((letti = is.read(buf)) > 0) {
