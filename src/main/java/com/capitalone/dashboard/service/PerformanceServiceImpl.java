@@ -15,10 +15,11 @@ import com.capitalone.dashboard.repository.PerformanceRepository;
 import com.capitalone.dashboard.request.CollectorRequest;
 import com.capitalone.dashboard.request.PerformanceCreateRequest;
 import com.capitalone.dashboard.request.PerformanceSearchRequest;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
-import com.mysema.query.BooleanBuilder;
-import org.apache.commons.lang.StringUtils;
+import com.querydsl.core.BooleanBuilder;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,7 +105,7 @@ public class PerformanceServiceImpl implements PerformanceService {
         }
 
         CollectorItem item = null;
-        PerformanceType qualityType = Objects.firstNonNull(request.getType(),
+        PerformanceType qualityType = MoreObjects.firstNonNull(request.getType(),
                 PerformanceType.ApplicationPerformance);
         List<CollectorItem> items = component.getCollectorItems().get(qualityType.collectorType());
         if (items != null) {

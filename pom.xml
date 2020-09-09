@@ -5,7 +5,7 @@
     <artifactId>api</artifactId>
     <packaging>jar</packaging>
     <name>${project.groupId}:${project.artifactId}</name>
-    <version>3.2.9-SNAPSHOT</version>
+    <version>3.3.0-SNAPSHOT</version>
     <description>Hygieia Rest API Layer</description>
     <url>https://github.com/Hygieia/api</url>
 
@@ -54,24 +54,38 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.3.0.RELEASE</version>
+        <version>1.5.22.RELEASE</version>
     </parent>
 
     <properties>
-        <com.capitalone.dashboard.core.version>3.9.8</com.capitalone.dashboard.core.version>
+        <!-- Dependencies -->
+        <com.capitalone.dashboard.core.version>3.10.0</com.capitalone.dashboard.core.version>
+        <spring-security.version>4.2.18.RELEASE</spring-security.version>
+        <tomcat.version>8.5.57</tomcat.version>
+        <commons-beanutils.version>1.9.4</commons-beanutils.version>
+        <commons-codec.version>1.14</commons-codec.version>
+        <commons-collections4.version>4.1</commons-collections4.version>
+        <commons-io.version>2.4</commons-io.version>
+        <commons-lang.version>3.10</commons-lang.version>
+        <fongo.version>2.2.0-RC2</fongo.version>
+        <guava.version>29.0-jre</guava.version>
+        <hibernate-validator.version>5.4.2.Final</hibernate-validator.version>
+        <jackson.version>2.10.3</jackson.version>
+        <jasypt.version>1.18</jasypt.version>
+        <logback.version>1.2.3</logback.version>
+        <mongodb.version>3.6.4</mongodb.version>
+        <jjwt.version>0.6.0</jjwt.version>
+        <springfox.version>2.4.0</springfox.version>
+        <assertj.version>3.9.0</assertj.version>
+
+        <!-- Plugins -->
         <apache.rat.plugin.version>0.13</apache.rat.plugin.version>
         <coveralls.maven.plugin.version>4.3.0</coveralls.maven.plugin.version>
-        <guava.version>19.0</guava.version>
-        <hamcrest.version>1.3</hamcrest.version>
         <jacoco.maven.plugin.version>0.8.3</jacoco.maven.plugin.version>
         <jacoco.coverage.percentage.minimum>0.200</jacoco.coverage.percentage.minimum>
         <jacoco.classes.missed.minimum>300</jacoco.classes.missed.minimum>
         <java.compilation.source>1.8</java.compilation.source>
         <java.compilation.target>1.8</java.compilation.target>
-        <joda-time.version>2.7</joda-time.version>
-        <joda-convert.version>1.8.1</joda-convert.version>
-        <jackson.version>2.10.3</jackson.version>
-        <junit.version>4.11</junit.version>
         <maven.compiler.plugin.version>3.1</maven.compiler.plugin.version>
         <maven.changes.plugin.version>2.12.1</maven.changes.plugin.version>
         <maven.checkstyle.plugin.version>3.0.0</maven.checkstyle.plugin.version>
@@ -81,19 +95,12 @@
         <maven.project-info.version>3.0.0</maven.project-info.version>
         <maven.scm.publish.plugin.version>3.0.0</maven.scm.publish.plugin.version>
         <maven.site.plugin.version>3.7.1</maven.site.plugin.version>
-        <mongo>3.6.4</mongo>
-        <mongodb.version>3.6.4</mongodb.version>
         <pmd.version>3.6</pmd.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <site.publish.url>https://github.com/Hygieia/api</site.publish.url>
         <site.publish.checkout.directory>site-content</site.publish.checkout.directory>
         <spotbugs.plugin.version>3.1.11</spotbugs.plugin.version>
-        <spring.version>4.1.7.RELEASE</spring.version>
-        <spring.data.version>1.8.0.RELEASE</spring.data.version>
-        <spring-data-releasetrain.version>Gosling-RELEASE</spring-data-releasetrain.version>
-        <spring.version>4.2.5.RELEASE</spring.version>
-        <spring.cloud.version>1.3.1.RELEASE</spring.cloud.version>
-        <application.version.number>${version}</application.version.number>
+        <application.version.number>${project.version}</application.version.number>
         <sonar.projectKey>Hygieia_api</sonar.projectKey>
         <sonar.organization>hygieia-oss</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -146,30 +153,17 @@
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
 
-
         <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
-            <version>1.1.0.Final</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-validator</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.el</groupId>
-            <artifactId>javax.el-api</artifactId>
-            <version>3.0.0</version>
-            <scope>provided</scope>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <!-- JWT -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt</artifactId>
-            <version>0.6.0</version>
+            <version>${jjwt.version}</version>
         </dependency>
 
         <!-- Jackson -->
@@ -188,122 +182,23 @@
             <artifactId>jackson-dataformat-xml</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-core-asl</artifactId>
-            <version>1.9.13</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-mapper-asl</artifactId>
-            <version>1.9.13</version>
-        </dependency>
-
-        <!-- Logging dependencies> -->
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-        </dependency>
-
-        <!-- Misc Deps -->
-        <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>2.6</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-        </dependency>
-
         <!-- Swagger API -->
         <dependency>
             <groupId>io.springfox</groupId>
             <artifactId>springfox-swagger2</artifactId>
-            <version>2.4.0</version>
+            <version>${springfox.version}</version>
         </dependency>
         <dependency>
             <groupId>io.springfox</groupId>
             <artifactId>springfox-swagger-ui</artifactId>
-            <version>2.4.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml</groupId>
-            <artifactId>classmate</artifactId>
-            <version>1.3.1</version>
+            <version>${springfox.version}</version>
         </dependency>
 
         <!-- Test Deps -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.hamcrest</groupId>
-                    <artifactId>hamcrest-core</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-core</artifactId>
-            <version>1.3</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.jayway.jsonpath</groupId>
-            <artifactId>json-path</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.joda</groupId>
-            <artifactId>joda-convert</artifactId>
-            <version>1.8.1</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.1</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-beanutils</groupId>
-            <artifactId>commons-beanutils</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
-            <version>4.0.0.RELEASE</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.8.2</version>
         </dependency>
     </dependencies>
 
@@ -684,7 +579,7 @@
                             <announcementDirectory>.</announcementDirectory>
                             <announcementFile>RELEASE-NOTES.txt</announcementFile>
                             <announceParameters>
-                                <releaseVersion>${version}</releaseVersion>
+                                <releaseVersion>${project.version}</releaseVersion>
                             </announceParameters>
                         </configuration>
                         <executions>

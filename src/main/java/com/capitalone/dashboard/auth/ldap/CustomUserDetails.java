@@ -149,4 +149,7 @@ public class CustomUserDetails implements LdapUserDetails {
     public void setEmailAddress(String emailAddress) {
         this.emailAddress = emailAddress;
     }
+
+    @Override
+    public void eraseCredentials() { this.password = null; }
 }

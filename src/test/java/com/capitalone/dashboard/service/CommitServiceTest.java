@@ -10,7 +10,7 @@ import com.capitalone.dashboard.repository.CollectorRepository;
 import com.capitalone.dashboard.repository.CommitRepository;
 import com.capitalone.dashboard.repository.ComponentRepository;
 import com.capitalone.dashboard.request.CommitRequest;
-import com.mysema.query.types.Predicate;
+import com.querydsl.core.types.Predicate;
 import org.bson.types.ObjectId;
 import org.junit.Assert;
 import org.junit.Test;

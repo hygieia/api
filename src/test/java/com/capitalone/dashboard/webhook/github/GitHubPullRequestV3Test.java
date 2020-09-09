@@ -45,6 +45,7 @@ import static org.mockito.Mockito.when;
 public class GitHubPullRequestV3Test {
     private static final Log LOG = LogFactory.getLog(GitHubPullRequestV3Test.class);
 
+
     @Mock private CollectorService collectorService;
     @Mock private GitRequestRepository gitRequestRepository;
     @Mock private CollectorItemRepository collectorItemRepository;
