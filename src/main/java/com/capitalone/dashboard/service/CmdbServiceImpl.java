@@ -27,7 +27,6 @@ public class CmdbServiceImpl implements CmdbService {
     public Page<Cmdb> configurationItemsByTypeWithFilter(String itemType, String filter, Pageable pageable) {
 
         Page<Cmdb> configItemString;
-
         if( StringUtils.isNotEmpty( filter ) ){
 
             List<Cmdb> cmdbList = cmdbRepository.findAllByConfigurationItemContainingOrConfigurationKeyContainingOrLegacyServiceManagerNameContainingOrCommonNameContainingAllIgnoreCase
