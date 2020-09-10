@@ -30,7 +30,8 @@ public class CmdbServiceImpl implements CmdbService {
 
         if( StringUtils.isNotEmpty( filter ) ){
 
-            List<Cmdb> cmdbList = cmdbRepository.findAllByConfigurationItemContainingOrCommonNameContainingAllIgnoreCase(filter,filter);
+            List<Cmdb> cmdbList = cmdbRepository.findAllByConfigurationItemContainingOrConfigurationKeyContainingOrLegacyServiceManagerNameContainingOrCommonNameContainingAllIgnoreCase
+                    (filter, filter, filter, filter);
 
             List<ObjectId> cmdbIdsList = new ArrayList<>();
             for (Cmdb cmdb : cmdbList) {
