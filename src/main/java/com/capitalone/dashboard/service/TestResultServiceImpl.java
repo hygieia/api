@@ -604,7 +604,8 @@ public class TestResultServiceImpl implements TestResultService {
             return configurationItem;
         }
         else if (StringUtils.isNotBlank(targetAppName) ){
-           List<Cmdb> cmdb = cmdbService.commonNameByConfigurationItem(targetAppName);
+            List<Cmdb> cmdb = cmdbService.configurationItemsByTypeWithFilter("", targetAppName,
+                   new PageRequest(0, 1)).getContent();
            if(cmdb.size() > 0){
                return cmdb.get(0).getConfigurationItem();
            }

@@ -27,10 +27,10 @@ public class CmdbServiceImpl implements CmdbService {
     public Page<Cmdb> configurationItemsByTypeWithFilter(String itemType, String filter, Pageable pageable) {
 
         Page<Cmdb> configItemString;
-
         if( StringUtils.isNotEmpty( filter ) ){
 
-            List<Cmdb> cmdbList = cmdbRepository.findAllByConfigurationItemContainingOrCommonNameContainingAllIgnoreCase(filter,filter);
+            List<Cmdb> cmdbList = cmdbRepository.findAllByConfigurationItemContainingOrConfigurationKeyContainingOrLegacyServiceManagerNameContainingOrCommonNameContainingAllIgnoreCase
+                    (filter, filter, filter, filter);
 
             List<ObjectId> cmdbIdsList = new ArrayList<>();
             for (Cmdb cmdb : cmdbList) {
