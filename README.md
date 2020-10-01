@@ -7,17 +7,8 @@
 <br>
 <br>
 ---
-title: All About Hygieia API
-tags:
-keywords:
-toc: true
-summary: Learn how to install and configure Hygieia API
-sidebar: hygieia_sidebar
-permalink: api.html
+title: All About Hygieia API - Learn how to install and configure Hygieia API
 ---
-
-[![Docker Stars](https://img.shields.io/docker/stars/capitalone/hygieia-api.svg)](https://hub.docker.com/r/capitalone/hygieia-api/)
-[![Docker Stars](https://img.shields.io/docker/pulls/capitalone/hygieia-api.svg)](https://hub.docker.com/r/capitalone/hygieia-api/)
 
 Hygieia API layer contains all the typical REST API services that work with the source system data (collected by service tasks). The Hygieia API layer is an abstraction of the local and source system data layer. All API REST controllers are generic to their purpose - they are not specific to any given source system.
 
@@ -29,7 +20,16 @@ Hygieia uses Spring Boot to package the API as an executable JAR file with depen
 
 To configure the Hygieia API layer, first fork and clone the [api repo](https://github.com/Hygieia/api).  Then, execute the following steps:
 
-*	**Step 1: Run Maven Build**
+Please review the two options in Step 1 to find the best fit for you. 
+
+*	**Step 1 - Option 1:**
+	
+	You can download the SNAPSHOTs from the SNAPSHOT directory [here](https://oss.sonatype.org/content/repositories/snapshots/com/capitalone/dashboard/api/) or from the maven central repository [here](https://search.maven.org/artifact/com.capitalone.dashboard/api).  
+	
+	
+Alternatively, you can build from the source with Step 1 - Option 2 below:  
+
+*	**Step 1 - Option 2: Run Maven Build**
 
 	To package the API source code into an executable JAR file, run the Maven build from the `\api` directory of your source code installation:
 
@@ -38,6 +38,8 @@ To configure the Hygieia API layer, first fork and clone the [api repo](https://
 	```
 
 	The output file `api.jar` is generated in the `\api\target` folder.
+
+Once you have chosen an option in Step 1, please proceed: 
 
 *	**Step 2: Set Parameters in the API Properties File**
 
@@ -162,60 +164,20 @@ For instructions on installing all components of Hygieia, see [Build Docker](../
 
 To create a Docker image for Hygieia's API layer, execute the following steps:
 
-*	**Step 1: Run Maven Build**
+*	**Step 1: Download the latest image or tagged image**
 
-	To package the API source code into an executable JAR file, run the maven build from the `\Hygieia` directory of your source code installation:
+	Navigate to the api docker hub location [here](https://hub.docker.com/r/hygieiadoc/api/tags) and download the latest image or tagged image (latest is preferred). 
 
-	```bash
-	mvn clean package -pl api docker:build
-	```
-*	**Step 2: Start MongoDB Docker Container**
+*	**Step 2: Run with Docker**
 
-	Execute the following commands to start MongoDB, switch to dashbaord with name `dashboarddb`, and then add dashboard user:
+	```Docker run -e SKIP_PROPERTIES_BUILDER=true -v properties_location:/hygieia/config image_name```
+	
+	- <code>-e SKIP_PROPERTIES_BUILDER=true</code>  <br />
+	indicates whether you want to supply a properties file for the java application. If false/omitted, the script will build a properties file with default values
+	- <code>-v properties_location:/hygieia/config</code> <br />
+	if you want to use your own properties file that located outside of docker container, supply the path here. 
+		- Example: <code>-v /Home/User/Document/application.properties:/hygieia/config</code>
 
-	``` bash
-	docker run -d -p 27017:27017 --name mongodb -v ./mongo:/data/db mongo:latest  mongod --smallfiles
-
-	# Connect to MongoDB
-	docker exec -t -i mongodb bash
-
-	# Switch to db dashbaord
-	use dashboarddb
-
-	# Create dashboard user
-	db.createUser({user: "dashboarduser", pwd: "dbpassword", roles: [{role: "readWrite", db: "dashboarddb"}]})
-
-	# To execute from CLI:
-
-	mongo 192.168.64.2/admin --eval 'db.getSiblingDB("dashboarddb").createUser({user: "dashboarduser", pwd: "dbpassword", roles: [{role: "readWrite", db: "dashboarddb"}]})'
-	```
-
-	For more information on creating docker image for MongoDB, refer to the [Docker Hub Document](https://hub.docker.com/r/library/mongo/).
-
-*   **Step 3: Set Environment Variables**
-
-	Specify the Environment Variables for dashboard properties:
-
-	```
-	docker run -t -p 8080:8080 -v ./logs:/hygieia/logs -e "SPRING_DATA_MONGODB_HOST=127.0.0.1" -i hygieia-api:latest
-	```
-
-	To define more properties, refer to the [Dockerfile](https://github.com/capitalone/Hygieia/blob/master/api/docker/Dockerfile).
-
-*	**Step 4: Run the API**
-
-	To run the API from Docker, execute the following command from the command prompt:
-
-	```
-	docker run -t -p 8080:8080 --link mongodb:mongo -v ./logs:/hygieia/logs -i hygieia-api:latest
-	```
-	To verify API access from the web browser, take the port mapping and the IP for your docker-machine <env> ip and then verify using url: `http://<docker-machine env ip>:<docker port for hygieia_api>/api/dashboard`
-
-	To list the running containers in the local repository, execute the following command:
-
-	```bash
-	docker ps
-	```
 
 ### Basic Authentication for Secure APIs
 
