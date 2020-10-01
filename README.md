@@ -153,6 +153,7 @@ githubSyncSettings.fetchCount;
 githubSyncSettings.commitPullSyncTime;
 
 ```
+In addition to these properties, add in any additional parameters that your environment may need.  We used Github sync api settings as an example, but you will customize based on your setup.  
 
 All values in the `api.properties` file are optional. For instance, if you have MongoDB installed with no authorization, you must be able to run the API even without the properties file.
 
