@@ -16,6 +16,14 @@ For detailed information on APIs, see the Swagger documentation available at `ht
 
 Hygieia uses Spring Boot to package the API as an executable JAR file with dependencies.
 
+# Table of Contents
+* [Setup Instructions](#setup-instructions)
+* [Api Properties File](#api-properties-file)
+* [Docker Image for API](#docker-image-for-api)
+* [Basic Authentication for Secure APIs](#basic-authentication-for-secure-apis)
+* [Rundeck Webhook Integration](#rundeck-webhook-integration)
+* [Troubleshooting Instructions](#troubleshooting-instructions)
+
 ## Setup Instructions
 
 To configure the Hygieia API layer, first fork and clone the [api repo](https://github.com/Hygieia/api).  Then, execute the following steps:
@@ -178,8 +186,7 @@ To create a Docker image for Hygieia's API layer, execute the following steps:
 	if you want to use your own properties file that located outside of docker container, supply the path here. 
 		- Example: <code>-v /Home/User/Document/application.properties:/hygieia/config</code>
 
-
-### Basic Authentication for Secure APIs
+## Basic Authentication for Secure APIs
 
 To carry out basic authentication for secure APIs, execute the following steps:
 
@@ -201,7 +208,7 @@ To carry out basic authentication for secure APIs, execute the following steps:
 	```
 	apiUser <apiuser>
 	```
-
+	
 ## Rundeck Webhook Integration
 
 Hygieia supports registering deployments using the Rundeck [webhook](http://rundeck.org/docs/manual/jobs.html#webhooks). In the Rundeck job configuration, select **Send Notification?** and check the **on success** and **on failure** webhook checkboxes. Configure the URL as `http://<apihost>:<apiport>/api/deploy/rundeck`. To provide configurability, a few additional features can be added to the webhook URL to locate the proper data for registering the deployment.
@@ -241,7 +248,7 @@ If these values are not provided, the webhook first queries the job to see if it
 
 For the required fields, if the methods to locate values is exhausted, the webhook endpoint fails and deployment is not registered. An exception appears in the Hygieia API log with the field name that is missing from the job. If `appName` is not set, it is set based on the Rundeck project name.
 
-### Troubleshooting Instructions
+## Troubleshooting Instructions
 
 **Scenario 1**
 
