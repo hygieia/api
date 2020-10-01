@@ -30,23 +30,24 @@ Hygieia uses Spring Boot to package the API as an executable JAR file with depen
 
 	Please review the two options in Step 1 to find the best fit for you. 
 	
-	**Option 1:**
+	***Option 1:***
 	
-		You can download the SNAPSHOTs from the SNAPSHOT directory [here](https://oss.sonatype.org/content/repositories/snapshots/com/capitalone/dashboard/api/) or from the maven central repository [here](https://search.maven.org/artifact/com.capitalone.dashboard/api).  
 	
-	**Option 2 - Build locally:**
+	You can download the SNAPSHOTs from the SNAPSHOT directory [here](https://oss.sonatype.org/content/repositories/snapshots/com/capitalone/dashboard/api/) or from the maven central repository [here](https://search.maven.org/artifact/com.capitalone.dashboard/api).  
+	
+	***Option 2 - Build locally:***
 
-		To configure the Hygieia API layer, git clone the [api repo](https://github.com/Hygieia/api).  Then, execute the following steps:
+	To configure the Hygieia API layer, git clone the [api repo](https://github.com/Hygieia/api).  Then, execute the following steps:
 
-		To package the API source code into an executable JAR file, run the Maven build from the `\api` directory of your source code installation:
+	To package the API source code into an executable JAR file, run the Maven build from the `\api` directory of your source code installation:
 
-		```bash
-		mvn install
-		```
+	```bash
+	mvn install
+	```
 
-		The output file `api.jar` is generated in the `\api\target` folder.
+	The output file `api.jar` is generated in the `\api\target` folder.
 
-Once you have chosen an option in Step 1, please proceed: 
+	Once you have chosen an option in Step 1, please proceed: 
 
 *	**Step 2: Set Parameters in the API Properties File**
 
