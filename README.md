@@ -7,7 +7,7 @@
 <br>
 <br>
 ---
-title: All About Hygieia API - Learn how to install and configure Hygieia API
+All About Hygieia API - Learn how to install and configure Hygieia API
 ---
 
 Hygieia API layer contains all the typical REST API services that work with the source system data (collected by service tasks). The Hygieia API layer is an abstraction of the local and source system data layer. All API REST controllers are generic to their purpose - they are not specific to any given source system.
@@ -18,7 +18,7 @@ Hygieia uses Spring Boot to package the API as an executable JAR file with depen
 
 # Table of Contents
 * [Setup Instructions](#setup-instructions)
-* [Api Properties File](#api-properties-file)
+* [Api Properties Section](#api-properties-section)
 * [Docker Image for API](#docker-image-for-api)
 * [Basic Authentication for Secure APIs](#basic-authentication-for-secure-apis)
 * [Rundeck Webhook Integration](#rundeck-webhook-integration)
@@ -26,32 +26,31 @@ Hygieia uses Spring Boot to package the API as an executable JAR file with depen
 
 ## Setup Instructions
 
-To configure the Hygieia API layer, first fork and clone the [api repo](https://github.com/Hygieia/api).  Then, execute the following steps:
+*	**Step 1:**
 
-Please review the two options in Step 1 to find the best fit for you. 
-
-*	**Step 1 - Option 1:**
+	Please review the two options in Step 1 to find the best fit for you. 
 	
-	You can download the SNAPSHOTs from the SNAPSHOT directory [here](https://oss.sonatype.org/content/repositories/snapshots/com/capitalone/dashboard/api/) or from the maven central repository [here](https://search.maven.org/artifact/com.capitalone.dashboard/api).  
+	**Option 1:**
 	
+		You can download the SNAPSHOTs from the SNAPSHOT directory [here](https://oss.sonatype.org/content/repositories/snapshots/com/capitalone/dashboard/api/) or from the maven central repository [here](https://search.maven.org/artifact/com.capitalone.dashboard/api).  
 	
-Alternatively, you can build from the source with Step 1 - Option 2 below:  
+	**Option 2 - Build locally:**
 
-*	**Step 1 - Option 2: Run Maven Build**
+		To configure the Hygieia API layer, git clone the [api repo](https://github.com/Hygieia/api).  Then, execute the following steps:
 
-	To package the API source code into an executable JAR file, run the Maven build from the `\api` directory of your source code installation:
+		To package the API source code into an executable JAR file, run the Maven build from the `\api` directory of your source code installation:
 
-	```bash
-	mvn install
-	```
+		```bash
+		mvn install
+		```
 
-	The output file `api.jar` is generated in the `\api\target` folder.
+		The output file `api.jar` is generated in the `\api\target` folder.
 
 Once you have chosen an option in Step 1, please proceed: 
 
 *	**Step 2: Set Parameters in the API Properties File**
 
-	Set the configurable parameters in the `api.properties` file to connect to the Dashboard MongoDB database instance, including properties required by the API module. To configure the parameters, refer to the [API properties](#api-properties-file) file.
+	Set the configurable parameters in the `api.properties` section to connect to the Dashboard MongoDB database instance, including properties required by the API module. To configure the parameters, refer to the [API properties](#api-properties-section) section.
 
 	For more information about the server configuration, see the Spring Boot [documentation](http://docs.spring.io/spring-boot/docs/current-SNAPSHOT/reference/htmlsingle/#boot-features-external-config-application-property-files).
 
@@ -73,9 +72,9 @@ Once you have chosen an option in Step 1, please proceed:
 	```
 	**Note**: The 'jasypt.encryptor.password' system property is used to decrypt the database password. For more information, refer to [Encrypted Properties](../collectors/collectors.md#encrypted-properties).
 
-## API Properties File
+## API Properties Section
 
-The sample `api.properties` file lists parameters with sample values to configure the API layer. Set the parameters based on your environment setup.
+The sample `api.properties` lists parameters with sample values to configure the API layer. Set the parameters based on your environment setup.
 
 ```properties
 # api.properties
@@ -167,13 +166,11 @@ Note the following:
 
 ## Docker Image for API
 
-You can install Hygieia by creating a Docker image. This section gives detailed instructions to create a Docker image for the API layer. 
+You can install Hygieia by using a docker image from docker hub. This section gives detailed instructions on how to download and run with Docker. 
 
-To create a Docker image for Hygieia's API layer, execute the following steps:
+*	**Step 1: Download**
 
-*	**Step 1: Download the latest image or tagged image**
-
-	Navigate to the api docker hub location [here](https://hub.docker.com/r/hygieiadoc/api/tags) and download the latest image or tagged image (latest is preferred). 
+	Navigate to the api docker hub location [here](https://hub.docker.com/r/hygieiadoc/api/tags) and download the latest image (most recent version is preferred).  Tags can also be used, if needed.
 
 *	**Step 2: Run with Docker**
 
