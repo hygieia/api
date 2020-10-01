@@ -169,8 +169,6 @@ Note the following:
 
 You can install Hygieia by creating a Docker image. This section gives detailed instructions to create a Docker image for the API layer. 
 
-For instructions on installing all components of Hygieia, see [Build Docker](../Build/builddocker.md).
-
 To create a Docker image for Hygieia's API layer, execute the following steps:
 
 *	**Step 1: Download the latest image or tagged image**
