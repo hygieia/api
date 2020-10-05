@@ -26,12 +26,11 @@ Hygieia uses Spring Boot to package the API as an executable JAR file with depen
 
 ## Setup Instructions
 
-*	**Step 1:**
+*	**Step 1 - Artifact Preparation:**
 
 	Please review the two options in Step 1 to find the best fit for you. 
 	
-	***Option 1:***
-	
+	***Option 1 - Download the artifact:***
 	
 	You can download the SNAPSHOTs from the SNAPSHOT directory [here](https://oss.sonatype.org/content/repositories/snapshots/com/capitalone/dashboard/api/) or from the maven central repository [here](https://search.maven.org/artifact/com.capitalone.dashboard/api).  
 	
@@ -71,7 +70,7 @@ Hygieia uses Spring Boot to package the API as an executable JAR file with depen
 	server.contextPath=/api
 	server.port=8080
 	```
-	**Note**: The 'jasypt.encryptor.password' system property is used to decrypt the database password. For more information, refer to [Encrypted Properties](../collectors/collectors.md#encrypted-properties).
+	**Note**: The 'jasypt.encryptor.password' system property is used to decrypt the database password. 
 
 ## API Properties Section
 
