@@ -79,12 +79,17 @@ public class LoggingFilter implements Filter {
                 (httpServletRequest.getMethod().equals(HttpMethod.POST.toString())) ||
                 (httpServletRequest.getMethod().equals(HttpMethod.DELETE.toString()))) {
 
-            if (settings.checkIgnoreEndPoint(httpServletRequest.getRequestURI())) return;
 
             Map<String, String> requestMap = this.getTypesafeRequestMap(httpServletRequest);
             BufferedRequestWrapper bufferedRequest = new BufferedRequestWrapper(httpServletRequest);
             BufferedResponseWrapper bufferedResponse = new BufferedResponseWrapper(httpServletResponse);
             String apiUser = bufferedRequest.getHeader(API_USER_KEY);
+            String endPointURI = httpServletRequest.getRequestURI();
+
+            if (settings.checkIgnoreEndPoint(endPointURI) || settings.checkIgnoreApiUser(apiUser)) {
+                chain.doFilter(bufferedRequest, bufferedResponse);
+                return;
+            }
 
             long startTime = System.currentTimeMillis();
             RequestLog requestLog = new RequestLog();
@@ -92,18 +97,19 @@ public class LoggingFilter implements Filter {
             requestLog.setEndpoint(httpServletRequest.getRequestURI());
             requestLog.setMethod(httpServletRequest.getMethod());
             requestLog.setParameter(requestMap.toString());
-            requestLog.setApiUser(org.apache.commons.lang3.StringUtils.isNotEmpty(apiUser) ? apiUser : UNKNOWN_USER);
+            requestLog.setApiUser(StringUtils.isNotEmpty(apiUser) ? apiUser : UNKNOWN_USER);
             requestLog.setRequestSize(httpServletRequest.getContentLengthLong());
             requestLog.setRequestContentType(httpServletRequest.getContentType());
 
             chain.doFilter(bufferedRequest, bufferedResponse);
             requestLog.setResponseContentType(httpServletResponse.getContentType());
             try {
+                boolean skipBody = settings.checkIgnoreBodyEndPoint(endPointURI);
                 if ((httpServletRequest.getContentType() != null) && (new MimeType(httpServletRequest.getContentType()).match(new MimeType(APPLICATION_JSON_VALUE)))) {
                     requestLog.setRequestBody(JSON.parse(bufferedRequest.getRequestBody()));
                 }
                 if ((bufferedResponse.getContentType() != null) && (new MimeType(bufferedResponse.getContentType()).match(new MimeType(APPLICATION_JSON_VALUE)))) {
-                    requestLog.setResponseBody(JSON.parse(bufferedResponse.getContent()));
+                    requestLog.setResponseBody( skipBody ? StringUtils.EMPTY : JSON.parse(bufferedResponse.getContent()));
                 }
             } catch (MimeTypeParseException e) {
                 LOGGER.error("Invalid MIME Type detected. Request MIME type=" + httpServletRequest.getContentType() + ". Response MIME Type=" + bufferedResponse.getContentType());
