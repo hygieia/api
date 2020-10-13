@@ -283,7 +283,7 @@ public class DeployServiceImpl implements DeployService {
         if (deploy == null) {
             deploy = new EnvironmentComponent();
         }
-
+        deploy.setChangeReference(request.getExecutionId());
         deploy.setAsOfDate(System.currentTimeMillis());
         deploy.setCollectorItemId(collectorItem.getId());
         deploy.setComponentID(request.getArtifactGroup());
