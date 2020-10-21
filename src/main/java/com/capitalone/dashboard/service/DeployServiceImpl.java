@@ -1,6 +1,7 @@
 package com.capitalone.dashboard.service;
 
 import com.capitalone.dashboard.misc.HygieiaException;
+import com.capitalone.dashboard.model.Build;
 import com.capitalone.dashboard.model.Collector;
 import com.capitalone.dashboard.model.CollectorItem;
 import com.capitalone.dashboard.model.CollectorType;
@@ -11,6 +12,7 @@ import com.capitalone.dashboard.model.EnvironmentStatus;
 import com.capitalone.dashboard.model.deploy.DeployableUnit;
 import com.capitalone.dashboard.model.deploy.Environment;
 import com.capitalone.dashboard.model.deploy.Server;
+import com.capitalone.dashboard.repository.BuildRepository;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.repository.CollectorRepository;
 import com.capitalone.dashboard.repository.ComponentRepository;
@@ -20,6 +22,7 @@ import com.capitalone.dashboard.request.CollectorRequest;
 import com.capitalone.dashboard.request.DeployDataCreateRequest;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +46,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static com.capitalone.dashboard.service.DeployServiceImpl.RundeckXMLParser.getAttributeValue;
 import static com.capitalone.dashboard.service.DeployServiceImpl.RundeckXMLParser.getChildNodeAttribute;
@@ -60,19 +64,23 @@ public class DeployServiceImpl implements DeployService {
     private final EnvironmentStatusRepository environmentStatusRepository;
     private final CollectorRepository collectorRepository;
     private final CollectorItemRepository collectorItemRepository;
+    private final BuildRepository buildRepository;
     private final CollectorService collectorService;
+
 
     @Autowired
     public DeployServiceImpl(ComponentRepository componentRepository,
                              EnvironmentComponentRepository environmentComponentRepository,
                              EnvironmentStatusRepository environmentStatusRepository,
-                             CollectorRepository collectorRepository, CollectorItemRepository collectorItemRepository, CollectorService collectorService) {
+                             CollectorRepository collectorRepository, CollectorItemRepository collectorItemRepository,
+                             CollectorService collectorService, BuildRepository buildRepository) {
         this.componentRepository = componentRepository;
         this.environmentComponentRepository = environmentComponentRepository;
         this.environmentStatusRepository = environmentStatusRepository;
         this.collectorRepository = collectorRepository;
         this.collectorItemRepository = collectorItemRepository;
         this.collectorService = collectorService;
+        this.buildRepository = buildRepository;
     }
 
     @Override
@@ -174,7 +182,7 @@ public class DeployServiceImpl implements DeployService {
     }
 
 
-    protected EnvironmentComponent createDeploy(DeployDataCreateRequest request) throws HygieiaException {
+    protected EnvironmentComponent createDeploy(DeployDataCreateRequest request, boolean associateBuild) throws HygieiaException {
         /*
           Step 1: create Collector if not there
           Step 2: create Collector item if not there
@@ -192,7 +200,7 @@ public class DeployServiceImpl implements DeployService {
             throw new HygieiaException("Failed creating Deploy collector item.", HygieiaException.COLLECTOR_ITEM_CREATE_ERROR);
         }
 
-        EnvironmentComponent deploy = createEnvComponent(collectorItem, request);
+        EnvironmentComponent deploy = createEnvComponent(collectorItem, request, associateBuild);
 
         if (deploy == null) {
             throw new HygieiaException("Failed inserting/updating Deployment information.", HygieiaException.ERROR_INSERTING_DATA);
@@ -204,13 +212,19 @@ public class DeployServiceImpl implements DeployService {
 
     @Override
     public String create(DeployDataCreateRequest request) throws HygieiaException {
-        EnvironmentComponent deploy = createDeploy(request);
+        EnvironmentComponent deploy = createDeploy(request, Boolean.FALSE);
         return deploy.getId().toString();
     }
 
     @Override
     public String createV2(DeployDataCreateRequest request) throws HygieiaException {
-        EnvironmentComponent deploy = createDeploy(request);
+        EnvironmentComponent deploy = createDeploy(request, Boolean.FALSE);
+        return String.format("%s,%s", deploy.getId().toString(), deploy.getCollectorItemId().toString());
+
+    }
+
+    public String createV3(DeployDataCreateRequest request) throws HygieiaException {
+        EnvironmentComponent deploy = createDeploy(request, Boolean.TRUE);
         return String.format("%s,%s", deploy.getId().toString(), deploy.getCollectorItemId().toString());
 
     }
@@ -263,26 +277,56 @@ public class DeployServiceImpl implements DeployService {
         return collectorService.createCollectorItem(tempCi);
     }
 
-    private EnvironmentComponent createEnvComponent(CollectorItem collectorItem, DeployDataCreateRequest request) {
+    private EnvironmentComponent createEnvComponent(CollectorItem collectorItem, DeployDataCreateRequest request, boolean associateBuild) {
         EnvironmentComponent deploy = environmentComponentRepository.
                 findByUniqueKey(collectorItem.getId(), request.getArtifactName(), request.getArtifactName(), request.getEndTime());
         if (deploy == null) {
             deploy = new EnvironmentComponent();
         }
-
+        deploy.setChangeReference(request.getExecutionId());
         deploy.setAsOfDate(System.currentTimeMillis());
         deploy.setCollectorItemId(collectorItem.getId());
         deploy.setComponentID(request.getArtifactGroup());
         deploy.setComponentName(request.getArtifactName());
+        deploy.setComponentPath( request.getArtifactPath());
+        deploy.setServiceName (request.getAppServiceName());
+        deploy.setApplicationName (request.getAppName());
         deploy.setComponentVersion(request.getArtifactVersion());
         deploy.setCollectorItemId(collectorItem.getId());
         deploy.setEnvironmentName(request.getEnvName());
         deploy.setEnvironmentUrl(request.getInstanceUrl());
         deploy.setJobUrl(request.getJobUrl());
         deploy.setDeployTime(request.getEndTime());
+        deploy.setJobStageName(request.getStageName());
+        deploy.setJobStageStatus(request.getStageStatus());
+        if(associateBuild) {
+            associateBuildToDeploy(request, deploy);
+        }
         deploy.setDeployed("SUCCESS".equalsIgnoreCase(request.getDeployStatus()));
 
         return environmentComponentRepository.save(deploy); // Save = Update (if ID present) or Insert (if ID not there)
+    }
+
+    private void associateBuildToDeploy(DeployDataCreateRequest request, EnvironmentComponent deploy) {
+
+        String collectorName = StringUtils.isNotEmpty(request.getCollectorName()) ? request.getCollectorName() : "Hudson";
+        List<Collector> collectors = collectorRepository.findByCollectorTypeAndName(CollectorType.Build, collectorName);
+        Optional<Collector> collector = collectors.stream().findFirst();
+        if(!collector.isPresent()) return;
+
+        ObjectId buildCollectorId = collector.get().getId();
+        Map<String, Object> option = new HashMap<>();
+        option.put("jobName", request.getJobName());
+        option.put("jobUrl", request.getJobUrl());
+        option.put("instanceUrl", request.getInstanceUrl());
+
+        List<CollectorItem> buildCollectorItems = IterableUtils.toList(collectorItemRepository.findAllByOptionMapAndCollectorIdsIn(option, Stream.of(buildCollectorId).collect(Collectors.toList())));
+        Optional<CollectorItem> enabledCollectorItem = buildCollectorItems.stream().filter(CollectorItem::isEnabled).findFirst();
+        if(!enabledCollectorItem.isPresent()) return; // Need to handle the case of create build collector item later
+
+        Build build =buildRepository.findByCollectorItemIdAndNumber(enabledCollectorItem.get().getId(), request.getJobNumber());
+        if(build == null) return; // Need to handle the case of create build later
+        deploy.setBuildId(build.getId());
     }
 
     protected DeployDataCreateRequest createRundeck(Document doc, Map<String, String[]> parameters, String executionId, String status) throws HygieiaException {
