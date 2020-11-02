@@ -436,6 +436,12 @@ public class DashboardControllerTest {
           .andExpect(status().isOk());
     }
 
+    @Test
+    public void cleanDashboardWidgets() throws Exception {
+        mockMvc.perform(get("/dashboard/widgets/cleanup?isSave=false"))
+                .andExpect(status().isOk());
+    }
+
     
     private DashboardRequestTitle makeDashboardRequestTitle(String title) {
         DashboardRequestTitle request = new DashboardRequestTitle();
