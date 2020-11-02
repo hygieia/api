@@ -330,7 +330,7 @@ public class DashboardController {
         } catch (HygieiaException he) {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
-                    .body(he.getMessage());
+                    .body("error cleaning up dashboard widgets");
         }
 
     }
