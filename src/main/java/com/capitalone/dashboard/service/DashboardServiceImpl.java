@@ -1006,19 +1006,21 @@ public class DashboardServiceImpl implements DashboardService {
     @Override
     public void cleanupDashboardWidgets(boolean isSave) throws HygieiaException {
         try {
-            Iterable<Dashboard> dashboards = dashboardRepository.findAll();
-            dashboards.forEach(dashboard -> {
+            Iterable<Dashboard> dashboards = dashboardRepository.findAllByType(DashboardType.Team);
+            for (Dashboard dashboard: dashboards) {
                 List<Widget> widgets = dashboard.getWidgets();
-                int widgetsSize = widgets.size();
-                List<Widget> distinctWidgets = widgets.stream().filter(distinctWidgetByName(Widget::getName)).collect(Collectors.toList());
-                dashboard.getWidgets().clear();
-                dashboard.setWidgets(distinctWidgets);
-                if (isSave) {
-                    dashboardRepository.save(dashboard);
+                if (CollectionUtils.isNotEmpty(widgets)) {
+                    int widgetsSize = widgets.size();
+                    List<Widget> distinctWidgets = widgets.stream().filter(distinctWidgetByName(Widget::getName)).collect(Collectors.toList());
+                    dashboard.getWidgets().clear();
+                    dashboard.setWidgets(distinctWidgets);
+                    if (isSave) {
+                        dashboardRepository.save(dashboard);
+                    }
+                    LOG.info(String.format("Dashboard %s's widgets updated from %s to %s",
+                            dashboard.getTitle(), widgetsSize, distinctWidgets.size()));
                 }
-                LOG.info(String.format("Dashboard %s's widgets updated from %s to %s",
-                        dashboard.getTitle(), widgetsSize, distinctWidgets.size()));
-            });
+            }
         } catch (Exception e) {
             throw new HygieiaException(e);
         }
