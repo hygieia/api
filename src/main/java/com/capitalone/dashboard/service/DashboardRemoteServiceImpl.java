@@ -153,14 +153,7 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
             WidgetRequest widgetRequest = allWidgetRequests.get(key);
 
             component = dashboardService.associateCollectorToComponent(dashboard.getApplication().getComponents().get(0).getId(), widgetRequest.getCollectorItemIds(),component,true);
-            Widget newWidget = widgetRequest.widget();
-            Widget oldWidget = existingWidgets.get(newWidget.getName());
-            if (Objects.isNull(oldWidget)) {
-                dashboardService.addWidget(dashboard, newWidget);
-            } else {
-                Widget widget = widgetRequest.updateWidget(dashboardService.getWidget(dashboard, oldWidget.getId()));
-                dashboardService.updateWidget(dashboard, widget);
-            }
+            addOrUpdateWidgets(dashboard, widgetRequest, existingWidgets);
         }
 
         // Delete collector item types that are not in the incoming types
@@ -192,6 +185,17 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
 
         componentRepository.save(component);
         return (dashboard != null) ? dashboardService.get(dashboard.getId()) : null;
+    }
+
+    protected void addOrUpdateWidgets(Dashboard dashboard, WidgetRequest widgetRequest, Map<String, Widget> existingWidgets) {
+        Widget newWidget = widgetRequest.widget();
+        Widget oldWidget = existingWidgets.get(newWidget.getName());
+        if (Objects.isNull(oldWidget)) {
+            dashboardService.addWidget(dashboard, newWidget);
+        } else {
+            Widget widget = widgetRequest.updateWidget(dashboardService.getWidget(dashboard, oldWidget.getId()));
+            dashboardService.updateWidget(dashboard, widget);
+        }
     }
 
     private Dashboard chooseDashboard(List<Dashboard> dashboards, DashboardRemoteRequest request) {

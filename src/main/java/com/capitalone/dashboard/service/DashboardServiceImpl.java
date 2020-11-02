@@ -183,13 +183,13 @@ public class DashboardServiceImpl implements DashboardService {
         Iterable<Component> components = null;
 
         if(!isUpdate) {
-            duplicateDashboardErrorCheck(dashboard);
             dashboard.setCreatedAt(System.currentTimeMillis());
             components = componentRepository.save(dashboard.getApplication().getComponents());
         }
         dashboard.setUpdatedAt(System.currentTimeMillis());
 
         try {
+            duplicateDashboardErrorCheck(dashboard);
             Dashboard savedDashboard = dashboardRepository.save(dashboard);
             CollectorItem scoreCollectorItem;
             if (isUpdate) {
@@ -838,7 +838,7 @@ public class DashboardServiceImpl implements DashboardService {
 
         if(appName != null && !appName.isEmpty() && compName != null && !compName.isEmpty()){
             Dashboard existingDashboard = dashboardRepository.findByConfigurationItemBusServNameIgnoreCaseAndConfigurationItemBusAppNameIgnoreCase(appName, compName);
-            if(existingDashboard != null && existingDashboard.getId().equals(dashboard.getId())){
+            if(existingDashboard != null && !existingDashboard.getId().equals(dashboard.getId())){
                 throw new HygieiaException("Existing Dashboard: " + existingDashboard.getTitle(), HygieiaException.DUPLICATE_DATA);
             }
         }
