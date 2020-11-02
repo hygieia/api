@@ -49,6 +49,8 @@ import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Objects;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -181,13 +183,13 @@ public class DashboardServiceImpl implements DashboardService {
         Iterable<Component> components = null;
 
         if(!isUpdate) {
+            duplicateDashboardErrorCheck(dashboard);
             dashboard.setCreatedAt(System.currentTimeMillis());
             components = componentRepository.save(dashboard.getApplication().getComponents());
         }
         dashboard.setUpdatedAt(System.currentTimeMillis());
 
         try {
-            duplicateDashboardErrorCheck(dashboard);
             Dashboard savedDashboard = dashboardRepository.save(dashboard);
             CollectorItem scoreCollectorItem;
             if (isUpdate) {
@@ -836,7 +838,7 @@ public class DashboardServiceImpl implements DashboardService {
 
         if(appName != null && !appName.isEmpty() && compName != null && !compName.isEmpty()){
             Dashboard existingDashboard = dashboardRepository.findByConfigurationItemBusServNameIgnoreCaseAndConfigurationItemBusAppNameIgnoreCase(appName, compName);
-            if(existingDashboard != null && !existingDashboard.getId().equals(dashboard.getId())){
+            if(existingDashboard != null && existingDashboard.getId().equals(dashboard.getId())){
                 throw new HygieiaException("Existing Dashboard: " + existingDashboard.getTitle(), HygieiaException.DUPLICATE_DATA);
             }
         }
@@ -994,6 +996,37 @@ public class DashboardServiceImpl implements DashboardService {
         Dashboard savedDashboard = dashboardRepository.save(dashboard);
         this.scoreDashboardService.editScoreForDashboard(savedDashboard);
         return savedDashboard;
+    }
+
+    /**
+     * one time execution to cleanup duplicate widgets of dashboards
+     * @param isSave
+     * @throws HygieiaException
+     */
+    @Override
+    public void cleanupDashboardWidgets(boolean isSave) throws HygieiaException {
+        try {
+            Iterable<Dashboard> dashboards = dashboardRepository.findAll();
+            dashboards.forEach(dashboard -> {
+                List<Widget> widgets = dashboard.getWidgets();
+                int widgetsSize = widgets.size();
+                List<Widget> distinctWidgets = widgets.stream().filter(distinctWidgetByName(Widget::getName)).collect(Collectors.toList());
+                dashboard.getWidgets().clear();
+                dashboard.setWidgets(distinctWidgets);
+                if (isSave) {
+                    dashboardRepository.save(dashboard);
+                }
+                LOG.info(String.format("Dashboard %s's widgets updated from %s to %s",
+                        dashboard.getTitle(), widgetsSize, distinctWidgets.size()));
+            });
+        } catch (Exception e) {
+            throw new HygieiaException(e);
+        }
+    }
+
+    public static <T> Predicate<T> distinctWidgetByName(Function<? super T, ?> keyExtractor) {
+        Set<Object> seen = ConcurrentHashMap.newKeySet();
+        return t -> seen.add(keyExtractor.apply(t));
     }
 
 }

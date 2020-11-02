@@ -35,7 +35,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 @Service
 public class DashboardRemoteServiceImpl implements DashboardRemoteService {
@@ -154,16 +154,12 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
 
             component = dashboardService.associateCollectorToComponent(dashboard.getApplication().getComponents().get(0).getId(), widgetRequest.getCollectorItemIds(),component,true);
             Widget newWidget = widgetRequest.widget();
-            if (isUpdate) {
-                Widget oldWidget = existingWidgets.get(newWidget.getName());
-                if (oldWidget == null) {
-                    dashboardService.addWidget(dashboard, newWidget);
-                } else {
-                    Widget widget = widgetRequest.updateWidget(dashboardService.getWidget(dashboard, oldWidget.getId()));
-                    dashboardService.updateWidget(dashboard, widget);
-                }
-            } else {
+            Widget oldWidget = existingWidgets.get(newWidget.getName());
+            if (Objects.isNull(oldWidget)) {
                 dashboardService.addWidget(dashboard, newWidget);
+            } else {
+                Widget widget = widgetRequest.updateWidget(dashboardService.getWidget(dashboard, oldWidget.getId()));
+                dashboardService.updateWidget(dashboard, widget);
             }
         }
 

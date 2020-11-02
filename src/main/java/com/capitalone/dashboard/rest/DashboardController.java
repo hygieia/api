@@ -11,6 +11,7 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import com.capitalone.dashboard.auth.access.Admin;
 import com.capitalone.dashboard.util.PaginationHeaderUtility;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
@@ -312,6 +313,20 @@ public class DashboardController {
                 return ResponseEntity.ok("Unchanged");
             }
 
+        } catch (HygieiaException he) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(he.getMessage());
+        }
+
+    }
+
+    @Admin
+    @RequestMapping(value = "/dashboard/widgets/cleanup", method = GET, produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity cleanupDashboardWidgets(boolean isSave) {
+        try {
+            dashboardService.cleanupDashboardWidgets(isSave);
+            return ResponseEntity.ok("dashboard widgets cleanup completed");
         } catch (HygieiaException he) {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
