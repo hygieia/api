@@ -8,18 +8,21 @@ import com.capitalone.dashboard.model.Collector;
 import com.capitalone.dashboard.model.CollectorItem;
 import com.capitalone.dashboard.model.CollectorType;
 import com.capitalone.dashboard.model.Component;
+import com.capitalone.dashboard.model.Dashboard;
+import com.capitalone.dashboard.model.Cmdb;
 import com.capitalone.dashboard.model.DataResponse;
 import com.capitalone.dashboard.model.QCodeQuality;
 import com.capitalone.dashboard.repository.CodeQualityRepository;
 import com.capitalone.dashboard.repository.CollectorRepository;
 import com.capitalone.dashboard.repository.ComponentRepository;
+import com.capitalone.dashboard.repository.DashboardRepository;
+import com.capitalone.dashboard.repository.CmdbRepository;
 import com.capitalone.dashboard.request.CodeQualityCreateRequest;
 import com.capitalone.dashboard.request.CodeQualityRequest;
 import com.capitalone.dashboard.request.CollectorRequest;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
-import com.google.common.collect.Iterables;
 import com.querydsl.core.BooleanBuilder;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.joda.time.LocalDate;
@@ -31,22 +34,31 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Collections;
+import java.util.Comparator;
 
 @Service
 public class CodeQualityServiceImpl implements CodeQualityService {
 
     private final CodeQualityRepository codeQualityRepository;
     private final ComponentRepository componentRepository;
+    private final DashboardRepository dashboardRepository;
+    private final CmdbRepository cmdbRepository;
     private final CollectorRepository collectorRepository;
     private final CollectorService collectorService;
 
     @Autowired
     public CodeQualityServiceImpl(CodeQualityRepository codeQualityRepository,
                                   ComponentRepository componentRepository,
+                                  DashboardRepository dashboardRepository,
+                                  CmdbRepository cmdbRepository,
                                   CollectorRepository collectorRepository,
                                   CollectorService collectorService) {
         this.codeQualityRepository = codeQualityRepository;
         this.componentRepository = componentRepository;
+        this.dashboardRepository = dashboardRepository;
+        this.cmdbRepository = cmdbRepository;
         this.collectorRepository = collectorRepository;
         this.collectorService = collectorService;
     }
@@ -220,5 +232,28 @@ public class CodeQualityServiceImpl implements CodeQualityService {
         sb.append(path)
                 .append(projectId);
         return sb.toString();
+    }
+
+    @Override
+    public Cmdb getCmdb(String projectName, String version) throws HygieiaException {
+        List<CodeQuality> codeQualities = codeQualityRepository.findByNameAndVersion(projectName, version);
+        if (CollectionUtils.isNotEmpty(codeQualities)) {
+            CodeQuality latestCQ = codeQualities.stream().sorted(Comparator.comparing(CodeQuality::getTimestamp).reversed()).findFirst().get();
+            List<Component> components = componentRepository.findByCodeQualityCollectorItems(latestCQ.getCollectorItemId());
+            if (CollectionUtils.isNotEmpty(components)) {
+                List<Dashboard> dashboards = dashboardRepository.findByApplicationComponentIdsIn(Collections.singleton(components.get(0).getId()));
+                if (CollectionUtils.isNotEmpty(dashboards)) {
+                    Cmdb cmdb = cmdbRepository.findByConfigurationItemAndItemTypeAndValidConfigItem(dashboards.get(0).getConfigurationItemBusAppName(),
+                            "component", true);
+                    if (Objects.nonNull(cmdb)) {
+                        return cmdb;
+                    }
+                    throw new HygieiaException("valid cmdb not exists", HygieiaException.NOTHING_TO_UPDATE);
+                }
+                throw new HygieiaException("dashboard not exists", HygieiaException.NOTHING_TO_UPDATE);
+            }
+            throw new HygieiaException("dashboard component not exists", HygieiaException.NOTHING_TO_UPDATE);
+        }
+        throw new HygieiaException("code analysis data not exists", HygieiaException.NOTHING_TO_UPDATE);
     }
 }

@@ -1,6 +1,7 @@
 package com.capitalone.dashboard.service;
 
 import com.capitalone.dashboard.misc.HygieiaException;
+import com.capitalone.dashboard.model.Cmdb;
 import com.capitalone.dashboard.model.CodeQuality;
 import com.capitalone.dashboard.model.DataResponse;
 import com.capitalone.dashboard.request.CodeQualityCreateRequest;
@@ -17,4 +18,5 @@ public interface CodeQualityService {
     DataResponse<Iterable<CodeQuality>> search(CodeQualityRequest request);
     String create(CodeQualityCreateRequest request) throws HygieiaException;
     String createV2(CodeQualityCreateRequest request) throws HygieiaException;
+    Cmdb getCmdb(String projectName, String version) throws HygieiaException;
 }
