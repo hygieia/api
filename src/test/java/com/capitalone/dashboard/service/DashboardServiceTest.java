@@ -950,7 +950,8 @@ public class DashboardServiceTest {
         List<Widget> widgets = Lists.newArrayList(widget1, widget2, widget3);
         dashboard.setWidgets(widgets);
         when(dashboardRepository.findAllByType(DashboardType.Team)).thenReturn(Arrays.asList(dashboard));
-        dashboardService.cleanupDashboardWidgets(false);
+        when(dashboardRepository.save(dashboard)).thenReturn(dashboard);
+        dashboardService.cleanupDashboardWidgets(true);
     }
 
     private Dashboard makeTeamDashboard(String template, String title, String appName, String owner,String configItemBusServName,String configItemBusAppName, String... compNames) {
