@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Optional;
 
 @Service
 public class CodeQualityServiceImpl implements CodeQualityService {
@@ -238,21 +239,23 @@ public class CodeQualityServiceImpl implements CodeQualityService {
     public Cmdb getCmdb(String projectName, String version) throws HygieiaException {
         List<CodeQuality> codeQualities = codeQualityRepository.findByNameAndVersion(projectName, version);
         if (CollectionUtils.isNotEmpty(codeQualities)) {
-            CodeQuality latestCQ = codeQualities.stream().sorted(Comparator.comparing(CodeQuality::getTimestamp).reversed()).findFirst().get();
-            List<Component> components = componentRepository.findByCodeQualityCollectorItems(latestCQ.getCollectorItemId());
-            if (CollectionUtils.isNotEmpty(components)) {
-                List<Dashboard> dashboards = dashboardRepository.findByApplicationComponentIdsIn(Collections.singleton(components.get(0).getId()));
-                if (CollectionUtils.isNotEmpty(dashboards)) {
-                    Cmdb cmdb = cmdbRepository.findByConfigurationItemAndItemTypeAndValidConfigItem(dashboards.get(0).getConfigurationItemBusAppName(),
-                            "component", true);
-                    if (Objects.nonNull(cmdb)) {
-                        return cmdb;
+            Optional<CodeQuality> latestCqOpt = codeQualities.stream().sorted(Comparator.comparing(CodeQuality::getTimestamp).reversed()).findFirst();
+            if (latestCqOpt.isPresent()) {
+                List<Component> components = componentRepository.findByCodeQualityCollectorItems(latestCqOpt.get().getCollectorItemId());
+                if (CollectionUtils.isNotEmpty(components)) {
+                    List<Dashboard> dashboards = dashboardRepository.findByApplicationComponentIdsIn(Collections.singleton(components.get(0).getId()));
+                    if (CollectionUtils.isNotEmpty(dashboards)) {
+                        Cmdb cmdb = cmdbRepository.findByConfigurationItemAndItemTypeAndValidConfigItem(dashboards.get(0).getConfigurationItemBusAppName(),
+                                "component", true);
+                        if (Objects.nonNull(cmdb)) {
+                            return cmdb;
+                        }
+                        throw new HygieiaException("valid cmdb not exists", HygieiaException.NOTHING_TO_UPDATE);
                     }
-                    throw new HygieiaException("valid cmdb not exists", HygieiaException.NOTHING_TO_UPDATE);
+                    throw new HygieiaException("dashboard not exists", HygieiaException.NOTHING_TO_UPDATE);
                 }
-                throw new HygieiaException("dashboard not exists", HygieiaException.NOTHING_TO_UPDATE);
+                throw new HygieiaException("dashboard component not exists", HygieiaException.NOTHING_TO_UPDATE);
             }
-            throw new HygieiaException("dashboard component not exists", HygieiaException.NOTHING_TO_UPDATE);
         }
         throw new HygieiaException("code analysis data not exists", HygieiaException.NOTHING_TO_UPDATE);
     }
