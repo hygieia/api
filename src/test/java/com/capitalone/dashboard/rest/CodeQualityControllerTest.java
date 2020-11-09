@@ -222,6 +222,14 @@ public class CodeQualityControllerTest {
 				.andExpect(status().isInternalServerError());
 	}
 
+	@Test
+	public void getCmdbDetailOfSonarProject() throws Exception {
+		when(codeQualityService.getCmdb(Matchers.anyString(), Matchers.anyString()))
+				.thenThrow(new HygieiaException("", HygieiaException.NOTHING_TO_UPDATE));
+		mockMvc.perform(get("/quality/static-analysis/cmdb?projectName=&version=")
+		.contentType(TestUtil.APPLICATION_JSON_UTF8)).andExpect(status().is2xxSuccessful());
+	}
+
     private CodeQualityCreateRequest makeCodeQualityRequest() {
         CodeQualityCreateRequest quality = new CodeQualityCreateRequest();
         quality.setHygieiaId("2345");
