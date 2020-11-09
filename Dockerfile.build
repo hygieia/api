@@ -1,5 +1,5 @@
 # our base build image
-FROM maven:3.6-jdk-8 as build
+FROM openjdk:8-slim as build
 
 # copy the project files
 COPY ./pom.xml ./pom.xml
@@ -14,7 +14,7 @@ COPY ./src ./src
 RUN mvn package
 
 
-FROM openjdk:8-jre
+FROM openjdk:8-jre-slim
 
 VOLUME ["/hygieia/logs"]
 
