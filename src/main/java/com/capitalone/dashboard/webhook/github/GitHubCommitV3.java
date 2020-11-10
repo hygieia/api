@@ -1,14 +1,11 @@
 package com.capitalone.dashboard.webhook.github;
 
+import com.capitalone.dashboard.model.*;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.client.RestClient;
 import com.capitalone.dashboard.model.webhook.github.GitHubParsed;
 import com.capitalone.dashboard.misc.HygieiaException;
-import com.capitalone.dashboard.model.CollectorItem;
-import com.capitalone.dashboard.model.Commit;
-import com.capitalone.dashboard.model.CommitType;
-import com.capitalone.dashboard.model.GitRequest;
 import com.capitalone.dashboard.repository.CommitRepository;
 import com.capitalone.dashboard.repository.GitRequestRepository;
 import com.capitalone.dashboard.service.CollectorService;
@@ -220,6 +217,14 @@ public class GitHubCommitV3 extends GitHubV3 {
                 numberChanges += ((List) cObj.get("modified")).size();
                 commit.setFilesModified((List) cObj.get("modified"));
             }
+
+            List<RepoFile> files = (List<RepoFile>) cObj.get("files");
+            for (RepoFile file: files) {
+                file.setFilename(file.getFilename());
+                file.setPatch(file.getPatch());
+                // TODO: add patch check
+            }
+            commit.setFiles(files);
 
             commit.setNumberOfChanges(numberChanges);
             setCommitPullNumber(commit);

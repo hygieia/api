@@ -3,11 +3,7 @@ package com.capitalone.dashboard.webhook.github;
 import com.capitalone.dashboard.client.RestClient;
 import com.capitalone.dashboard.client.RestOperationsSupplier;
 import com.capitalone.dashboard.misc.HygieiaException;
-import com.capitalone.dashboard.model.Collector;
-import com.capitalone.dashboard.model.CollectorItem;
-import com.capitalone.dashboard.model.Commit;
-import com.capitalone.dashboard.model.CommitType;
-import com.capitalone.dashboard.model.GitRequest;
+import com.capitalone.dashboard.model.*;
 import com.capitalone.dashboard.model.webhook.github.GitHubParsed;
 import com.capitalone.dashboard.model.webhook.github.GitHubRepo;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
@@ -126,6 +122,12 @@ public class GitHubCommitV3Test {
         Assert.assertEquals(7, commit1.getNumberOfChanges());
         Assert.assertEquals(collectorItemId, commit1.getCollectorItemId().toString());
         verify(gitHubCommitV3, times(3)).getCommitNode(anyObject(), anyString(), anyString());
+
+        List<RepoFile> files = commit1.getFiles();
+        Assert.assertEquals("filename", files.get(0).getFilename());
+        Assert.assertEquals("patch", files.get(0).getPatch());
+        Assert.assertEquals("filename2", files.get(1).getFilename());
+        Assert.assertEquals("patch2", files.get(1).getPatch());
 
         Commit commit2 = commitsList.get(1);
         Assert.assertEquals(repoUrl, commit2.getScmUrl());
@@ -453,6 +455,16 @@ public class GitHubCommitV3Test {
         commitsMap1.put("removed",Arrays.asList(".gitignore", "style.css"));
         commitsMap1.put("modified",Arrays.asList("Readme.md", "gulp.js"));
 
+        RepoFile files1 = new RepoFile();
+        files1.setPatch("patch");
+        files1.setFilename("filename");
+
+        RepoFile files2 = new RepoFile();
+        files2.setPatch("patch2");
+        files2.setFilename("filename2");
+
+        commitsMap1.put("files",Arrays.asList(files1,files2));
+
         Map commitsMap2 = new HashMap();
         commitsList.add(commitsMap2);
 
@@ -475,7 +487,7 @@ public class GitHubCommitV3Test {
         commitsMap2.put("removed",Arrays.asList(".gitignore", "style.css"));
         commitsMap2.put("modified",Arrays.asList(""));
 
-
+        commitsMap2.put("files",Arrays.asList(files1,files2));
 
         return commitsList;
     }
