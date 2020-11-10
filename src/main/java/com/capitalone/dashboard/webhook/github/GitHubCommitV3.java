@@ -1,6 +1,5 @@
 package com.capitalone.dashboard.webhook.github;
 
-import com.capitalone.dashboard.model.*;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.client.RestClient;
@@ -20,6 +19,11 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import org.springframework.http.ResponseEntity;
+import com.capitalone.dashboard.model.CollectorItem;
+import com.capitalone.dashboard.model.Commit;
+import com.capitalone.dashboard.model.CommitType;
+import com.capitalone.dashboard.model.GitRequest;
+import com.capitalone.dashboard.model.RepoFile;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -219,11 +223,7 @@ public class GitHubCommitV3 extends GitHubV3 {
             }
 
             List<RepoFile> files = (List<RepoFile>) cObj.get("files");
-            for (RepoFile file: files) {
-                file.setFilename(file.getFilename());
-                file.setPatch(file.getPatch());
-                // TODO: add patch check
-            }
+            // TODO: Add patch check based on requirements
             commit.setFiles(files);
 
             commit.setNumberOfChanges(numberChanges);
