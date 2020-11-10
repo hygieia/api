@@ -72,15 +72,4 @@ public class CodeQualityController {
         request.setType(CodeQualityType.SecurityAnalysis);
         return codeQualityService.search(request);
     }
-
-    @RequestMapping(value = "/quality/static-analysis/cmdb", method = GET, produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> getStaticAnalysisCMDB(@Valid String projectName, @Valid String version) {
-        Object response;
-        try {
-            response = codeQualityService.getCmdb(projectName, version);
-        } catch (HygieiaException he) {
-            response = he.getMessage();
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
 }
