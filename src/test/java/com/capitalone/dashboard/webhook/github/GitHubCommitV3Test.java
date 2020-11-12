@@ -136,7 +136,6 @@ public class GitHubCommitV3Test {
 
         Commit commit2 = commitsList.get(1);
         Assert.assertEquals(repoUrl, commit2.getScmUrl());
-        Assert.assertEquals(repoUrl, commit2.getScmUrl());
         Assert.assertEquals("master", commit2.getScmBranch());
         Assert.assertEquals("commit2ID", commit2.getScmRevisionNumber());
         Assert.assertEquals("GitHub WebHook Commit 2", commit2.getScmCommitLog());
