@@ -463,10 +463,28 @@ public class GitHubCommitV3Test {
         RepoFile files1 = new RepoFile();
         files1.setPatch("patch");
         files1.setFilename("filename");
+        files1.setSha("sha");
+        files1.setAdditions(1);
+        files1.setBlob_url("blobUrl");
+        files1.setStatus("status");
+        files1.setAdditions(1);
+        files1.setDeletions(1);
+        files1.setChanges(1);
+        files1.setRaw_url("rawUrl");
+        files1.setContents_url("contentsUrl");
 
         RepoFile files2 = new RepoFile();
         files2.setPatch("patch2");
         files2.setFilename("filename2");
+        files2.setSha("sha2");
+        files2.setAdditions(1);
+        files2.setBlob_url("blobUrl2");
+        files2.setStatus("status2");
+        files2.setAdditions(1);
+        files2.setDeletions(1);
+        files2.setChanges(1);
+        files2.setRaw_url("rawUrl2");
+        files2.setContents_url("contentsUrl2");
 
         commitsMap1.put("files",Arrays.asList(files1,files2));
 
