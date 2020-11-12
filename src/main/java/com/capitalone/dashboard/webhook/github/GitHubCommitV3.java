@@ -223,7 +223,9 @@ public class GitHubCommitV3 extends GitHubV3 {
             }
 
             List<RepoFile> files = (List<RepoFile>) cObj.get("files");
-            // TODO: Add patch check based on requirements
+            for (RepoFile file : files) {
+                String fileType = file.getFilename().split("[.]")[1];
+            }
             commit.setFiles(files);
 
             commit.setNumberOfChanges(numberChanges);

@@ -129,12 +129,13 @@ public class GitHubCommitV3Test {
         verify(gitHubCommitV3, times(3)).getCommitNode(anyObject(), anyString(), anyString());
 
         List<RepoFile> files = commit1.getFiles();
-        Assert.assertEquals("filename", files.get(0).getFilename());
+        Assert.assertEquals("filename.py", files.get(0).getFilename());
         Assert.assertEquals("patch", files.get(0).getPatch());
-        Assert.assertEquals("filename2", files.get(1).getFilename());
+        Assert.assertEquals("filename2.py", files.get(1).getFilename());
         Assert.assertEquals("patch2", files.get(1).getPatch());
 
         Commit commit2 = commitsList.get(1);
+        Assert.assertEquals(repoUrl, commit2.getScmUrl());
         Assert.assertEquals(repoUrl, commit2.getScmUrl());
         Assert.assertEquals("master", commit2.getScmBranch());
         Assert.assertEquals("commit2ID", commit2.getScmRevisionNumber());
@@ -462,7 +463,7 @@ public class GitHubCommitV3Test {
 
         RepoFile files1 = new RepoFile();
         files1.setPatch("patch");
-        files1.setFilename("filename");
+        files1.setFilename("filename.py");
         files1.setSha("sha");
         files1.setAdditions(1);
         files1.setBlob_url("blobUrl");
@@ -475,7 +476,7 @@ public class GitHubCommitV3Test {
 
         RepoFile files2 = new RepoFile();
         files2.setPatch("patch2");
-        files2.setFilename("filename2");
+        files2.setFilename("filename2.py");
         files2.setSha("sha2");
         files2.setAdditions(1);
         files2.setBlob_url("blobUrl2");
