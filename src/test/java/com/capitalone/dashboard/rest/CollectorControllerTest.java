@@ -110,7 +110,7 @@ public class CollectorControllerTest {
     public void getCmdbDetailOfSonarProject() throws Exception {
         when(collectorService.getCmdbByStaticAnalysis(Matchers.anyString(), Matchers.anyString()))
                 .thenThrow(new HygieiaException("", HygieiaException.NOTHING_TO_UPDATE));
-        mockMvc.perform(get("/collector/item/static-analysis/cmdb?projectName="))
+        mockMvc.perform(get("/collector/item/static-analysis/cmdb?collectorName=&projectName="))
                 .andExpect(status().is2xxSuccessful());
     }
 
