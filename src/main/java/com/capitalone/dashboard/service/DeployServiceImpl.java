@@ -224,8 +224,9 @@ public class DeployServiceImpl implements DeployService {
     }
 
     public String createV3(DeployDataCreateRequest request) throws HygieiaException {
-        EnvironmentComponent deploy = createDeploy(request, Boolean.TRUE);
-        return String.format("%s,%s", deploy.getId().toString(), deploy.getCollectorItemId().toString());
+        // Will be re designed later
+        //EnvironmentComponent deploy = createDeploy(request, Boolean.TRUE);
+        return String.format("%s,%s", "deployId", "deployCollectorItemId");
 
     }
 
