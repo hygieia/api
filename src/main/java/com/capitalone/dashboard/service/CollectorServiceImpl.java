@@ -375,9 +375,9 @@ public class CollectorServiceImpl implements CollectorService {
     }
 
     @Override
-    public Set<Cmdb> getCmdbByStaticAnalysis(String projectName) throws HygieiaException {
-        if (StringUtils.isNotEmpty(projectName)) {
-            Collector collector = collectorRepository.findByName("Sonar");
+    public Set<Cmdb> getCmdbByStaticAnalysis(String collectorName, String projectName) throws HygieiaException {
+        if (StringUtils.isNotEmpty(collectorName) && StringUtils.isNotEmpty(projectName)) {
+            Collector collector = collectorRepository.findByName(collectorName);
             if (Objects.nonNull(collector)) {
                 Iterable<CollectorItem> collectorItems = collectorItemRepository
                         .findAllByOptionNameValueAndCollectorIdsIn("projectName", projectName, Arrays.asList(collector.getId()));
@@ -403,6 +403,6 @@ public class CollectorServiceImpl implements CollectorService {
             }
             throw new HygieiaException("collector not exists", HygieiaException.NOTHING_TO_UPDATE);
         }
-        throw new HygieiaException("invalid projectName", HygieiaException.NOTHING_TO_UPDATE);
+        throw new HygieiaException("invalid collectorName or projectName", HygieiaException.NOTHING_TO_UPDATE);
     }
 }

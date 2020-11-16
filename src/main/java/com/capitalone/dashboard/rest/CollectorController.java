@@ -129,10 +129,10 @@ public class CollectorController {
 
 
     @RequestMapping(value = "/collector/item/static-analysis/cmdb", method = GET, produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> getCmdbByStaticAnalysis(@Valid String projectName) {
+    public ResponseEntity<Object> getCmdbByStaticAnalysis(@Valid String collectorName, @Valid String projectName) {
         Object response;
         try {
-            response = collectorService.getCmdbByStaticAnalysis(projectName);
+            response = collectorService.getCmdbByStaticAnalysis(collectorName, projectName);
         } catch (HygieiaException he) {
             response = he.getMessage();
         }

@@ -269,8 +269,8 @@ public class CollectorServiceTest {
 	@Test
 	public void test_getCmdbOfSonarProject_invalidProjectName() throws HygieiaException {
 		thrown.expect(HygieiaException.class);
-		thrown.expectMessage("invalid projectName");
-		collectorService.getCmdbByStaticAnalysis(null);
+		thrown.expectMessage("invalid collectorName or projectName");
+		collectorService.getCmdbByStaticAnalysis(null, null);
 	}
 
 	@Test
@@ -278,22 +278,22 @@ public class CollectorServiceTest {
 		when(collectorRepository.findByName(Matchers.anyString())).thenReturn(null);
 		thrown.expect(HygieiaException.class);
 		thrown.expectMessage("collector not exists");
-		collectorService.getCmdbByStaticAnalysis("test");
+		collectorService.getCmdbByStaticAnalysis("colName","test");
 	}
 
 	@Test
 	public void test_getCmdbOfSonarProject_noCollectorItems() throws HygieiaException {
-		when(collectorRepository.findByName("Sonar")).thenReturn(new Collector("Sonar", CollectorType.CodeQuality));
+		when(collectorRepository.findByName(Matchers.anyString())).thenReturn(new Collector("colName", CollectorType.CodeQuality));
 		when(collectorItemRepository
 				.findAllByOptionNameValueAndCollectorIdsIn(Matchers.anyString(), Matchers.anyString(), Matchers.anyList())).thenReturn(null);
 		thrown.expect(HygieiaException.class);
 		thrown.expectMessage("collector item not exists");
-		collectorService.getCmdbByStaticAnalysis("test");
+		collectorService.getCmdbByStaticAnalysis("colName","test");
 	}
 
 	@Test
 	public void test_getCmdbOfSonarProject_noComponent() throws HygieiaException {
-		when(collectorRepository.findByName("Sonar")).thenReturn(new Collector("Sonar", CollectorType.CodeQuality));
+		when(collectorRepository.findByName(Matchers.anyString())).thenReturn(new Collector("colName", CollectorType.CodeQuality));
 		when(collectorItemRepository
 				.findAllByOptionNameValueAndCollectorIdsIn(Matchers.anyString(), Matchers.anyString(), Matchers.anyList()))
 				.thenReturn(Lists.newArrayList(makeCollectorItem(false)));
@@ -301,12 +301,12 @@ public class CollectorServiceTest {
 				.thenReturn(null);
 		thrown.expect(HygieiaException.class);
 		thrown.expectMessage("dashboard component not exists");
-		collectorService.getCmdbByStaticAnalysis("test");
+		collectorService.getCmdbByStaticAnalysis("colName","test");
 	}
 
 	@Test
 	public void test_getCmdbOfSonarProject_noDashboard() throws HygieiaException {
-		when(collectorRepository.findByName("Sonar")).thenReturn(new Collector("Sonar", CollectorType.CodeQuality));
+		when(collectorRepository.findByName(Matchers.anyString())).thenReturn(new Collector("colName", CollectorType.CodeQuality));
 		when(collectorItemRepository
 				.findAllByOptionNameValueAndCollectorIdsIn(Matchers.anyString(), Matchers.anyString(), Matchers.anyList()))
 				.thenReturn(Lists.newArrayList(makeCollectorItem(false)));
@@ -316,12 +316,12 @@ public class CollectorServiceTest {
 				.thenReturn(null);
 		thrown.expect(HygieiaException.class);
 		thrown.expectMessage("dashboard not exists");
-		collectorService.getCmdbByStaticAnalysis("test");
+		collectorService.getCmdbByStaticAnalysis("colName","test");
 	}
 
 	@Test
 	public void test_getCmdbOfSonarProject_noCmdb() throws HygieiaException {
-		when(collectorRepository.findByName("Sonar")).thenReturn(new Collector("Sonar", CollectorType.CodeQuality));
+		when(collectorRepository.findByName(Matchers.anyString())).thenReturn(new Collector("colName", CollectorType.CodeQuality));
 		when(collectorItemRepository
 				.findAllByOptionNameValueAndCollectorIdsIn(Matchers.anyString(), Matchers.anyString(), Matchers.anyList()))
 				.thenReturn(Lists.newArrayList(makeCollectorItem(false)));
@@ -335,6 +335,6 @@ public class CollectorServiceTest {
 				.thenReturn(null);
 		thrown.expect(HygieiaException.class);
 		thrown.expectMessage("valid cmdb not exists");
-		collectorService.getCmdbByStaticAnalysis("test");
+		collectorService.getCmdbByStaticAnalysis("colName","test");
 	}
 }
