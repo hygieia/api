@@ -19,7 +19,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
@@ -79,7 +78,6 @@ public class CodeQualityServiceTest {
 
         Assert.assertNull(item);
     }
-
     private CodeQualityCreateRequest makeCodeQualityRequest() {
         CodeQualityCreateRequest quality = new CodeQualityCreateRequest();
         quality.setHygieiaId(ObjectId.get().toString());

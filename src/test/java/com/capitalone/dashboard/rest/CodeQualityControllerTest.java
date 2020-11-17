@@ -9,7 +9,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.Arrays;
 import java.util.Collections;
 
 import org.bson.types.ObjectId;
@@ -221,7 +220,6 @@ public class CodeQualityControllerTest {
 				.content(TestUtil.convertObjectToJsonBytes(request)))
 				.andExpect(status().isInternalServerError());
 	}
-
     private CodeQualityCreateRequest makeCodeQualityRequest() {
         CodeQualityCreateRequest quality = new CodeQualityCreateRequest();
         quality.setHygieiaId("2345");

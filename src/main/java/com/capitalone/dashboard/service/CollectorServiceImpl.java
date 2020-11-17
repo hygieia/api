@@ -7,11 +7,13 @@ import com.capitalone.dashboard.model.CollectorType;
 import com.capitalone.dashboard.model.MultiSearchFilter;
 import com.capitalone.dashboard.model.Dashboard;
 import com.capitalone.dashboard.model.Component;
+import com.capitalone.dashboard.model.Cmdb;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.repository.CollectorRepository;
 import com.capitalone.dashboard.repository.ComponentRepository;
 import com.capitalone.dashboard.repository.DashboardRepository;
 import com.capitalone.dashboard.repository.CustomRepositoryQuery;
+import com.capitalone.dashboard.repository.CmdbRepository;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
@@ -36,6 +38,8 @@ import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Collectors;
+import java.util.Objects;
+import java.util.Set;
 
 @Service
 public class CollectorServiceImpl implements CollectorService {
@@ -45,16 +49,19 @@ public class CollectorServiceImpl implements CollectorService {
     private final ComponentRepository componentRepository;
     private final DashboardRepository dashboardRepository;
     private final CustomRepositoryQuery customRepositoryQuery;
+    private final CmdbRepository cmdbRepository;
 
     @Autowired
     public CollectorServiceImpl(CollectorRepository collectorRepository,
                                 CollectorItemRepository collectorItemRepository,
-                                ComponentRepository componentRepository, DashboardRepository dashboardRepository, CustomRepositoryQuery customRepositoryQuery) {
+                                ComponentRepository componentRepository, DashboardRepository dashboardRepository,
+                                CustomRepositoryQuery customRepositoryQuery, CmdbRepository cmdbRepository) {
         this.collectorRepository = collectorRepository;
         this.collectorItemRepository = collectorItemRepository;
         this.componentRepository = componentRepository;
         this.dashboardRepository = dashboardRepository;
         this.customRepositoryQuery = customRepositoryQuery;
+        this.cmdbRepository = cmdbRepository;
     }
 
     @Override
@@ -365,5 +372,37 @@ public class CollectorServiceImpl implements CollectorService {
         public List<String> apply(Collector input) {
             return input.getSearchFields();
         }
+    }
+
+    @Override
+    public Set<Cmdb> getCmdbByStaticAnalysis(String collectorName, String projectName) throws HygieiaException {
+        if (StringUtils.isNotEmpty(collectorName) && StringUtils.isNotEmpty(projectName)) {
+            Collector collector = collectorRepository.findByName(collectorName);
+            if (Objects.nonNull(collector)) {
+                Iterable<CollectorItem> collectorItems = collectorItemRepository
+                        .findAllByOptionNameValueAndCollectorIdsIn("projectName", projectName, Arrays.asList(collector.getId()));
+                if (!IterableUtils.isEmpty(collectorItems)) {
+                    List<ObjectId> collectorItemIds = IterableUtils.toList(collectorItems).stream().map(CollectorItem::getId).collect(Collectors.toList());
+                    List<Component> components = componentRepository.findByCollectorTypeAndItemIdIn(CollectorType.CodeQuality, collectorItemIds);
+                    if (CollectionUtils.isNotEmpty(components)) {
+                        List<ObjectId> componentIds = components.stream().map(Component::getId).collect(Collectors.toList());
+                        List<Dashboard> dashboards = dashboardRepository.findByApplicationComponentIdsIn(componentIds);
+                        if (CollectionUtils.isNotEmpty(dashboards)) {
+                            Set<Cmdb> cmdbs = dashboards.stream().map(dashboard -> cmdbRepository.findByConfigurationItemAndItemTypeAndValidConfigItem(dashboard.getConfigurationItemBusAppName(),
+                                    "component", true)).filter(Objects::nonNull).collect(Collectors.toSet());
+                            if (CollectionUtils.isNotEmpty(cmdbs)) {
+                                return cmdbs;
+                            }
+                            throw new HygieiaException("valid cmdb not exists", HygieiaException.NOTHING_TO_UPDATE);
+                        }
+                        throw new HygieiaException("dashboard not exists", HygieiaException.NOTHING_TO_UPDATE);
+                    }
+                    throw new HygieiaException("dashboard component not exists", HygieiaException.NOTHING_TO_UPDATE);
+                }
+                throw new HygieiaException("collector item not exists", HygieiaException.NOTHING_TO_UPDATE);
+            }
+            throw new HygieiaException("collector not exists", HygieiaException.NOTHING_TO_UPDATE);
+        }
+        throw new HygieiaException("invalid collectorName or projectName", HygieiaException.NOTHING_TO_UPDATE);
     }
 }

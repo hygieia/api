@@ -12,10 +12,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.Arrays;
 import java.util.Collections;
 
+import com.capitalone.dashboard.misc.HygieiaException;
 import org.bson.types.ObjectId;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -102,6 +104,14 @@ public class CollectorControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id", is(collector.getId().toString())))
                 .andExpect(jsonPath("$[0].name", is("Hudson")));
+    }
+
+    @Test
+    public void getCmdbDetailOfSonarProject() throws Exception {
+        when(collectorService.getCmdbByStaticAnalysis(Matchers.anyString(), Matchers.anyString()))
+                .thenThrow(new HygieiaException("", HygieiaException.NOTHING_TO_UPDATE));
+        mockMvc.perform(get("/collector/item/static-analysis/cmdb?collectorName=&projectName="))
+                .andExpect(status().is2xxSuccessful());
     }
 
     private Collector makeCollector(String name, CollectorType type) {

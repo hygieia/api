@@ -102,7 +102,7 @@ public class DashboardController {
         }
     }
 
-    @DashboardOwnerOrAdmin
+    
     @RequestMapping(path = "/dashboard/{id}/owners", method = PUT, consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<Iterable<Owner>> updateOwners(@PathVariable ObjectId id, @RequestBody Iterable<Owner> owners) {
     	return new ResponseEntity<Iterable<Owner>>(dashboardService.updateOwners(id, owners), HttpStatus.ACCEPTED);

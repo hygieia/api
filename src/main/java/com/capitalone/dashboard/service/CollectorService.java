@@ -1,6 +1,7 @@
 package com.capitalone.dashboard.service;
 
 import com.capitalone.dashboard.misc.HygieiaException;
+import com.capitalone.dashboard.model.Cmdb;
 import com.capitalone.dashboard.model.Collector;
 import com.capitalone.dashboard.model.CollectorItem;
 import com.capitalone.dashboard.model.CollectorType;
@@ -9,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface CollectorService {
 
@@ -120,4 +122,9 @@ public interface CollectorService {
      * @param id
      */
     void deletePropertiesInCollectorById(String id);
+
+    /**
+     * Get cmdb of static analysis project
+     */
+    Set<Cmdb> getCmdbByStaticAnalysis(String collectorName, String projectName) throws HygieiaException;
 }
