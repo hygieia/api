@@ -252,7 +252,7 @@ public class DeployServiceImpl implements DeployService {
             // find the build collectorItem associated
             // next find the associated build using number if not found then create it
             // enrich the build.
-            BuildDataCreateRequest buildRequest = buildRequestFromDeployRequest(request);//new BuildDataCreateRequest();
+            BuildDataCreateRequest buildRequest = buildRequestFromDeployRequest(request);
             BuildDataCreateResponse buildResponse = buildService.createV3(buildRequest);
             ObjectId buildId = buildResponse.getId();
             Build build  = buildRepository.findOne(buildId);
