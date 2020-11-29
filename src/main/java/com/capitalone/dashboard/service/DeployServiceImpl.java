@@ -18,8 +18,10 @@ import com.capitalone.dashboard.repository.CollectorRepository;
 import com.capitalone.dashboard.repository.ComponentRepository;
 import com.capitalone.dashboard.repository.EnvironmentComponentRepository;
 import com.capitalone.dashboard.repository.EnvironmentStatusRepository;
+import com.capitalone.dashboard.request.BuildDataCreateRequest;
 import com.capitalone.dashboard.request.CollectorRequest;
 import com.capitalone.dashboard.request.DeployDataCreateRequest;
+import com.capitalone.dashboard.response.BuildDataCreateResponse;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import org.apache.commons.collections4.IterableUtils;
@@ -57,6 +59,7 @@ public class DeployServiceImpl implements DeployService {
 
     private static final Pattern INSTANCE_URL_PATTERN = Pattern.compile("https?://[^/]*");
     private static final String DEFAULT_COLLECTOR_NAME = "Jenkins";
+    private static final String DEFAULT_DEPLOY_COLLECTOR_NAME = "JenkinsDeploy";
     private static final String PARAM = "Param";
 
     private final ComponentRepository componentRepository;
@@ -66,6 +69,7 @@ public class DeployServiceImpl implements DeployService {
     private final CollectorItemRepository collectorItemRepository;
     private final BuildRepository buildRepository;
     private final CollectorService collectorService;
+    private final BuildService buildService;
 
 
     @Autowired
@@ -73,7 +77,8 @@ public class DeployServiceImpl implements DeployService {
                              EnvironmentComponentRepository environmentComponentRepository,
                              EnvironmentStatusRepository environmentStatusRepository,
                              CollectorRepository collectorRepository, CollectorItemRepository collectorItemRepository,
-                             CollectorService collectorService, BuildRepository buildRepository) {
+                             CollectorService collectorService, BuildRepository buildRepository,
+                             BuildService buildService) {
         this.componentRepository = componentRepository;
         this.environmentComponentRepository = environmentComponentRepository;
         this.environmentStatusRepository = environmentStatusRepository;
@@ -81,6 +86,7 @@ public class DeployServiceImpl implements DeployService {
         this.collectorItemRepository = collectorItemRepository;
         this.collectorService = collectorService;
         this.buildRepository = buildRepository;
+        this.buildService = buildService;
     }
 
     @Override
@@ -224,10 +230,61 @@ public class DeployServiceImpl implements DeployService {
     }
 
     public String createV3(DeployDataCreateRequest request) throws HygieiaException {
-        // Will be re designed later
-        //EnvironmentComponent deploy = createDeploy(request, Boolean.TRUE);
+        /*
+          Step 1: create JenkinsDeploy Collector if not there
+          Step 2: create Collector item if not there
+          Step 3: Insert build data if new. If existing, update it.
+         */
+
+        Collector collector = createJenkinsDeployCollector(request);
+
+        if (collector == null) {
+            throw new HygieiaException("Failed creating Deploy collector.", HygieiaException.COLLECTOR_CREATE_ERROR);
+        }
+
+        CollectorItem collectorItem = createJenkinsDeployCollectorItem(collector, request);
+
+        if (collectorItem == null) {
+            throw new HygieiaException("Failed creating Deploy collector item.", HygieiaException.COLLECTOR_ITEM_CREATE_ERROR);
+        }
+
+        if(StringUtils.isNotEmpty(request.getJobNumber())) {
+            // find the build collectorItem associated
+            // next find the associated build using number if not found then create it
+            // enrich the build.
+            BuildDataCreateRequest buildRequest = buildRequestFromDeployRequest(request);//new BuildDataCreateRequest();
+            BuildDataCreateResponse buildResponse = buildService.createV3(buildRequest);
+            ObjectId buildId = buildResponse.getId();
+            Build build  = buildRepository.findOne(buildId);
+            HashMap<String, String> metadata = new HashMap<>();
+            metadata.put("appName", request.getAppName());
+            metadata.put("appServiceName",request.getAppServiceName());
+            metadata.put("artifactName", request.getArtifactName());
+            metadata.put("artifactVersion", request.getArtifactVersion());
+            metadata.put("artifactPath", request.getArtifactPath());
+            metadata.put("artifactGroup", request.getArtifactGroup());
+            metadata.put("envName", request.getEnvName());
+            metadata.put("executionId",request.getExecutionId());
+            build.setDeployMetadata(metadata);
+            buildRepository.save(build);
+            return String.format("%s,%s", build.getId().toString(), build.getCollectorItemId().toString());
+        }
+
         return String.format("%s,%s", "deployId", "deployCollectorItemId");
 
+    }
+
+    private BuildDataCreateRequest buildRequestFromDeployRequest(DeployDataCreateRequest request) {
+        BuildDataCreateRequest buildRequest = new BuildDataCreateRequest();
+        buildRequest.setBuildStatus("InProgress");
+        buildRequest.setNumber(request.getJobNumber());
+        buildRequest.setStartTime(request.getStartTime());
+        buildRequest.setJobName(request.getJobName());
+        buildRequest.setBuildUrl(request.getBuildUrl());
+        buildRequest.setNiceName(request.getNiceName());
+        buildRequest.setJobUrl(request.getJobUrl());
+        buildRequest.setInstanceUrl(request.getInstanceUrl());
+        return buildRequest;
     }
 
     @Override
@@ -261,6 +318,52 @@ public class DeployServiceImpl implements DeployService {
         col.getAllFields().putAll(allOptions);
         col.getUniqueFields().putAll(allOptions);
         return collectorService.createCollector(col);
+    }
+
+    private Collector createJenkinsDeployCollector(DeployDataCreateRequest request) {
+        CollectorRequest collectorReq = new CollectorRequest();
+        String collectorName = request.getCollectorName();
+        if (StringUtils.isBlank(collectorName)) {
+            collectorName = DEFAULT_DEPLOY_COLLECTOR_NAME;
+        }
+        collectorReq.setName(collectorName);
+        collectorReq.setCollectorType(CollectorType.Deployment);
+        Collector col = collectorReq.toCollector();
+        col.setEnabled(true);
+        col.setOnline(true);
+        col.setLastExecuted(System.currentTimeMillis());
+
+        Map<String, Object> allOptions = new HashMap<>();
+        allOptions.put("jobName", "");
+        allOptions.put("jobUrl", "");
+        allOptions.put("instanceUrl", "");
+        col.getAllFields().putAll(allOptions);
+
+        Map<String, Object> uniqueOptions = new HashMap<>();
+        uniqueOptions.put("jobName", "");
+        uniqueOptions.put("jobUrl", "");
+        col.getUniqueFields().putAll(uniqueOptions);
+
+        String[] searchFields  = { "options.jobName" , "nicename" };
+        col.setSearchFields(Arrays.asList(searchFields));
+
+        return collectorService.createCollector(col);
+    }
+
+    private CollectorItem createJenkinsDeployCollectorItem(Collector collector, DeployDataCreateRequest request) {
+        CollectorItem tempCi = new CollectorItem();
+        tempCi.setCollectorId(collector.getId());
+        tempCi.setDescription(request.getAppName());
+        tempCi.setPushed(true);
+        tempCi.setLastUpdated(System.currentTimeMillis());
+        tempCi.setNiceName(request.getNiceName());
+        Map<String, Object> option = new HashMap<>();
+        option.put("jobName", request.getJobName());
+        option.put("jobUrl", request.getJobUrl());
+        option.put("instanceUrl", request.getInstanceUrl());
+        tempCi.getOptions().putAll(option);
+
+        return collectorService.createCollectorItem(tempCi);
     }
 
     private CollectorItem createCollectorItem(Collector collector, DeployDataCreateRequest request) {
