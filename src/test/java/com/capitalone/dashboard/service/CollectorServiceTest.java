@@ -5,7 +5,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyCollection;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Mockito.times;
@@ -17,35 +16,45 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.capitalone.dashboard.repository.CustomRepositoryQuery;
-import org.apache.commons.collections4.MapUtils;
+
+import com.capitalone.dashboard.misc.HygieiaException;
+import com.capitalone.dashboard.model.Collector;
+import com.capitalone.dashboard.model.CollectorItem;
+import com.capitalone.dashboard.model.CollectorType;
+import com.capitalone.dashboard.model.Component;
+import com.capitalone.dashboard.model.Dashboard;
+import com.capitalone.dashboard.repository.CollectorItemRepository;
+import com.capitalone.dashboard.repository.CollectorRepository;
+import com.capitalone.dashboard.repository.DashboardRepository;
+import com.capitalone.dashboard.repository.ComponentRepository;
+import com.capitalone.dashboard.repository.CmdbRepository;
+
+import com.google.common.collect.Lists;
+
 import org.bson.types.ObjectId;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
-import com.capitalone.dashboard.model.Collector;
-import com.capitalone.dashboard.model.CollectorItem;
-import com.capitalone.dashboard.model.CollectorType;
-import com.capitalone.dashboard.repository.CollectorItemRepository;
-import com.capitalone.dashboard.repository.CollectorRepository;
-
 @RunWith(MockitoJUnitRunner.class)
 public class CollectorServiceTest {
 	private static final String FILTER_STRING = "";
 
-	@Mock
-	private CollectorRepository collectorRepository;
-	@Mock
-	private CollectorItemRepository collectorItemRepository;
-	@InjectMocks
-	private CollectorServiceImpl collectorService;
-
+	@Rule public ExpectedException thrown = ExpectedException.none();
+	@Mock private DashboardRepository dashboardRepository;
+	@Mock private ComponentRepository componentRepository;
+	@Mock private CollectorRepository collectorRepository;
+	@Mock private CollectorItemRepository collectorItemRepository;
+	@Mock private CmdbRepository cmdbRepository;
+	@InjectMocks private CollectorServiceImpl collectorService;
 
 	@Test
 	@SuppressWarnings("unchecked")
@@ -257,7 +266,75 @@ public class CollectorServiceTest {
 		verify(collectorItemRepository,times(1)).save(any(CollectorItem.class));
 	}
 
+	@Test
+	public void test_getCmdbOfSonarProject_invalidProjectName() throws HygieiaException {
+		thrown.expect(HygieiaException.class);
+		thrown.expectMessage("invalid collectorName or projectName");
+		collectorService.getCmdbByStaticAnalysis(null, null);
+	}
 
+	@Test
+	public void test_getCmdbOfSonarProject_noCollector() throws HygieiaException {
+		when(collectorRepository.findByName(Matchers.anyString())).thenReturn(null);
+		thrown.expect(HygieiaException.class);
+		thrown.expectMessage("collector not exists");
+		collectorService.getCmdbByStaticAnalysis("colName","test");
+	}
 
+	@Test
+	public void test_getCmdbOfSonarProject_noCollectorItems() throws HygieiaException {
+		when(collectorRepository.findByName(Matchers.anyString())).thenReturn(new Collector("colName", CollectorType.CodeQuality));
+		when(collectorItemRepository
+				.findAllByOptionNameValueAndCollectorIdsIn(Matchers.anyString(), Matchers.anyString(), Matchers.anyList())).thenReturn(null);
+		thrown.expect(HygieiaException.class);
+		thrown.expectMessage("collector item not exists");
+		collectorService.getCmdbByStaticAnalysis("colName","test");
+	}
 
+	@Test
+	public void test_getCmdbOfSonarProject_noComponent() throws HygieiaException {
+		when(collectorRepository.findByName(Matchers.anyString())).thenReturn(new Collector("colName", CollectorType.CodeQuality));
+		when(collectorItemRepository
+				.findAllByOptionNameValueAndCollectorIdsIn(Matchers.anyString(), Matchers.anyString(), Matchers.anyList()))
+				.thenReturn(Lists.newArrayList(makeCollectorItem(false)));
+		when(componentRepository.findByCollectorTypeAndItemIdIn(Matchers.any(CollectorType.class), Matchers.anyListOf(ObjectId.class)))
+				.thenReturn(null);
+		thrown.expect(HygieiaException.class);
+		thrown.expectMessage("dashboard component not exists");
+		collectorService.getCmdbByStaticAnalysis("colName","test");
+	}
+
+	@Test
+	public void test_getCmdbOfSonarProject_noDashboard() throws HygieiaException {
+		when(collectorRepository.findByName(Matchers.anyString())).thenReturn(new Collector("colName", CollectorType.CodeQuality));
+		when(collectorItemRepository
+				.findAllByOptionNameValueAndCollectorIdsIn(Matchers.anyString(), Matchers.anyString(), Matchers.anyList()))
+				.thenReturn(Lists.newArrayList(makeCollectorItem(false)));
+		when(componentRepository.findByCollectorTypeAndItemIdIn(Matchers.any(CollectorType.class), Matchers.anyListOf(ObjectId.class)))
+				.thenReturn(Lists.newArrayList(new Component()));
+		when(dashboardRepository.findByApplicationComponentIdsIn(Matchers.anyListOf(ObjectId.class)))
+				.thenReturn(null);
+		thrown.expect(HygieiaException.class);
+		thrown.expectMessage("dashboard not exists");
+		collectorService.getCmdbByStaticAnalysis("colName","test");
+	}
+
+	@Test
+	public void test_getCmdbOfSonarProject_noCmdb() throws HygieiaException {
+		when(collectorRepository.findByName(Matchers.anyString())).thenReturn(new Collector("colName", CollectorType.CodeQuality));
+		when(collectorItemRepository
+				.findAllByOptionNameValueAndCollectorIdsIn(Matchers.anyString(), Matchers.anyString(), Matchers.anyList()))
+				.thenReturn(Lists.newArrayList(makeCollectorItem(false)));
+		when(componentRepository.findByCollectorTypeAndItemIdIn(Matchers.any(CollectorType.class), Matchers.anyListOf(ObjectId.class)))
+				.thenReturn(Lists.newArrayList(new Component()));
+		Dashboard dashboard = new Dashboard(false,null,"testDbd",null,null,null,null,
+				null,null,false,null);
+		when(dashboardRepository.findByApplicationComponentIdsIn(Matchers.anyListOf(ObjectId.class)))
+				.thenReturn(Lists.newArrayList(dashboard));
+		when(cmdbRepository.findByConfigurationItemAndItemTypeAndValidConfigItem(Matchers.anyString(), Matchers.anyString(), Matchers.anyBoolean()))
+				.thenReturn(null);
+		thrown.expect(HygieiaException.class);
+		thrown.expectMessage("valid cmdb not exists");
+		collectorService.getCmdbByStaticAnalysis("colName","test");
+	}
 }
