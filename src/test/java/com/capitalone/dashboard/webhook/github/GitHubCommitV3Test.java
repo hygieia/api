@@ -128,11 +128,9 @@ public class GitHubCommitV3Test {
         Assert.assertEquals(collectorItemId, commit1.getCollectorItemId().toString());
         verify(gitHubCommitV3, times(3)).getCommitNode(anyObject(), anyString(), anyString());
 
-        List<RepoFile> files = commit1.getFiles();
-        Assert.assertEquals("filename.py", files.get(0).getFilename());
-        Assert.assertEquals("patch", files.get(0).getPatch());
-        Assert.assertEquals("filename2.py", files.get(1).getFilename());
-        Assert.assertEquals("patch2", files.get(1).getPatch());
+        // commit1 has PRs, so it is NOT a direct commit (should not have files)
+        Assert.assertNull(commit1.getFiles());
+        Assert.assertEquals("2", commit1.getPullNumber());
 
         Commit commit2 = commitsList.get(1);
         Assert.assertEquals(repoUrl, commit2.getScmUrl());
@@ -142,6 +140,10 @@ public class GitHubCommitV3Test {
         Assert.assertEquals("author2Name", commit2.getScmAuthor());
         Assert.assertEquals(3, commit2.getNumberOfChanges());
         Assert.assertEquals(collectorItemId, commit2.getCollectorItemId().toString());
+
+        Assert.assertNotNull(commit2.getFiles());
+        Assert.assertEquals("filename.py", commit2.getFiles().get(0).getFilename());
+        Assert.assertEquals("filename2.py", commit2.getFiles().get(1).getFilename());
     }
 
     @Test
@@ -431,7 +433,7 @@ public class GitHubCommitV3Test {
         node.put("oid", "oid1");
 
         repository.put("object", node);
-        
+
         return responseJsonObject;
     }
 
@@ -445,6 +447,7 @@ public class GitHubCommitV3Test {
         commitsMap1.put("message", "GitHub WebHook Commit 1");
         commitsMap1.put("timestamp", "2018-09-22T11:18:56-05:00");
         commitsMap1.put("url", "https://host/commit/commit1ID");
+        commitsMap1.put("pullNumber", "2");
 
         List<Integer> modifiedList1 = new ArrayList<>();
         modifiedList1.add(1);

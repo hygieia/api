@@ -121,9 +121,9 @@ public class GitHubCommitV3 extends GitHubV3 {
 
         List<Pattern> commitExclusionPatterns = new ArrayList<>();
         Optional.ofNullable(gitHubWebHookSettings.getNotBuiltCommits())
-            .orElseGet(Collections::emptyList).stream()
-            .map(regExStr -> Pattern.compile(regExStr, Pattern.CASE_INSENSITIVE))
-            .forEach(commitExclusionPatterns::add);
+                .orElseGet(Collections::emptyList).stream()
+                .map(regExStr -> Pattern.compile(regExStr, Pattern.CASE_INSENSITIVE))
+                .forEach(commitExclusionPatterns::add);
 
         for (Map cObj : commitsObjectList) {
             Object repoMap = restClient.getAsObject(cObj, "repository");
@@ -222,9 +222,13 @@ public class GitHubCommitV3 extends GitHubV3 {
                 commit.setFilesModified((List) cObj.get("modified"));
             }
 
-            List<RepoFile> files = (List<RepoFile>) cObj.get("files");
-            commit.setFiles(files);
-
+            if (cObj.get("pullNumber") instanceof String) {
+                commit.setPullNumber((String) cObj.get("pullNumber"));
+            } else {
+                // current commit has no PRs (makes it a direct commit) = should have files
+                List<RepoFile> files = (List<RepoFile>) cObj.get("files");
+                commit.setFiles(files);
+            }
             commit.setNumberOfChanges(numberChanges);
             setCommitPullNumber(commit);
             setCollectorItemId(commit);
@@ -239,9 +243,9 @@ public class GitHubCommitV3 extends GitHubV3 {
 
     protected void setCommitPullNumbersForRebaseAndMergeCommit(List<Commit> commitsList) {
         List<Commit> commitsWithPullNumber = Optional.ofNullable(commitsList)
-                                            .orElseGet(Collections::emptyList).stream()
-                                            .filter(commit -> !StringUtils.isEmpty(commit.getPullNumber()))
-                                            .collect(Collectors.toList());
+                .orElseGet(Collections::emptyList).stream()
+                .filter(commit -> !StringUtils.isEmpty(commit.getPullNumber()))
+                .collect(Collectors.toList());
 
         // In case of Rebase and Merge, only the last commit in the list of commits on the "merge commit" json should have the PR number.
         // This is because, there should be a corresponding PR in the DB whose "merge_commit_sha" matches the last commit in the list of commits
