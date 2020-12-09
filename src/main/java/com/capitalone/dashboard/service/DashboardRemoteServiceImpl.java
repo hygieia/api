@@ -269,7 +269,7 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
         List<Dashboard> existing = new ArrayList<>();
         if( !StringUtils.isEmpty( businessService ) && !StringUtils.isEmpty( businessApplication ) ){
            existing.addAll(dashboardRepository.findAllByConfigurationItemBusServNameContainingIgnoreCaseAndConfigurationItemBusAppNameContainingIgnoreCase( businessService, businessApplication ));
-        } else if (StringUtils.isNotEmpty(title)) {
+        } if (CollectionUtils.isEmpty(existing) && StringUtils.isNotEmpty(title)) {
            existing.addAll(dashboardRepository.findByTitle( request.getMetaData().getTitle() ));
         }
         return existing;
