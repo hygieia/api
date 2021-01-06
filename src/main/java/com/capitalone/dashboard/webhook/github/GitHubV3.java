@@ -12,6 +12,7 @@ import com.capitalone.dashboard.service.CollectorService;
 import com.capitalone.dashboard.util.HygieiaUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bson.types.ObjectId;
@@ -40,16 +41,19 @@ public abstract class GitHubV3 {
     protected final CollectorService collectorService;
     protected final RestClient restClient;
     protected final ApiSettings apiSettings;
+    protected final CollectorItemRepository collectorItemRepository;
 
     private Map<String, String> ldapMap;
     private Map<String, String> authorTypeMap;
 
     public GitHubV3(CollectorService collectorService,
                     RestClient restClient,
-                    ApiSettings apiSettings) {
+                    ApiSettings apiSettings,
+                    CollectorItemRepository collectorItemRepository) {
         this.collectorService = collectorService;
         this.restClient = restClient;
         this.apiSettings = apiSettings;
+        this.collectorItemRepository = collectorItemRepository;
         ldapMap = new HashMap<>();
         authorTypeMap = new HashMap<>();
     }
@@ -108,7 +112,11 @@ public abstract class GitHubV3 {
         if (col == null)
             throw new HygieiaException("Failed creating collector.", HygieiaException.COLLECTOR_CREATE_ERROR);
 
-        CollectorItem item = buildCollectorItem(col.getId(), repoUrl, branch);
+        CollectorItem item = collectorItemRepository.findRepoByUrlAndBranch(col.getId(), repoUrl, branch);
+        if (item != null)
+            return item;
+
+        item = buildCollectorItem(col.getId(), repoUrl, branch);
         if (item == null)
             throw new HygieiaException("Failed creating collector item. Invalid repo url and/or branch", HygieiaException.COLLECTOR_ITEM_CREATE_ERROR);
 
@@ -118,6 +126,13 @@ public abstract class GitHubV3 {
             throw new HygieiaException("Failed creating collector item.", HygieiaException.COLLECTOR_ITEM_CREATE_ERROR);
 
         return colItem;
+    }
+
+    // Update lastUpdated field in collector item
+    protected void updateCollectorItemLastUpdated(String repoUrl, String branch) throws HygieiaException {
+        CollectorItem item = getCollectorItem(repoUrl, branch);
+        item.setLastUpdated(System.currentTimeMillis());
+        collectorItemRepository.save(item);
     }
 
     protected String getRepositoryToken(String scmUrl) {

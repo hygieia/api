@@ -108,7 +108,7 @@ public class GitHubCommitV3Test {
         senderObj.put("senderLogin", "senderLogin");
         senderObj.put("authorLDAPDN", "authorLDAPDN");
         try {
-            commitsList = gitHubCommitV3.getCommits(commitsMapList, repoUrl, branch, senderObj);
+            commitsList = gitHubCommitV3.getCommits(commitsMapList, repoUrl, branch, "token", senderObj);
         } catch (Exception e) {
             LOG.error(e.getMessage());
         }

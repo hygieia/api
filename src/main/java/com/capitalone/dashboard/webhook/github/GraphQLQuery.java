@@ -31,6 +31,62 @@ public class GraphQLQuery {
             "    }" +
             "}";
 
+    public static final String COMMITS_LIST_GRAPHQL =
+            "query ($owner: String!, $name: String!, $branch: String!, $since: GitTimestamp!, $fetchCount: Int!) {" +
+            "   repository(owner: $owner, name: $name) {" +
+            "       ref(qualifiedName: $branch) {" +
+            "           target {" +
+            "               ... on Commit {" +
+            "                   history(since: $since, first: $fetchCount) { " +
+            "                       pageInfo { " +
+            "                           endCursor" +
+            "                           hasNextPage" +
+            "                       }" +
+            "                       edges {" +
+            "                           cursor" +
+            "                           node {" +
+            "                               oid" +
+            "                               changedFiles" +
+            "                               deletions" +
+            "                               additions" +
+            "                               parents(first:10) {" +
+            "                                   nodes {" +
+            "                                       oid" +
+            "                                   }" +
+            "                               }" +
+            "                               message" +
+            "                               committer {" +
+            "                                   user {" +
+            "                                       login" +
+            "                                   }" +
+            "                                   name" +
+            "                                   date" +
+            "                               }" +
+            "                               author {" +
+            "                                   name" +
+            "                                   user {" +
+            "                                       login" +
+            "                                   }" +
+            "                                   email" +
+            "                                   date" +
+            "                               }" +
+            "                               status {" +
+            "                                   state" +
+            "                                   contexts {" +
+            "                                       id" +
+            "                                       description" +
+            "                                   }" +
+            "                               }" +
+            "                           }" +
+            "                       }" +
+            "                   }" +
+            "               }" +
+            "           }" +
+            "       }" +
+            "   }" +
+            "}";
+
+
     public static final String PR_GRAPHQL_BEGIN_PRE =
             "query ($owner: String!, $name: String!, $number: Int!";
 
