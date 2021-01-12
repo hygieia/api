@@ -99,11 +99,11 @@ public class GitHubCommitV3 extends GitHubV3 {
 
         GitHubWebHookSettings gitHubWebHookSettings = getGitHubWebHookSettings();
         if(gitHubWebHookSettings == null) {
-            throw new HygieiaException("Github Webhook properties not set on the properties file.", HygieiaException.INVALID_CONFIGURATION);
+            throw new HygieiaException("Github Webhook properties not set on the properties file. ", HygieiaException.INVALID_CONFIGURATION);
         }
-        String gitHubWebHookToken =  isPrivate ? RestClient.decryptString(repoToken, apiSettings.getKey()) : gitHubWebHookSettings.getToken();
+        String gitHubWebHookToken =  isPrivate ? repoToken : gitHubWebHookSettings.getToken();
         if (StringUtils.isEmpty(gitHubWebHookToken)) {
-            throw new HygieiaException("Failed processing payload. Missing Github API token in Hygieia.", HygieiaException.INVALID_CONFIGURATION);
+            throw new HygieiaException("Failed processing payload. Missing Github API token in Hygieia. ", HygieiaException.INVALID_CONFIGURATION);
         }
 
 
@@ -116,7 +116,7 @@ public class GitHubCommitV3 extends GitHubV3 {
         return result;
     }
 
-    protected List<Commit> getCommits(List<Map> commitsObjectList, String repoUrl,
+    protected List<Commit> getCommits(List<Map> commitListPayload, String repoUrl,
                                       String branch, String gitHubWebHookToken, Object senderObj) throws MalformedURLException, HygieiaException, ParseException {
         List<Commit> commitsList = new ArrayList<>();
 
@@ -135,15 +135,16 @@ public class GitHubCommitV3 extends GitHubV3 {
             .map(regExStr -> Pattern.compile(regExStr, Pattern.CASE_INSENSITIVE))
             .forEach(commitExclusionPatterns::add);
 
-        CollectorItem collectorItem = getCollectorItem(repoUrl, branch);
-        String since = new DateTime(collectorItem.getLastUpdated()).toString();
+        // Get the earliest commit timestamp and use that as 'since' parameter
+        String since = restClient.getString(commitListPayload.get(0), "timestamp");
 
+        int numCommits = commitListPayload.size();
+        List<Map> commitListNode = getCommitListNode(gitHubParsed, branch, since, numCommits, gitHubWebHookToken);
 
-        int numCommits = commitsObjectList.size();
-        List<Map> commitListObj = getCommitNodeList(gitHubParsed, branch, since, commitsObjectList.size(), gitHubWebHookToken);
+        for (int i=0; i < commitListNode.size(); i++) {
 
-        for (Map commitObj : commitListObj) {
-            Map node = (Map) commitObj.get("node");
+            Map node = (Map) commitListNode.get(i).get("node");
+            Map payload = commitListPayload.get(i);
 
             Commit commit = new Commit();
 
@@ -169,7 +170,7 @@ public class GitHubCommitV3 extends GitHubV3 {
             Object userObject = restClient.getAsObject(authorObject, "user");
             String authorLogin = (userObject == null) ? "unknown" : restClient.getString(userObject, "login");
             commit.setScmAuthorLogin(authorLogin);
-//
+
             if (senderObj != null && authorLogin.equalsIgnoreCase(restClient.getString(senderObj, "login"))) {
                 String authorType = restClient.getString(senderObj, "type");
                 if (!StringUtils.isEmpty(authorType)) {
@@ -194,7 +195,7 @@ public class GitHubCommitV3 extends GitHubV3 {
                 long end = System.currentTimeMillis();
                 LOG.debug("Time to fetch LDAPDN = "+(end-start));
             }
-//
+
             // Set the Committer details. This in the case of a merge commit is the user who merges the PR.
             // In the case of a regular commit, it is usually set to a default "name": "GitHub Enterprise", and login is null
             Object committerObject = restClient.getAsObject(node, "committer");
@@ -204,20 +205,20 @@ public class GitHubCommitV3 extends GitHubV3 {
 
             DateTime commitTimestamp = new DateTime(restClient.getString(committerObject, "date"));
             commit.setScmCommitTimestamp(commitTimestamp.getMillis());
-//
+
             // added fields to capture files
             int numberChanges = 0;
-            if (node.get("added") instanceof List) {
-                numberChanges += ((List) node.get("added")).size();
-                commit.setFilesAdded((List) node.get("added"));
+            if (payload.get("added") instanceof List) {
+                numberChanges += ((List) payload.get("added")).size();
+                commit.setFilesAdded((List) payload.get("added"));
             }
-            if (node.get("removed") instanceof List) {
-                numberChanges += ((List) node.get("removed")).size();
-                commit.setFilesRemoved((List) node.get("removed"));
+            if (payload.get("removed") instanceof List) {
+                numberChanges += ((List) payload.get("removed")).size();
+                commit.setFilesRemoved((List) payload.get("removed"));
             }
-            if (node.get("modified") instanceof List) {
-                numberChanges += ((List) node.get("modified")).size();
-                commit.setFilesModified((List) node.get("modified"));
+            if (payload.get("modified") instanceof List) {
+                numberChanges += ((List) payload.get("modified")).size();
+                commit.setFilesModified((List) payload.get("modified"));
             }
 
             commit.setNumberOfChanges(numberChanges);
@@ -319,7 +320,7 @@ public class GitHubCommitV3 extends GitHubV3 {
     }
 
     // Retrieve a list of commit nodes
-    protected List<Map> getCommitNodeList(GitHubParsed gitHubParsed, String branch, String since, int fetchCount, String token) throws HygieiaException, ParseException {
+    protected List<Map> getCommitListNode(GitHubParsed gitHubParsed, String branch, String since, int fetchCount, String token) throws HygieiaException, ParseException {
         JSONObject postBody = getQuery(gitHubParsed, branch, since, fetchCount, GraphQLQuery.COMMITS_LIST_GRAPHQL);
 
         ResponseEntity<String> response = null;
@@ -416,7 +417,7 @@ public class GitHubCommitV3 extends GitHubV3 {
     }
 
     // Return github webhook settings
-    private GitHubWebHookSettings getGitHubWebHookSettings() {
+    protected GitHubWebHookSettings getGitHubWebHookSettings() {
         WebHookSettings webHookSettings = apiSettings.getWebHook();
         if (webHookSettings == null) {
             return null;
