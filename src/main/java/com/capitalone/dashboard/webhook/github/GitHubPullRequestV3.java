@@ -100,7 +100,7 @@ public class GitHubPullRequestV3 extends GitHubV3 {
         long end = System.currentTimeMillis();
         LOG.debug("Time to make collectorItemRepository call to fetch repository token = "+(end-start));
 
-        String token = isPrivate ? RestClient.decryptString(repoToken, apiSettings.getKey()) : gitHubWebHookToken;
+        String token = isPrivate ? repoToken : gitHubWebHookToken;
 
         if (StringUtils.isEmpty(token)) {
             throw new HygieiaException("Failed processing payload. Missing Github API token in Hygieia.", HygieiaException.INVALID_CONFIGURATION);
