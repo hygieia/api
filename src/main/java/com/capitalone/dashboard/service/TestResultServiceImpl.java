@@ -4,6 +4,7 @@ import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.*;
 import com.capitalone.dashboard.model.quality.CucumberJsonReport;
 import com.capitalone.dashboard.model.quality.JunitXmlReport;
+import com.capitalone.dashboard.model.quality.JunitXmlReportV2;
 import com.capitalone.dashboard.repository.CollectorRepository;
 import com.capitalone.dashboard.repository.ComponentRepository;
 import com.capitalone.dashboard.repository.TestResultRepository;
@@ -17,7 +18,9 @@ import com.google.gson.Gson;
 import com.querydsl.core.BooleanBuilder;
 import hygieia.transformer.CucumberJsonToTestCapabilityTransformer;
 import hygieia.transformer.JunitXmlToTestCapabilityTransformer;
+import hygieia.transformer.JunitXmlToTestCapabilityTransformerV2;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 import org.joda.time.format.DateTimeFormat;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +52,7 @@ public class TestResultServiceImpl implements TestResultService {
     private final CmdbService cmdbService;
     private final ApiSettings apiSettings;
 
-
+    private static final Logger LOGGER = Logger.getLogger(ApiTokenServiceImpl.class);
 
     @Autowired
     public TestResultServiceImpl(TestResultRepository testResultRepository,
@@ -236,7 +239,7 @@ public class TestResultServiceImpl implements TestResultService {
 
     }
 
-    protected TestResult createTestCucumber(TestCreateRequest request) throws HygieiaException {
+    protected List<TestResult> createTestCucumber(TestCreateRequest request) throws HygieiaException {
 
         CucumberJsonReport.Feature cucumberFeature = null;
 
@@ -265,13 +268,36 @@ public class TestResultServiceImpl implements TestResultService {
         if (testResult == null) {
             throw new HygieiaException("Failed inserting cucumber Test information.", HygieiaException.ERROR_INSERTING_DATA);
         }
-        return testResult;
+
+        return new ArrayList<TestResult>() {{add(testResult);}};
 
     }
 
-    protected TestResult createTestJunit(TestCreateRequest request) throws HygieiaException {
+    protected List<TestResult> processTestJunit(TestCreateRequest request) throws HygieiaException {
+        if(request == null || StringUtils.isEmpty(request.getTestResult())) {
+            throw new HygieiaException("TestResult is not a valid Xml", HygieiaException.JSON_FORMAT_ERROR);
+        }
+        JunitXmlReport junitXmlReport = decodeXmlPayload(JunitXmlReport.class, request);
+        JunitXmlReportV2 junitXmlReportV2;
+        List<TestResult> testResults = new ArrayList<>();
+        if (junitXmlReport != null) {
+            testResults.add(createTestJunit(request, junitXmlReport));
+            return testResults;
+        } else {
+            junitXmlReportV2 = decodeXmlPayload(JunitXmlReportV2.class, request);
+            if (junitXmlReportV2 == null) {
+                throw new HygieiaException("TestResult is not a valid Xml", HygieiaException.JSON_FORMAT_ERROR);
+            }
+        }
 
-        JunitXmlReport  junitXmlReport = decodeXmlPayload(JunitXmlReport.class,request);
+        List<JunitXmlReportV2.TestSuite> testSuites = junitXmlReportV2.getTestsuite();
+        for (JunitXmlReportV2.TestSuite testSuite : testSuites) {
+            testResults.add(createTestJunitV2(request, testSuite));
+        }
+        return testResults;
+    }
+
+        protected TestResult createTestJunit(TestCreateRequest request, JunitXmlReport junitXmlReport) throws HygieiaException {
         Collector collector = createGenericCollector(request, TestResultConstants.JUNITTEST);;
         if (collector == null) {
             throw new HygieiaException("Failed creating Test collector.", HygieiaException.COLLECTOR_CREATE_ERROR);
@@ -290,6 +316,25 @@ public class TestResultServiceImpl implements TestResultService {
 
     }
 
+    protected TestResult createTestJunitV2(TestCreateRequest request, JunitXmlReportV2.TestSuite junitXmlReportV2Testsuite) throws HygieiaException {
+        Collector collector = createGenericCollector(request, TestResultConstants.JUNITTEST);
+        if (collector == null) {
+            throw new HygieiaException("Failed creating Test collector.", HygieiaException.COLLECTOR_CREATE_ERROR);
+        }
+        CollectorItem collectorItem = createGenericCollectorItem(collector, request , junitXmlReportV2Testsuite.getName());
+        if (collectorItem == null) {
+            throw new HygieiaException("Failed creating Test collector item.", HygieiaException.COLLECTOR_ITEM_CREATE_ERROR);
+        }
+        JunitXmlToTestCapabilityTransformerV2 transformer = new JunitXmlToTestCapabilityTransformerV2();
+        TestCapability testCapability = transformer.convert(junitXmlReportV2Testsuite);
+        TestResult testResult = createTestJunitV2(collectorItem, junitXmlReportV2Testsuite,  TestSuiteType.Unit, request, testCapability);
+        if (testResult == null) {
+            throw new HygieiaException("Failed inserting Junit Test information.", HygieiaException.ERROR_INSERTING_DATA);
+        }
+        return testResult;
+
+    }
+
     private <T> T decodeJsonPayload (Class<T> type , TestCreateRequest request) throws HygieiaException{
         if(request == null || StringUtils.isEmpty(request.getTestResult())) {
             throw new HygieiaException("TestResult is not a valid json.", HygieiaException.JSON_FORMAT_ERROR);
@@ -301,11 +346,7 @@ public class TestResultServiceImpl implements TestResultService {
 
     }
 
-    private <T> T decodeXmlPayload (Class<T> type , TestCreateRequest request) throws HygieiaException{
-
-        if(request == null || StringUtils.isEmpty(request.getTestResult())) {
-            throw new HygieiaException("TestResult is not a valid Xml", HygieiaException.JSON_FORMAT_ERROR);
-        }
+    private <T> T decodeXmlPayload (Class<T> type , TestCreateRequest request) {
         byte[] decodedBytes = Base64.getDecoder().decode(request.getTestResult());
         String decodedPayload = new String(decodedBytes);
         StringReader sr = new StringReader(decodedPayload);
@@ -314,28 +355,32 @@ public class TestResultServiceImpl implements TestResultService {
             JAXBContext jaxbContext = JAXBContext.newInstance(type);
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
             junitXmlReport = (T) unmarshaller.unmarshal(sr);
+            LOGGER.info("Successful transformation to " + type + " xml format type");
         }catch (JAXBException ex){
-            ex.printStackTrace();
-            throw new HygieiaException("TestResult is not a valid Xml", HygieiaException.JSON_FORMAT_ERROR);
+            LOGGER.info("Could not transform to " + type + " xml format type: " + ex.toString());
         }
         return junitXmlReport;
     }
 
     @Override
     public String createTest(TestCreateRequest request) throws HygieiaException {
-        TestResult testResult = null;
+        List<TestResult> testResults = null;
+        String response = "";
         validConfigurationItem(request.getConfigurationItem(),request.getTargetAppName());
         if (TestResultConstants.FUNCTIONAL.equals(request.getTestType()) && apiSettings.getFunctional().get("cucumber").equals(request.getSourceFormat())) {
 
-            testResult = createTestCucumber(request);
+            testResults = createTestCucumber(request);
 
         } else if (TestResultConstants.UNIT.equals(request.getTestType())&& apiSettings.getUnit().equals(request.getSourceFormat())) {
 
-            testResult = createTestJunit(request);
+            testResults = processTestJunit(request);
         } else {
             return "Hygieia does not support " + request.getTestType() + " sourceFormat " + request.getSourceFormat();
         }
-        return testResult.getId() + "," + testResult.getCollectorItemId();
+        for (TestResult testResult : testResults) {
+            response += testResult.getId() + "," + testResult.getCollectorItemId() + ";";
+        }
+        return response;
     }
 
 
@@ -590,12 +635,30 @@ public class TestResultServiceImpl implements TestResultService {
         testResult.setTotalCount(junitXmlReport.getTests());
         testResult.setUnknownStatusCount(testCapability.getUnknownStatusTestSuiteCount());
         testResult.setTimestamp(convertTimestamp(request.getTimeStamp()));
-        testResult.getTestCapabilities().addAll(testCapabilities);
         TestResult result = testResultRepository.save(testResult);
         return result;
     }
 
-
+    private TestResult createTestJunitV2(CollectorItem collectorItem, JunitXmlReportV2.TestSuite junitXmlReportTestsuite, TestSuiteType type, TestCreateRequest request, TestCapability testCapability) {
+        TestResult  testResult = new TestResult();
+        Collection<TestCapability> testCapabilities = new ArrayList();
+        testCapabilities.add(testCapability);
+        testResult.setTestCapabilities(testCapabilities);
+        testResult.setType(type);
+        testResult.setCollectorItemId(collectorItem.getId());
+        testResult.setDescription(junitXmlReportTestsuite.getName());
+        testResult.setTargetEnvName(getConfigurationItem(request.getConfigurationItem(),request.getTargetAppName()));
+        testResult.setTargetAppName((request.getTargetAppName()));
+        testResult.setDuration(junitXmlReportTestsuite.getTime().longValue());
+        testResult.setFailureCount(junitXmlReportTestsuite.getFailures());
+        testResult.setSuccessCount(testCapability.getSuccessTestSuiteCount());
+        testResult.setSkippedCount(StringUtils.isNotEmpty(junitXmlReportTestsuite.getSkipped())? Integer.parseInt(junitXmlReportTestsuite.getSkipped()):StringUtils.isNotEmpty(junitXmlReportTestsuite.getSkips())? Integer.parseInt(junitXmlReportTestsuite.getSkips()): 0);
+        testResult.setTotalCount(junitXmlReportTestsuite.getTests());
+        testResult.setUnknownStatusCount(testCapability.getUnknownStatusTestSuiteCount());
+        testResult.setTimestamp(convertTimestamp(request.getTimeStamp()));
+        TestResult result = testResultRepository.save(testResult);
+        return result;
+    }
 
     private String getConfigurationItem(String configurationItem, String targetAppName){
 
