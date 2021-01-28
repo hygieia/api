@@ -378,7 +378,7 @@ public class TestResultServiceImpl implements TestResultService {
             return "Hygieia does not support " + request.getTestType() + " sourceFormat " + request.getSourceFormat();
         }
         for (TestResult testResult : testResults) {
-            response += testResult.getId() + "," + testResult.getCollectorItemId() + ";";
+            response += testResult.getId() + ", " + testResult.getCollectorItemId() + "; ";
         }
         return response;
     }
