@@ -313,7 +313,7 @@ public class TestResultServiceTest {
 
         when(testResultRepository.save(any(TestResult.class))).thenReturn(testResult);
         String response = testResultService.createTest(request);
-        String expected = testResult.getId().toString() + "," + testResult.getCollectorItemId() + ";";
+        String expected = testResult.getId().toString() + ", " + testResult.getCollectorItemId() + ";";
         assertEquals(response, expected);
     }
 
@@ -332,7 +332,7 @@ public class TestResultServiceTest {
 
         when(testResultRepository.save(any(TestResult.class))).thenReturn(testResult);
         String response = testResultService.createTest(request);
-        String expected = testResult.getId().toString() + "," + testResult.getCollectorItemId() + ";";
+        String expected = testResult.getId().toString() + ", " + testResult.getCollectorItemId() + ";";
         assertEquals(response, expected);
     }
 
@@ -351,7 +351,7 @@ public class TestResultServiceTest {
 
         when(testResultRepository.save(any(TestResult.class))).thenReturn(testResult);
         String response = testResultService.createTest(request);
-        String expected = testResult.getId().toString() + "," + testResult.getCollectorItemId() + ";";
+        String expected = testResult.getId().toString() + ", " + testResult.getCollectorItemId() + ";";
         assertEquals(response, expected);
     }
 
@@ -371,7 +371,7 @@ public class TestResultServiceTest {
         when(testResultRepository.save(any(TestResult.class))).thenReturn(testResult1).thenReturn(testResult2);
         String response = testResultService.createTest(request);
         System.out.println(response);
-        String expected = testResult1.getId().toString() + "," + testResult1.getCollectorItemId() + ";" + testResult2.getId().toString() + "," + testResult2.getCollectorItemId() + ";";
+        String expected = testResult1.getId().toString() + ", " + testResult1.getCollectorItemId() + ";" + testResult2.getId().toString() + ", " + testResult2.getCollectorItemId() + ";";
         System.out.println(expected);
         assertEquals(response, expected);
     }
