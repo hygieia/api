@@ -5,7 +5,7 @@
     <artifactId>api</artifactId>
     <packaging>jar</packaging>
     <name>${project.groupId}:${project.artifactId}</name>
-    <version>3.3.8-SNAPSHOT</version>
+    <version>3.3.9-SNAPSHOT</version>
     <description>Hygieia Rest API Layer</description>
     <url>https://github.com/Hygieia/api</url>
 
@@ -59,7 +59,7 @@
 
     <properties>
         <!-- Dependencies -->
-        <com.capitalone.dashboard.core.version>3.11.0</com.capitalone.dashboard.core.version>
+        <com.capitalone.dashboard.core.version>3.13.2</com.capitalone.dashboard.core.version>
         <spring-security.version>4.2.18.RELEASE</spring-security.version>
         <tomcat.version>8.5.57</tomcat.version>
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
