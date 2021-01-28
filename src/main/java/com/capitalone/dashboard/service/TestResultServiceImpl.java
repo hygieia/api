@@ -269,7 +269,9 @@ public class TestResultServiceImpl implements TestResultService {
             throw new HygieiaException("Failed inserting cucumber Test information.", HygieiaException.ERROR_INSERTING_DATA);
         }
 
-        return new ArrayList<TestResult>() {{add(testResult);}};
+        List<TestResult> testResults = new ArrayList<>();
+        testResults.add(testResult);
+        return testResults;
 
     }
 
