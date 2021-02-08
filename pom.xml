@@ -232,6 +232,8 @@
                 <configuration>
                     <source>${java.compilation.source}</source>
                     <target>${java.compilation.target}</target>
+                    <testSource>${java.compilation.source}</testSource>
+                    <testTarget>${java.compilation.target}</testTarget>
                 </configuration>
             </plugin>
             <plugin>
