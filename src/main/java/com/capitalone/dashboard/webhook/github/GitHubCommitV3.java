@@ -46,7 +46,7 @@ public class GitHubCommitV3 extends GitHubV3 {
                           GitRequestRepository gitRequestRepository,
                           CollectorItemRepository collectorItemRepository,
                           ApiSettings apiSettings) {
-        super(collectorService, restClient, apiSettings);
+        super(collectorService, restClient, apiSettings, collectorItemRepository);
 
         this.commitRepository = commitRepository;
         this.gitRequestRepository = gitRequestRepository;
@@ -90,28 +90,39 @@ public class GitHubCommitV3 extends GitHubV3 {
             return "Repo: <" + repoUrl + "> Branch: <" + branch + "> is not registered in Hygieia";
         }
 
-        Object senderObj = jsonObject.get("sender");
-        List<Commit> commitList = getCommits(commitsObjectList, repoUrl, branch, senderObj);
+        // Get github repository token
+        boolean isPrivate = restClient.getBoolean(repoObject, "private");
+        long start = System.currentTimeMillis();
+        String repoToken = getRepositoryToken(repoUrl);
+        long end = System.currentTimeMillis();
+        LOG.debug("Time to make collectorItemRepository call to fetch repository token = "+(end-start));
 
+        GitHubWebHookSettings gitHubWebHookSettings = getGitHubWebHookSettings();
+        if(gitHubWebHookSettings == null) {
+            throw new HygieiaException("Github Webhook properties not set on the properties file. ", HygieiaException.INVALID_CONFIGURATION);
+        }
+        String gitHubWebHookToken =  isPrivate ? repoToken : gitHubWebHookSettings.getToken();
+        if (StringUtils.isEmpty(gitHubWebHookToken)) {
+            throw new HygieiaException("Failed processing payload. Missing Github API token in Hygieia. ", HygieiaException.INVALID_CONFIGURATION);
+        }
+
+
+        Object senderObj = jsonObject.get("sender");
+        List<Commit> commitList = getCommits(commitsObjectList, repoUrl, branch, gitHubWebHookToken, senderObj);
+
+        updateCollectorItemLastUpdated(repoUrl, branch);
         commitRepository.save(commitList);
 
         return result;
     }
 
-    protected List<Commit> getCommits(List<Map> commitsObjectList, String repoUrl,
-                                      String branch, Object senderObj) throws MalformedURLException, HygieiaException, ParseException {
+    protected List<Commit> getCommits(List<Map> commitListPayload, String repoUrl,
+                                      String branch, String gitHubWebHookToken, Object senderObj) throws MalformedURLException, HygieiaException, ParseException {
         List<Commit> commitsList = new ArrayList<>();
 
         GitHubParsed gitHubParsed = new GitHubParsed(repoUrl);
 
-        WebHookSettings webHookSettings = apiSettings.getWebHook();
-
-        if (webHookSettings == null) {
-            LOG.info("Github Webhook properties not set on the properties file. Returning ...");
-            return commitsList;
-        }
-
-        GitHubWebHookSettings gitHubWebHookSettings = webHookSettings.getGitHub();
+        GitHubWebHookSettings gitHubWebHookSettings = getGitHubWebHookSettings();
 
         if (gitHubWebHookSettings == null) {
             LOG.info("Github Webhook properties not set on the properties file. Returning ...");
@@ -124,101 +135,90 @@ public class GitHubCommitV3 extends GitHubV3 {
             .map(regExStr -> Pattern.compile(regExStr, Pattern.CASE_INSENSITIVE))
             .forEach(commitExclusionPatterns::add);
 
-        for (Map cObj : commitsObjectList) {
-            Object repoMap = restClient.getAsObject(cObj, "repository");
-            boolean isPrivate = restClient.getBoolean(repoMap, "private");
+        // Get the earliest commit timestamp and use that as 'since' parameter
+        String since = restClient.getString(commitListPayload.get(0), "timestamp");
 
-            long start = System.currentTimeMillis();
+        int numCommits = commitListPayload.size();
+        List<Map> commitListNode = getCommitListNode(gitHubParsed, branch, since, numCommits, gitHubWebHookToken);
 
-            String repoToken = getRepositoryToken(gitHubParsed.getUrl());
+        for (int i=0; i < commitListNode.size(); i++) {
 
-            long end = System.currentTimeMillis();
-
-            LOG.debug("Time to make collectorItemRepository call to fetch repository token = "+(end-start));
-
-            String gitHubWebHookToken =  isPrivate ? RestClient.decryptString(repoToken, apiSettings.getKey()) : gitHubWebHookSettings.getToken();
-
-            if (StringUtils.isEmpty(gitHubWebHookToken)) {
-                throw new HygieiaException("Failed processing payload. Missing Github API token in Hygieia.", HygieiaException.INVALID_CONFIGURATION);
-            }
+            Map node = (Map) commitListNode.get(i).get("node");
+            Map payload = commitListPayload.get(i);
 
             Commit commit = new Commit();
 
-            String commitId = restClient.getString(cObj, "id");
+            String commitId = restClient.getString(node, "oid");
             commit.setScmRevisionNumber(commitId);
 
-            Object authorObjectFromCommit = restClient.getAsObject(cObj,"author");
+            Object authorObjectFromCommit = restClient.getAsObject(node,"author");
             commit.setScmAuthor(restClient.getString(authorObjectFromCommit, "name"));
 
-            String message = restClient.getString(cObj, "message");
+            String message = restClient.getString(node, "message");
             commit.setScmCommitLog(message);
 
             commit.setTimestamp(System.currentTimeMillis());
             commit.setScmUrl(repoUrl);
             commit.setScmBranch(branch);
 
-            DateTime commitTimestamp = new DateTime(restClient.getString(cObj, "timestamp"));
-            commit.setScmCommitTimestamp(commitTimestamp.getMillis());
+            List<String> parentShas = getParentShas(node);
+            commit.setScmParentRevisionNumbers(parentShas);
+            commit.setFirstEverCommit(CollectionUtils.isEmpty(parentShas));
+            commit.setType(getCommitType(parentShas.size(), message, gitHubWebHookSettings, commitExclusionPatterns));
 
-            Object node = getCommitNode(gitHubParsed, commitId, gitHubWebHookToken);
-            if (node == null) {
-                LOG.debug("Commit node not found for " + commitId);
-            } else  {
-                List<String> parentShas = getParentShas(node);
-                commit.setScmParentRevisionNumbers(parentShas);
-                commit.setFirstEverCommit(CollectionUtils.isEmpty(parentShas));
-                commit.setType(getCommitType(parentShas.size(), message, gitHubWebHookSettings, commitExclusionPatterns));
+            Object authorObject = restClient.getAsObject(node, "author");
+            Object userObject = restClient.getAsObject(authorObject, "user");
+            String authorLogin = (userObject == null) ? "unknown" : restClient.getString(userObject, "login");
+            commit.setScmAuthorLogin(authorLogin);
 
-                Object authorObject = restClient.getAsObject(node, "author");
-                Object userObject = restClient.getAsObject(authorObject, "user");
-                String authorLogin = (userObject == null) ? "unknown" : restClient.getString(userObject, "login");
-                commit.setScmAuthorLogin(authorLogin);
+            if (senderObj != null && authorLogin.equalsIgnoreCase(restClient.getString(senderObj, "login"))) {
+                String authorType = restClient.getString(senderObj, "type");
+                if (!StringUtils.isEmpty(authorType)) {
+                    commit.setScmAuthorType(authorType);
+                }
+                String authorLDAPDN = restClient.getString(senderObj, "ldap_dn");
+                if (!StringUtils.isEmpty(authorLDAPDN)) {
+                    commit.setScmAuthorLDAPDN(authorLDAPDN);
+                }
+            } else {
+                long start = System.currentTimeMillis();
 
-                if (senderObj != null && authorLogin.equalsIgnoreCase(restClient.getString(senderObj, "login"))) {
-                    String authorType = restClient.getString(senderObj, "type");
-                    if (!StringUtils.isEmpty(authorType)) {
-                        commit.setScmAuthorType(authorType);
-                    }
-                    String authorLDAPDN = restClient.getString(senderObj, "ldap_dn");
-                    if (!StringUtils.isEmpty(authorLDAPDN)) {
-                        commit.setScmAuthorLDAPDN(authorLDAPDN);
-                    }
-                } else {
-                    start = System.currentTimeMillis();
-
-                    String authorType = getAuthorType(repoUrl, authorLogin, gitHubWebHookToken);
-                    if (!StringUtils.isEmpty(authorType)) {
-                        commit.setScmAuthorType(authorType);
-                    }
-                    String authorLDAPDN = getLDAPDN(repoUrl, authorLogin, gitHubWebHookToken);
-                    if (!StringUtils.isEmpty(authorLDAPDN)) {
-                        commit.setScmAuthorLDAPDN(authorLDAPDN);
-                    }
-
-                    end = System.currentTimeMillis();
-                    LOG.debug("Time to fetch LDAPDN = "+(end-start));
+                String authorType = getAuthorType(repoUrl, authorLogin, gitHubWebHookToken);
+                if (!StringUtils.isEmpty(authorType)) {
+                    commit.setScmAuthorType(authorType);
+                }
+                String authorLDAPDN = getLDAPDN(repoUrl, authorLogin, gitHubWebHookToken);
+                if (!StringUtils.isEmpty(authorLDAPDN)) {
+                    commit.setScmAuthorLDAPDN(authorLDAPDN);
                 }
 
-                // Set the Committer details. This in the case of a merge commit is the user who merges the PR.
-                // In the case of a regular commit, it is usually set to a default "name": "GitHub Enterprise", and login is null
-                Object committerObject = restClient.getAsObject(node, "committer");
-                Object committerUserObject = restClient.getAsObject(committerObject, "user");
-                String committerLogin = (committerUserObject == null) ? "unknown" : restClient.getString(committerUserObject, "login");
-                commit.setScmCommitterLogin(committerLogin);
+                long end = System.currentTimeMillis();
+                LOG.debug("Time to fetch LDAPDN = "+(end-start));
             }
+
+            // Set the Committer details. This in the case of a merge commit is the user who merges the PR.
+            // In the case of a regular commit, it is usually set to a default "name": "GitHub Enterprise", and login is null
+            Object committerObject = restClient.getAsObject(node, "committer");
+            Object committerUserObject = restClient.getAsObject(committerObject, "user");
+            String committerLogin = (committerUserObject == null) ? "unknown" : restClient.getString(committerUserObject, "login");
+            commit.setScmCommitterLogin(committerLogin);
+
+            DateTime commitTimestamp = new DateTime(restClient.getString(committerObject, "date"));
+            commit.setScmCommitTimestamp(commitTimestamp.getMillis());
+
             // added fields to capture files
             int numberChanges = 0;
-            if (cObj.get("added") instanceof List) {
-                numberChanges += ((List) cObj.get("added")).size();
-                commit.setFilesAdded((List) cObj.get("added"));
+            if (payload.get("added") instanceof List) {
+                numberChanges += ((List) payload.get("added")).size();
+                commit.setFilesAdded((List) payload.get("added"));
             }
-            if (cObj.get("removed") instanceof List) {
-                numberChanges += ((List) cObj.get("removed")).size();
-                commit.setFilesRemoved((List) cObj.get("removed"));
+            if (payload.get("removed") instanceof List) {
+                numberChanges += ((List) payload.get("removed")).size();
+                commit.setFilesRemoved((List) payload.get("removed"));
             }
-            if (cObj.get("modified") instanceof List) {
-                numberChanges += ((List) cObj.get("modified")).size();
-                commit.setFilesModified((List) cObj.get("modified"));
+            if (payload.get("modified") instanceof List) {
+                numberChanges += ((List) payload.get("modified")).size();
+                commit.setFilesModified((List) payload.get("modified"));
             }
 
             commit.setNumberOfChanges(numberChanges);
@@ -285,6 +285,7 @@ public class GitHubCommitV3 extends GitHubV3 {
         }
     }
 
+    // List a single commit nodes using commit id
     protected Object getCommitNode(GitHubParsed gitHubParsed, String commitId, String token) throws HygieiaException, ParseException {
 
         JSONObject postBody = getQuery(gitHubParsed, commitId, GraphQLQuery.COMMITS_GRAPHQL);
@@ -316,6 +317,48 @@ public class GitHubCommitV3 extends GitHubV3 {
         if (repoData == null) { return null; }
 
         return repoData.get("object");
+    }
+
+    // Retrieve a list of commit nodes
+    protected List<Map> getCommitListNode(GitHubParsed gitHubParsed, String branch, String since, int fetchCount, String token) throws HygieiaException, ParseException {
+        JSONObject postBody = getQuery(gitHubParsed, branch, since, fetchCount, GraphQLQuery.COMMITS_LIST_GRAPHQL);
+
+        ResponseEntity<String> response = null;
+        int retryCount = 0;
+        while(true) {
+            try {
+                response = restClient.makeRestCallPost(gitHubParsed.getGraphQLUrl(), "token", token, postBody);
+                break;
+            } catch (Exception e) {
+                retryCount++;
+                if(retryCount > apiSettings.getWebHook().getGitHub().getMaxRetries()) {
+                    LOG.error("Unable to get COMMIT from " + gitHubParsed.getUrl() + " after " + apiSettings.getWebHook().getGitHub().getMaxRetries() + " tries!");
+                    throw new HygieiaException(e);
+                }
+            }
+        }
+
+        JSONObject responseJsonObject = restClient.parseAsObject(response);
+        if (responseJsonObject == null) { return null; }
+
+        checkForErrors(responseJsonObject);
+
+        JSONObject data = (JSONObject) responseJsonObject.get("data");
+        if (data == null) { return null; }
+
+        JSONObject repo = (JSONObject) data.get("repository");
+        if (repo == null) { return null; }
+
+        JSONObject ref = (JSONObject) repo.get("ref");
+        if (ref == null) { return null; }
+
+        JSONObject target = (JSONObject) ref.get("target");
+        if (target == null) { return null; }
+
+        JSONObject history = (JSONObject) target.get("history");
+        if (history == null) { return null; }
+
+        return (ArrayList<Map>) history.get("edges");
     }
 
     protected List<String> getParentShas(Object commit) {
@@ -358,6 +401,28 @@ public class GitHubCommitV3 extends GitHubV3 {
         query.put("query", queryString);
         query.put("variables", variableJSON.toString());
         return query;
+    }
+
+    protected JSONObject getQuery (GitHubParsed gitHubParsed, String branch, String since, int fetchCount, String queryString) {
+        JSONObject query = new JSONObject();
+        JSONObject variableJSON = new JSONObject();
+        variableJSON.put("owner", gitHubParsed.getOrgName());
+        variableJSON.put("name", gitHubParsed.getRepoName());
+        variableJSON.put("branch", branch);
+        variableJSON.put("since", since);
+        variableJSON.put("fetchCount", fetchCount);
+        query.put("query", queryString);
+        query.put("variables", variableJSON.toString());
+        return query;
+    }
+
+    // Return github webhook settings
+    protected GitHubWebHookSettings getGitHubWebHookSettings() {
+        WebHookSettings webHookSettings = apiSettings.getWebHook();
+        if (webHookSettings == null) {
+            return null;
+        }
+        return webHookSettings.getGitHub();
     }
 
 }

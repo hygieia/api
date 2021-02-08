@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.regex.Pattern;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
@@ -98,7 +99,7 @@ public class GitHubCommitV3Test {
         }
         when(apiSettings.getWebHook()).thenReturn(makeWebHookSettings());
         try {
-            when(gitHubCommitV3.getCommitNode(anyObject(), anyString(), anyString())).thenReturn(null);
+            when(restClient.parseAsObject(anyObject())).thenReturn(getData("GithubWebhook/commit-node-2.json"));
         } catch (Exception e) {
             LOG.error(e.getMessage());
         }
@@ -108,7 +109,7 @@ public class GitHubCommitV3Test {
         senderObj.put("senderLogin", "senderLogin");
         senderObj.put("authorLDAPDN", "authorLDAPDN");
         try {
-            commitsList = gitHubCommitV3.getCommits(commitsMapList, repoUrl, branch, senderObj);
+            commitsList = gitHubCommitV3.getCommits(commitsMapList, repoUrl, branch, "token", senderObj);
         } catch (Exception e) {
             LOG.error(e.getMessage());
         }
@@ -125,7 +126,7 @@ public class GitHubCommitV3Test {
         Assert.assertEquals("author1Name", commit1.getScmAuthor());
         Assert.assertEquals(7, commit1.getNumberOfChanges());
         Assert.assertEquals(collectorItemId, commit1.getCollectorItemId().toString());
-        verify(gitHubCommitV3, times(3)).getCommitNode(anyObject(), anyString(), anyString());
+        verify(restClient, times(1)).makeRestCallPost(anyObject(), anyString(), anyString(), anyObject());
 
         Commit commit2 = commitsList.get(1);
         Assert.assertEquals(repoUrl, commit2.getScmUrl());
@@ -387,9 +388,13 @@ public class GitHubCommitV3Test {
         collector.setId(new ObjectId(collectorId));
 
         CollectorItem repo = makeCollectorItem("https://github.com/chzhanpeng/WebhookTest", "master");
+        JSONObject commitNode = getData("GithubWebhook/commit-node-1.json");
 
         when(collectorService.createCollector(anyObject())).thenReturn(collector);
         when(gitHubCommitV3.getCollectorItemRepository().findRepoByUrlAndBranch(anyObject(), anyString(), anyString(), anyBoolean())).thenReturn(repo);
+        when(gitHubCommitV3.getCollectorItemRepository().findRepoByUrlAndBranch(anyObject(), anyString(), anyString())).thenReturn(repo);
+        when(apiSettings.getWebHook()).thenReturn(makeWebHookSettings());
+        when(restClient.parseAsObject(anyObject())).thenReturn(commitNode);
 
         JSONObject commitPayload = getData("GithubWebhook/commit-payload.json");
 
@@ -513,4 +518,12 @@ public class GitHubCommitV3Test {
         JSONParser parser = new JSONParser();
         return (JSONObject) parser.parse(data);
     }
+
+    private JSONArray getJsonArray(String filename) throws Exception {
+        String data = IOUtils.toString(Resources.getResource(filename));
+        JSONParser parser = new JSONParser();
+        return (JSONArray) parser.parse(data);
+
+    }
+
 }

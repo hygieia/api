@@ -40,7 +40,6 @@ public class GitHubPullRequestV3 extends GitHubV3 {
     private static final Log LOG = LogFactory.getLog(GitHubPullRequestV3.class);
 
     private final GitRequestRepository gitRequestRepository;
-    private final CollectorItemRepository collectorItemRepository;
     private final CommitRepository commitRepository;
 
     public GitHubPullRequestV3(CollectorService collectorService,
@@ -49,15 +48,14 @@ public class GitHubPullRequestV3 extends GitHubV3 {
                                CommitRepository commitRepository,
                                CollectorItemRepository collectorItemRepository,
                                ApiSettings apiSettings) {
-        super(collectorService, restClient, apiSettings);
+        super(collectorService, restClient, apiSettings, collectorItemRepository);
 
         this.gitRequestRepository = gitRequestRepository;
-        this.collectorItemRepository = collectorItemRepository;
         this.commitRepository = commitRepository;
     }
 
     @Override
-    public CollectorItemRepository getCollectorItemRepository() { return this.collectorItemRepository; }
+    public CollectorItemRepository getCollectorItemRepository() { return super.collectorItemRepository; }
 
     @Override
     public String process(JSONObject prJsonObject) throws MalformedURLException, HygieiaException, ParseException {
@@ -102,7 +100,7 @@ public class GitHubPullRequestV3 extends GitHubV3 {
         long end = System.currentTimeMillis();
         LOG.debug("Time to make collectorItemRepository call to fetch repository token = "+(end-start));
 
-        String token = isPrivate ? RestClient.decryptString(repoToken, apiSettings.getKey()) : gitHubWebHookToken;
+        String token = isPrivate ? repoToken : gitHubWebHookToken;
 
         if (StringUtils.isEmpty(token)) {
             throw new HygieiaException("Failed processing payload. Missing Github API token in Hygieia.", HygieiaException.INVALID_CONFIGURATION);
@@ -145,6 +143,7 @@ public class GitHubPullRequestV3 extends GitHubV3 {
 
         updateGitRequestWithGraphQLData(pull, repoUrl, branch, prData, token);
 
+        updateCollectorItemLastUpdated(repoUrl, branch);
         gitRequestRepository.save(pull);
 
         return "Pull Request Processed Successfully";
