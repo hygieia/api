@@ -27,6 +27,7 @@ import com.google.common.collect.Sets;
 import com.querydsl.core.BooleanBuilder;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +59,8 @@ public class BuildServiceImpl implements BuildService {
 
     @Autowired
     private ApiSettings settings;
+
+    private static final Logger LOGGER = Logger.getLogger(BuildService.class);
 
     @Autowired
     public BuildServiceImpl(BuildRepository buildRepository,
@@ -180,6 +183,19 @@ public class BuildServiceImpl implements BuildService {
                 populateDashboardId(response);
             }
         }
+        // Will be refactored soon
+        CollectorItem buildCollectorItem = collectorItemRepository.findOne(build.getCollectorItemId());
+        if(buildCollectorItem != null) {
+            LOGGER.info("buildUrl=" + build.getBuildUrl()
+                    + ", buildDuration=" + build.getDuration()
+                    + ", startedBy=" + build.getStartedBy()
+                    + ", buildStatus=" + build.getBuildStatus()
+                    + ", hygieiaBuildId=" + build.getId()
+                    + ", buildInstanceUrl=" + buildCollectorItem.getOptions().get("instanceUrl")
+                    + ", buildJobName=" + buildCollectorItem.getOptions().get("jobName")
+                    + ", buildJobUrl=" + buildCollectorItem.getOptions().get("jobUrl"));
+        }
+
         return response;
     }
 
