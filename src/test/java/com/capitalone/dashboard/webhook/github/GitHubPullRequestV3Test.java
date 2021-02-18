@@ -8,9 +8,11 @@ import com.capitalone.dashboard.model.CollectorItem;
 import com.capitalone.dashboard.model.Comment;
 import com.capitalone.dashboard.model.Commit;
 import com.capitalone.dashboard.model.CommitStatus;
+import com.capitalone.dashboard.model.GitHubCollector;
 import com.capitalone.dashboard.model.GitRequest;
 import com.capitalone.dashboard.model.Review;
 import com.capitalone.dashboard.model.webhook.github.GitHubParsed;
+import com.capitalone.dashboard.repository.BaseCollectorRepository;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.repository.CommitRepository;
 import com.capitalone.dashboard.repository.GitRequestRepository;
@@ -49,6 +51,7 @@ public class GitHubPullRequestV3Test {
     @Mock private CollectorService collectorService;
     @Mock private GitRequestRepository gitRequestRepository;
     @Mock private CollectorItemRepository collectorItemRepository;
+    @Mock private BaseCollectorRepository<GitHubCollector> collectorRepository;
     @Mock private CommitRepository commitRepository;
     @Mock private ApiSettings apiSettings;
     @Mock private RestOperationsSupplier restOperationsSupplier;
@@ -60,7 +63,7 @@ public class GitHubPullRequestV3Test {
     @Before
     public void init() {
         restClient = new RestClient(restOperationsSupplier);
-        gitHubPullRequestV3 = new GitHubPullRequestV3 (collectorService, restClient, gitRequestRepository, commitRepository, collectorItemRepository, apiSettings);
+        gitHubPullRequestV3 = new GitHubPullRequestV3 (collectorService, restClient, gitRequestRepository, commitRepository, collectorItemRepository, apiSettings, collectorRepository);
         payLoadJsonObject = makePullRequestPayloadObject();
     }
 

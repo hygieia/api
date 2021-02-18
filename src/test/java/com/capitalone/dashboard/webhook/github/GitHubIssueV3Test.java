@@ -5,8 +5,10 @@ import com.capitalone.dashboard.client.RestOperationsSupplier;
 import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.Collector;
 import com.capitalone.dashboard.model.CollectorItem;
+import com.capitalone.dashboard.model.GitHubCollector;
 import com.capitalone.dashboard.model.GitRequest;
 import com.capitalone.dashboard.model.webhook.github.GitHubParsed;
+import com.capitalone.dashboard.repository.BaseCollectorRepository;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.repository.GitRequestRepository;
 import com.capitalone.dashboard.service.CollectorService;
@@ -38,6 +40,7 @@ public class GitHubIssueV3Test {
     @Mock private CollectorService collectorService;
     @Mock private GitRequestRepository gitRequestRepository;
     @Mock private CollectorItemRepository collectorItemRepository;
+    @Mock private BaseCollectorRepository<GitHubCollector> collectorRepository;
     @Mock private ApiSettings apiSettings;
     @Mock private RestOperationsSupplier restOperationsSupplier;
 
@@ -46,7 +49,7 @@ public class GitHubIssueV3Test {
     @Before
     public void init() {
         RestClient restClient = new RestClient(restOperationsSupplier);
-        gitHubIssueV3 = new GitHubIssueV3 (collectorService, restClient, gitRequestRepository, collectorItemRepository, apiSettings);
+        gitHubIssueV3 = new GitHubIssueV3 (collectorService, restClient, gitRequestRepository, collectorItemRepository, apiSettings, collectorRepository);
     }
 
     @Test

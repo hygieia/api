@@ -1,5 +1,7 @@
 package com.capitalone.dashboard.webhook.github;
 
+import com.capitalone.dashboard.model.GitHubCollector;
+import com.capitalone.dashboard.repository.BaseCollectorRepository;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.client.RestClient;
@@ -22,8 +24,9 @@ public class GitHubIssueV3 extends GitHubV3 {
                          RestClient restClient,
                          GitRequestRepository gitRequestRepository,
                          CollectorItemRepository collectorItemRepository,
-                         ApiSettings apiSettings) {
-        super(collectorService, restClient, apiSettings, collectorItemRepository);
+                         ApiSettings apiSettings,
+                         BaseCollectorRepository<GitHubCollector> collectorRepository) {
+        super(collectorService, restClient, apiSettings, collectorItemRepository, collectorRepository);
         this.gitRequestRepository =  gitRequestRepository;
     }
 
