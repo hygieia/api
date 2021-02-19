@@ -4,19 +4,16 @@ import com.capitalone.dashboard.model.GitHubCollector;
 import com.capitalone.dashboard.repository.BaseCollectorRepository;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.model.webhook.github.GitHubRepo;
-import com.capitalone.dashboard.repository.CollectorRepository;
 import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.client.RestClient;
 import com.capitalone.dashboard.model.webhook.github.GitHubParsed;
 import com.capitalone.dashboard.misc.HygieiaException;
-import com.capitalone.dashboard.model.Collector;
 import com.capitalone.dashboard.model.CollectorItem;
 import com.capitalone.dashboard.model.CollectorType;
 import com.capitalone.dashboard.service.CollectorService;
 import com.capitalone.dashboard.util.HygieiaUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bson.types.ObjectId;
@@ -128,7 +125,7 @@ public abstract class GitHubV3 {
     }
 
     protected CollectorItem getCollectorItem(String repoUrl, String branch) throws HygieiaException {
-        Collector col = collectorService.createCollector(getCollector());
+        GitHubCollector col = getCollector();
 
         if (col == null)
             throw new HygieiaException("Failed creating collector.", HygieiaException.COLLECTOR_CREATE_ERROR);
