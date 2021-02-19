@@ -3,10 +3,13 @@ package com.capitalone.dashboard.webhook.github;
 import com.capitalone.dashboard.client.RestClient;
 import com.capitalone.dashboard.client.RestOperationsSupplier;
 import com.capitalone.dashboard.misc.HygieiaException;
-import com.capitalone.dashboard.model.Collector;
 import com.capitalone.dashboard.model.CollectorItem;
+import com.capitalone.dashboard.model.CollectorType;
+import com.capitalone.dashboard.model.GitHubCollector;
 import com.capitalone.dashboard.model.GitRequest;
 import com.capitalone.dashboard.model.webhook.github.GitHubParsed;
+import com.capitalone.dashboard.model.webhook.github.GitHubRepo;
+import com.capitalone.dashboard.repository.BaseCollectorRepository;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.repository.GitRequestRepository;
 import com.capitalone.dashboard.service.CollectorService;
@@ -27,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
@@ -38,6 +42,7 @@ public class GitHubIssueV3Test {
     @Mock private CollectorService collectorService;
     @Mock private GitRequestRepository gitRequestRepository;
     @Mock private CollectorItemRepository collectorItemRepository;
+    @Mock private BaseCollectorRepository<GitHubCollector> collectorRepository;
     @Mock private ApiSettings apiSettings;
     @Mock private RestOperationsSupplier restOperationsSupplier;
 
@@ -46,7 +51,7 @@ public class GitHubIssueV3Test {
     @Before
     public void init() {
         RestClient restClient = new RestClient(restOperationsSupplier);
-        gitHubIssueV3 = new GitHubIssueV3 (collectorService, restClient, gitRequestRepository, collectorItemRepository, apiSettings);
+        gitHubIssueV3 = new GitHubIssueV3 (collectorService, restClient, gitRequestRepository, collectorItemRepository, apiSettings, collectorRepository);
     }
 
     @Test
@@ -85,16 +90,14 @@ public class GitHubIssueV3Test {
         newIssue.setScmUrl(repoUrl);
         newIssue.setScmBranch(branch);
 
-        Collector collector = gitHubIssueV3.getCollector();
-        String collectorId = createGuid("0123456789abcdef");
-        collector.setId(new ObjectId(collectorId));
+        GitHubCollector collector = makeCollector();
 
-        CollectorItem collectorItem = gitHubIssueV3.buildCollectorItem(new ObjectId(collectorId), repoUrl, branch);
+        CollectorItem collectorItem = gitHubIssueV3.buildCollectorItem(collector.getId(), repoUrl, branch);
         String collectorItemId = createGuid("0123456789abcdee");
         collectorItem.setId(new ObjectId(collectorItemId));
 
         when(gitRequestRepository.findByScmUrlIgnoreCaseAndScmBranchIgnoreCaseAndNumberAndRequestTypeIgnoreCase(anyString(), anyString(), anyString(), anyString())).thenReturn(null);
-        when(collectorService.createCollector(anyObject())).thenReturn(collector);
+        when(collectorRepository.save(any(GitHubCollector.class))).thenReturn(collector);
         when(gitHubIssueV3.buildCollectorItem(anyObject(), anyString(), anyString())).thenReturn(collectorItem);
         when(collectorService.createCollectorItem(anyObject())).thenReturn(collectorItem);
         try {
@@ -122,15 +125,13 @@ public class GitHubIssueV3Test {
         String repoUrl = "http://hostName/orgName/repoName";
         String branch = "master";
 
-        Collector collector = gitHubIssueV3.getCollector();
-        String collectorId = createGuid("0123456789abcdef");
-        collector.setId(new ObjectId(collectorId));
+        GitHubCollector collector = makeCollector();
 
-        CollectorItem collectorItem = gitHubIssueV3.buildCollectorItem(new ObjectId(collectorId), repoUrl, branch);
+        CollectorItem collectorItem = gitHubIssueV3.buildCollectorItem(collector.getId(), repoUrl, branch);
         String collectorItemId = createGuid("0123456789abcdee");
         collectorItem.setId(new ObjectId(collectorItemId));
 
-        when(collectorService.createCollector(anyObject())).thenReturn(collector);
+        when(collectorRepository.save(any(GitHubCollector.class))).thenReturn(collector);
         when(gitHubIssueV3.buildCollectorItem(anyObject(), anyString(), anyString())).thenReturn(collectorItem);
         when(collectorService.createCollectorItem(anyObject())).thenReturn(collectorItem);
 
@@ -179,5 +180,29 @@ public class GitHubIssueV3Test {
             hexChars[j * 2 + 1] = hexArray[v & 0x0F];
         }
         return new String(hexChars);
+    }
+
+    private GitHubCollector makeCollector() {
+        GitHubCollector col = new GitHubCollector();
+        col.setId(new ObjectId(createGuid("0123456789abcdef")));
+        col.setName("GitHub");
+        col.setCollectorType(CollectorType.SCM);
+        col.setOnline(true);
+        col.setEnabled(true);
+
+        Map<String, Object> allOptions = new HashMap<>();
+        allOptions.put(GitHubRepo.REPO_URL, "");
+        allOptions.put(GitHubRepo.BRANCH, "");
+        allOptions.put(GitHubRepo.USER_ID, "");
+        allOptions.put(GitHubRepo.PASSWORD, "");
+        allOptions.put(GitHubRepo.PERSONAL_ACCESS_TOKEN, "");
+        allOptions.put(GitHubRepo.TYPE, "");
+        col.setAllFields(allOptions);
+
+        Map<String, Object> uniqueOptions = new HashMap<>();
+        uniqueOptions.put(GitHubRepo.REPO_URL, "");
+        uniqueOptions.put(GitHubRepo.BRANCH, "");
+        col.setUniqueFields(uniqueOptions);
+        return col;
     }
 }

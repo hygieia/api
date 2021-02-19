@@ -1,6 +1,8 @@
 package com.capitalone.dashboard.webhook.github;
 
 import com.capitalone.dashboard.misc.HygieiaException;
+import com.capitalone.dashboard.model.GitHubCollector;
+import com.capitalone.dashboard.repository.BaseCollectorRepository;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.client.RestClient;
@@ -25,6 +27,7 @@ public class GitHubHookServiceImpl implements GitHubHookService {
     private final CommitRepository commitRepository;
     private final GitRequestRepository gitRequestRepository;
     private final CollectorItemRepository collectorItemRepository;
+    private final BaseCollectorRepository<GitHubCollector> collectorRepository;
     private final CollectorService collectorService;
     protected final ApiSettings apiSettings;
     protected final RestClient restClient;
@@ -35,10 +38,12 @@ public class GitHubHookServiceImpl implements GitHubHookService {
                                  CollectorService collectorService,
                                  CollectorItemRepository collectorItemRepository,
                                  ApiSettings apiSettings,
-                                 RestClient restClient) {
+                                 RestClient restClient,
+                                 BaseCollectorRepository<GitHubCollector> collectorRepository) {
         this.commitRepository = commitRepository;
         this.gitRequestRepository = gitRequestRepository;
         this.collectorItemRepository = collectorItemRepository;
+        this.collectorRepository = collectorRepository;
         this.collectorService = collectorService;
         this.apiSettings = apiSettings;
         this.restClient = restClient;
@@ -62,15 +67,15 @@ public class GitHubHookServiceImpl implements GitHubHookService {
 
         switch (payloadType) {
             case Push:
-                gitHubv3 = new GitHubCommitV3(collectorService, restClient, commitRepository, gitRequestRepository, collectorItemRepository, apiSettings);
+                gitHubv3 = new GitHubCommitV3(collectorService, restClient, commitRepository, gitRequestRepository, collectorItemRepository, apiSettings, collectorRepository);
                 break;
 
             case PullRequest:
-                gitHubv3 = new GitHubPullRequestV3(collectorService, restClient, gitRequestRepository, commitRepository, collectorItemRepository, apiSettings);
+                gitHubv3 = new GitHubPullRequestV3(collectorService, restClient, gitRequestRepository, commitRepository, collectorItemRepository, apiSettings, collectorRepository);
                 break;
 
             case Issues:
-                gitHubv3 = new GitHubIssueV3(collectorService, restClient, gitRequestRepository, collectorItemRepository, apiSettings);
+                gitHubv3 = new GitHubIssueV3(collectorService, restClient, gitRequestRepository, collectorItemRepository, apiSettings, collectorRepository);
                 break;
 
             default:
