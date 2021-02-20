@@ -174,26 +174,44 @@ public class BuildServiceImpl implements BuildService {
         Build build = createBuild(request);
         try {
             org.apache.commons.beanutils.BeanUtils.copyProperties(response, build);
-        }
-        catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (IllegalAccessException | InvocationTargetException e) {
             throw new HygieiaException(e);
-        }
-        finally {
-            if(settings.isLookupDashboardForBuildDataCreate()) {
+        } finally {
+            if (settings.isLookupDashboardForBuildDataCreate()) {
                 populateDashboardId(response);
             }
         }
         // Will be refactored soon
         CollectorItem buildCollectorItem = collectorItemRepository.findOne(build.getCollectorItemId());
-        if(buildCollectorItem != null) {
+        if (buildCollectorItem != null) {
             LOGGER.info("buildUrl=" + build.getBuildUrl()
-                    + ", buildDuration=" + build.getDuration()
-                    + ", startedBy=" + build.getStartedBy()
-                    + ", buildStatus=" + build.getBuildStatus()
-                    + ", hygieiaBuildId=" + build.getId()
-                    + ", buildInstanceUrl=" + buildCollectorItem.getOptions().get("instanceUrl")
-                    + ", buildJobName=" + buildCollectorItem.getOptions().get("jobName")
-                    + ", buildJobUrl=" + buildCollectorItem.getOptions().get("jobUrl"));
+                    + " buildDurationMillis=" + build.getDuration()
+                    + " startedBy=" + build.getStartedBy()
+                    + " buildStatus=" + build.getBuildStatus()
+                    + " hygieiaBuildId=" + build.getId()
+                    + " buildInstanceUrl=" + buildCollectorItem.getOptions().get("instanceUrl")
+                    + " buildJobName=" + buildCollectorItem.getOptions().get("jobName")
+                    + " buildJobUrl=" + buildCollectorItem.getOptions().get("jobUrl"));
+
+            //log stage information only for failed builds
+            if (CollectionUtils.isNotEmpty(build.getStages()) && !(BuildStatus.Success.equals(build.getBuildStatus()))) {
+                for (BuildStage buildStage : build.getStages()) {
+
+                    LOGGER.info("buildUrl=" + build.getBuildUrl()
+                            + " buildDurationMillis=" + build.getDuration()
+                            + " startedBy=" + build.getStartedBy()
+                            + " buildStatus=" + build.getBuildStatus()
+                            + " hygieiaBuildId=" + build.getId()
+                            + " buildInstanceUrl=" + buildCollectorItem.getOptions().get("instanceUrl")
+                            + " buildStageName=" + buildStage.getName()
+                            + " buildStageStatus=" + buildStage.getStatus()
+                            + " buildStageDurationMillis=" + buildStage.getDurationMillis()
+                            + (StringUtils.isNotEmpty(buildStage.getExec_node_logUrl()) ?
+                            " buildStageLog=" + (buildCollectorItem.getOptions().get("instanceUrl") + buildStage.getExec_node_logUrl())
+                            : StringUtils.EMPTY)
+                    );
+                }
+            }
         }
 
         return response;
@@ -330,10 +348,12 @@ public class BuildServiceImpl implements BuildService {
                 item.getOptions().put("branch", repoBranch.getBranch());
                 item.getOptions().put("url", repoBranch.getUrl());
                 item.setEnabled(true);
+                item.setPushed(true);
                 item.setLastUpdated(0);
                 collectorItemRepository.save(item);
             } else if (!item.isEnabled()) {
                 item.setEnabled(true);
+                item.setPushed(true);
                 item.setLastUpdated(0);
                 collectorItemRepository.save(item);
             }
