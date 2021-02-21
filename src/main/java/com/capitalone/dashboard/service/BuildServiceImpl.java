@@ -44,6 +44,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 @Service
@@ -196,7 +197,7 @@ public class BuildServiceImpl implements BuildService {
             //log stage information only for failed builds
             if (CollectionUtils.isNotEmpty(build.getStages()) && !(BuildStatus.Success.equals(build.getBuildStatus()))) {
                 for (BuildStage buildStage : build.getStages()) {
-
+                    if(Objects.isNull(buildStage)) continue;
                     LOGGER.info("buildUrl=" + build.getBuildUrl()
                             + " buildDurationMillis=" + build.getDuration()
                             + " startedBy=" + build.getStartedBy()
@@ -206,15 +207,24 @@ public class BuildServiceImpl implements BuildService {
                             + " buildStageName=" + buildStage.getName()
                             + " buildStageStatus=" + buildStage.getStatus()
                             + " buildStageDurationMillis=" + buildStage.getDurationMillis()
-                            + (StringUtils.isNotEmpty(buildStage.getExec_node_logUrl()) ?
-                            " buildStageLog=" + (buildCollectorItem.getOptions().get("instanceUrl") + buildStage.getExec_node_logUrl())
-                            : StringUtils.EMPTY)
+                            + buildStageErrorLog(buildStage)
+                            + buildExecNodeLog(buildStage, buildCollectorItem)
                     );
                 }
             }
         }
 
         return response;
+    }
+
+    private String buildStageErrorLog (BuildStage buildStage) {
+        if(Objects.isNull(buildStage) || Objects.isNull(buildStage.getError())) return "";
+        return " buildStageError="+buildStage.getError().getType()+":"+buildStage.getError().getMessage();
+    }
+
+    private String buildExecNodeLog (BuildStage buildStage, CollectorItem collectorItem) {
+        if(Objects.isNull(buildStage) || StringUtils.isEmpty(buildStage.getExec_node_logUrl()) || Objects.isNull(collectorItem)) return "";
+        return " buildStageLog=" + (collectorItem.getOptions().get("instanceUrl") + buildStage.getExec_node_logUrl());
     }
 
     private void populateDashboardId(BuildDataCreateResponse response) {
