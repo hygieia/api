@@ -243,6 +243,9 @@ public class GitHubPullRequestV3 extends GitHubV3 {
 
         // Total number of commits
         pull.setNumberOfChanges(restClient.getInteger(pullRequestObject, "commits"));
+        pull.setCountFilesChanged(restClient.getLong(pullRequestObject, "changed_files"));
+        pull.setLineAdditions(restClient.getLong(pullRequestObject, "additions"));
+        pull.setLineDeletions(restClient.getLong(pullRequestObject, "deletions"));
 
         // Merge Details: From the closed PR
         long mergedTimestampMillis = getTimeStampMills(restClient.getString(pullRequestObject, "merged_at"));

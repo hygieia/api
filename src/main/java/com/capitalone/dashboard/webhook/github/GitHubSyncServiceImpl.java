@@ -510,6 +510,9 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
             pull.setCreatedAt(createdTimestamp);
             pull.setClosedAt(closedTimestamp);
             pull.setUpdatedAt(updatedTimestamp);
+            pull.setCountFilesChanged(asInt(node, "changedFiles"));
+            pull.setLineAdditions(asInt(node, "additions"));
+            pull.setLineDeletions(asInt(node, "deletions"));
             //Status
             pull.setState(str(node, "state").toLowerCase());
             JSONObject headrefJson = (JSONObject) node.get("headRef");
