@@ -1,25 +1,18 @@
 package com.capitalone.dashboard.service;
 
 import com.capitalone.dashboard.misc.HygieiaException;
-import com.capitalone.dashboard.model.Dashboard;
 import com.capitalone.dashboard.model.DataResponse;
 import com.capitalone.dashboard.model.Metadata;
 import com.capitalone.dashboard.repository.CustomRepositoryQuery;
 import com.capitalone.dashboard.repository.MetadataRepository;
 import com.capitalone.dashboard.request.MetadataCreateRequest;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.LinkedHashMap;
-import java.util.List;
 
 @Service
 public class MetadataServiceImpl implements MetadataService {
@@ -47,7 +40,7 @@ public class MetadataServiceImpl implements MetadataService {
         // check if the raw data is a valid
         JSONObject jsonObject;
         try {
-            jsonObject = (JSONObject) new JSONParser().parse(new ObjectMapper().writeValueAsString(request.getRawData()));
+            jsonObject = (JSONObject) new JSONParser().parse(String.valueOf(request.getRawData()));
 
 
         } catch (Exception e) {

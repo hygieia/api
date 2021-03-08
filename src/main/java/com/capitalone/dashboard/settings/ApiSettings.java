@@ -51,6 +51,9 @@ public class ApiSettings {
     private Map<String,String> performance;
     private String unit;
 
+    @Value("${encryptRemoteCreatePayload:true}")
+    private boolean encryptRemoteCreatePayload;
+
     public Map<String, String> getFunctional() {
         return functional;
     }
@@ -199,4 +202,7 @@ public class ApiSettings {
         this.dataSyncSettings = dataSyncSettings;
     }
 
+    public boolean isEncryptRemoteCreatePayload() { return encryptRemoteCreatePayload; }
+
+    public void setEncryptRemoteCreatePayload(boolean encryptRemoteCreatePayload) { this.encryptRemoteCreatePayload = encryptRemoteCreatePayload; }
 }
