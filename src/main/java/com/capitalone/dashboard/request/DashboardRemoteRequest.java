@@ -82,6 +82,8 @@ public class DashboardRemoteRequest {
 
         private String businessApplication;
 
+        private Map<String, String> properties = new HashMap<>();
+
         public String getTemplate() {
             return template;
         }
@@ -153,6 +155,10 @@ public class DashboardRemoteRequest {
         public void setType(String type) {
             this.type = type;
         }
+
+        public Map<String, String> getProperties() { return properties; }
+
+        public void setProperties(Map<String, String> properties) { this.properties = properties; }
     }
 
     /**
