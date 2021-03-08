@@ -10,8 +10,8 @@ import com.capitalone.dashboard.model.Component;
 import com.capitalone.dashboard.model.Dashboard;
 import com.capitalone.dashboard.model.DashboardType;
 import com.capitalone.dashboard.model.Owner;
-import com.capitalone.dashboard.model.Widget;
 import com.capitalone.dashboard.model.ScoreDisplayType;
+import com.capitalone.dashboard.model.Widget;
 import com.capitalone.dashboard.repository.CmdbRepository;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.repository.CollectorRepository;
@@ -20,6 +20,7 @@ import com.capitalone.dashboard.repository.CustomRepositoryQuery;
 import com.capitalone.dashboard.repository.DashboardRepository;
 import com.capitalone.dashboard.request.DashboardRemoteRequest;
 import com.capitalone.dashboard.request.WidgetRequest;
+import com.capitalone.dashboard.settings.ApiSettings;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -35,7 +36,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class DashboardRemoteServiceImpl implements DashboardRemoteService {
@@ -49,13 +49,20 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
     private final CmdbRepository cmdbRepository;
     private final ComponentRepository componentRepository;
     private final CollectorItemRepository collectorItemRepository;
+    private final ApiSettings apiSettings;
+    private final EncryptionService encryptionService;
+
+    public static final String PASSWORD_OPTION = "password";
+    public static final String PERSONAL_ACCESS_TOKEN_OPTION = "personalAccessToken";
+
 
     @Autowired
     public DashboardRemoteServiceImpl(
             CollectorRepository collectorRepository,
             CustomRepositoryQuery customRepositoryQuery,
-            DashboardRepository dashboardRepository, DashboardService dashboardService, CollectorService collectorService, UserInfoService userInfoService, CmdbRepository cmdbRepository, ComponentRepository componentRepository,
-            CollectorItemRepository collectorItemRepository) {
+            DashboardRepository dashboardRepository, DashboardService dashboardService, CollectorService collectorService,
+            UserInfoService userInfoService, CmdbRepository cmdbRepository, ComponentRepository componentRepository,
+            CollectorItemRepository collectorItemRepository, ApiSettings apiSettings, EncryptionService encryptionService) {
         this.collectorRepository = collectorRepository;
         this.customRepositoryQuery = customRepositoryQuery;
         this.dashboardRepository = dashboardRepository;
@@ -65,6 +72,8 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
         this.cmdbRepository = cmdbRepository;
         this.componentRepository = componentRepository;
         this.collectorItemRepository = collectorItemRepository;
+        this.apiSettings = apiSettings;
+        this.encryptionService = encryptionService;
     }
 
     /**
@@ -111,6 +120,11 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
 
         if (validOwners.isEmpty()) {
             throw new HygieiaException("There are no valid owner/owners in the request", HygieiaException.INVALID_CONFIGURATION);
+        }
+
+        // if true password or personalAccessToken in SCM widgets needs to be encrypted
+        if(apiSettings.isEncryptRemoteCreatePayload()) {
+            encryptSCMWidgets(request);
         }
 
         List<Dashboard> dashboards = findExistingDashboardsFromRequest( request );
@@ -327,5 +341,23 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
         }
         List<String> activeWidgets = new ArrayList<>();
         return new Dashboard(true, metaData.getTemplate(), metaData.getTitle(), application, metaData.getOwners(), DashboardType.fromString(metaData.getType()), serviceName, appName,activeWidgets, false, ScoreDisplayType.HEADER);
+    }
+
+    private void encryptSCMWidgets (DashboardRemoteRequest request) {
+        if(request == null) return;
+        if(CollectionUtils.isEmpty(request.getCodeRepoEntries())) return;
+        List<DashboardRemoteRequest.CodeRepoEntry> scmEntries = request.getCodeRepoEntries();
+
+        for (DashboardRemoteRequest.CodeRepoEntry scmEntry : scmEntries) {
+
+            String password = (String) scmEntry.getOptions().get(PASSWORD_OPTION);
+            String accessToken = (String) scmEntry.getOptions().get(PERSONAL_ACCESS_TOKEN_OPTION);
+            if(StringUtils.isNotEmpty(password)) {
+                //encrypt the password
+                scmEntry.getOptions().put(PASSWORD_OPTION, encryptionService.encrypt(password));
+            } else if (StringUtils.isNotEmpty(accessToken)) {
+                scmEntry.getOptions().put(PERSONAL_ACCESS_TOKEN_OPTION, encryptionService.encrypt(accessToken));
+            }
+        }
     }
 }
