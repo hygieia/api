@@ -84,7 +84,7 @@ public class ApiTokenRequestFilterTest {
         boolean isException = Boolean.FALSE;
         try{
             filter.attemptAuthentication(request, response);
-        } catch (AuthenticationServiceException e) {
+        } catch (AuthenticationServiceException | StringIndexOutOfBoundsException e) {
             isException = Boolean.TRUE;
         }
         assertEquals(isException, Boolean.TRUE);
