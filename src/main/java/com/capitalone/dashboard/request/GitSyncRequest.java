@@ -2,7 +2,7 @@ package com.capitalone.dashboard.request;
 
 import javax.validation.constraints.NotNull;
 
-public class GitSyncRequest {
+public class GitSyncRequest extends BaseRequest {
     @NotNull
     private String repo;
     @NotNull

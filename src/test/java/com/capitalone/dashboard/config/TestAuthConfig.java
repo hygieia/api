@@ -12,6 +12,7 @@ import com.capitalone.dashboard.service.ApiTokenServiceImpl;
 import com.capitalone.dashboard.service.AuthenticationService;
 import com.capitalone.dashboard.service.AutoDiscoveryService;
 import com.capitalone.dashboard.service.BinaryArtifactService;
+import com.capitalone.dashboard.service.BuildCommonService;
 import com.capitalone.dashboard.service.BuildService;
 import com.capitalone.dashboard.service.BusCompOwnerService;
 import com.capitalone.dashboard.service.CloudInstanceService;
@@ -308,5 +309,8 @@ public class TestAuthConfig {
 
     @Bean
     public AutoDiscoveryService autoDiscoveryService() {return Mockito.mock(AutoDiscoveryService.class);}
+
+    @Bean
+    public BuildCommonService buildCommonService() { return Mockito.mock(BuildCommonService.class); }
 }
 

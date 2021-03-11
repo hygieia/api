@@ -3,7 +3,7 @@ package com.capitalone.dashboard.request;
 import com.capitalone.dashboard.model.Service;
 import com.capitalone.dashboard.model.ServiceStatus;
 
-public class ServiceRequest {
+public class ServiceRequest extends BaseRequest {
 
 
     private ServiceStatus status;

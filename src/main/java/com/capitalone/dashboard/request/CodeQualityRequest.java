@@ -5,7 +5,7 @@ import org.bson.types.ObjectId;
 
 import javax.validation.constraints.NotNull;
 
-public class CodeQualityRequest {
+public class CodeQualityRequest extends BaseRequest {
     @NotNull
     private ObjectId componentId;
     private Integer max;

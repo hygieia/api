@@ -2,7 +2,7 @@ package com.capitalone.dashboard.request;
 
 import javax.validation.constraints.NotNull;
 
-public class CmdbRequest {
+public class CmdbRequest extends BaseRequest {
     /**
      * configurationItem unique system generated id
      */

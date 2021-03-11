@@ -1,10 +1,10 @@
 package com.capitalone.dashboard.request;
 
-import javax.validation.constraints.NotNull;
-
 import com.capitalone.dashboard.model.Authentication;
 
-public class AuthenticationRequest {
+import javax.validation.constraints.NotNull;
+
+public class AuthenticationRequest extends BaseRequest {
 
     @NotNull
     private String username;
