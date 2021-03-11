@@ -4,7 +4,7 @@ import org.bson.types.ObjectId;
 
 import javax.validation.constraints.NotNull;
 
-public class LogAnalysisSearchRequest {
+public class LogAnalysisSearchRequest extends BaseRequest {
 
     @NotNull
     private ObjectId componentId;

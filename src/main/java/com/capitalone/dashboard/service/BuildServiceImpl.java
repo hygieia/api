@@ -185,28 +185,31 @@ public class BuildServiceImpl implements BuildService {
         // Will be refactored soon
         CollectorItem buildCollectorItem = collectorItemRepository.findOne(build.getCollectorItemId());
         if (buildCollectorItem != null) {
-            LOGGER.info("buildUrl=" + build.getBuildUrl()
-                    + " buildDurationMillis=" + build.getDuration()
-                    + " startedBy=" + build.getStartedBy()
-                    + " buildStatus=" + build.getBuildStatus()
-                    + " hygieiaBuildId=" + build.getId()
-                    + " buildInstanceUrl=" + buildCollectorItem.getOptions().get("instanceUrl")
-                    + " buildJobName=" + buildCollectorItem.getOptions().get("jobName")
-                    + " buildJobUrl=" + buildCollectorItem.getOptions().get("jobUrl"));
+            LOGGER.info("correlation_id=" + request.getClientReference()
+                    + ", build_url=" + build.getBuildUrl()
+                    + ", build_duration_millis=" + build.getDuration()
+                    + ", build_started_by=" + build.getStartedBy()
+                    + ", build_status=" + build.getBuildStatus()
+                    + ", hygieia_build_id=" + build.getId()
+                    + ", hygieia_build_view_link=" + settings.getHygieia_ui_url()+"/build/"+build.getId()
+                    + ", build_instance_url=" + buildCollectorItem.getOptions().get("instanceUrl")
+                    + ", build_job_name=" + buildCollectorItem.getOptions().get("jobName")
+                    + ", build_job_url=" + buildCollectorItem.getOptions().get("jobUrl"));
 
             //log stage information only for failed builds
             if (CollectionUtils.isNotEmpty(build.getStages()) && !(BuildStatus.Success.equals(build.getBuildStatus()))) {
                 for (BuildStage buildStage : build.getStages()) {
                     if(Objects.isNull(buildStage)) continue;
-                    LOGGER.info("buildUrl=" + build.getBuildUrl()
-                            + " buildDurationMillis=" + build.getDuration()
-                            + " startedBy=" + build.getStartedBy()
-                            + " buildStatus=" + build.getBuildStatus()
-                            + " hygieiaBuildId=" + build.getId()
-                            + " buildInstanceUrl=" + buildCollectorItem.getOptions().get("instanceUrl")
-                            + " buildStageName=" + buildStage.getName()
-                            + " buildStageStatus=" + buildStage.getStatus()
-                            + " buildStageDurationMillis=" + buildStage.getDurationMillis()
+                    LOGGER.info("correlation_id=" + request.getClientReference()
+                            + ", build_url=" + build.getBuildUrl()
+                            + ", build_duration_millis=" + build.getDuration()
+                            + ", build_started_by=" + build.getStartedBy()
+                            + ", build_status=" + build.getBuildStatus()
+                            + ", hygieia_build_id=" + build.getId()
+                            + ", build_instance_url=" + buildCollectorItem.getOptions().get("instanceUrl")
+                            + ", build_stage_name=" + buildStage.getName()
+                            + ", build_stage_status=" + buildStage.getStatus()
+                            + ", build_stage_duration_millis=" + buildStage.getDurationMillis()
                             + buildStageErrorLog(buildStage)
                             + buildExecNodeLog(buildStage, buildCollectorItem)
                     );
@@ -219,12 +222,12 @@ public class BuildServiceImpl implements BuildService {
 
     private String buildStageErrorLog (BuildStage buildStage) {
         if(Objects.isNull(buildStage) || Objects.isNull(buildStage.getError())) return "";
-        return " buildStageError="+buildStage.getError().getType()+":"+buildStage.getError().getMessage();
+        return " build_stage_error="+buildStage.getError().getType()+":"+buildStage.getError().getMessage();
     }
 
     private String buildExecNodeLog (BuildStage buildStage, CollectorItem collectorItem) {
         if(Objects.isNull(buildStage) || StringUtils.isEmpty(buildStage.getExec_node_logUrl()) || Objects.isNull(collectorItem)) return "";
-        return " buildStageLog=" + (collectorItem.getOptions().get("instanceUrl") + buildStage.getExec_node_logUrl());
+        return " build_stage_log=" + (collectorItem.getOptions().get("instanceUrl") + buildStage.getExec_node_logUrl());
     }
 
     private void populateDashboardId(BuildDataCreateResponse response) {
@@ -291,6 +294,7 @@ public class BuildServiceImpl implements BuildService {
         if (build == null) {
             build = new Build();
         }
+        build.setClientReference(request.getClientReference());
         build.setNumber(request.getNumber());
         build.setBuildUrl(request.getBuildUrl());
         build.setStartTime(request.getStartTime());

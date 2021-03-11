@@ -69,6 +69,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/registerUser").permitAll()
                 .antMatchers("/findUser").permitAll()
                 .antMatchers("/login**").permitAll()
+                .antMatchers("/build-details").permitAll()
                 //TODO: sample call secured with ROLE_API
                 //.antMatchers("/ping").hasAuthority("ROLE_API")
                 .antMatchers(HttpMethod.GET, "/**").permitAll()

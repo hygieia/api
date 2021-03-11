@@ -2,7 +2,7 @@ package com.capitalone.dashboard.request;
 
 import javax.validation.constraints.NotNull;
 
-public class DataSyncRequest {
+public class DataSyncRequest extends BaseRequest {
     @NotNull
     private String collectorName;
 

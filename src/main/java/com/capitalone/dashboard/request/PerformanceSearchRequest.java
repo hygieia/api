@@ -5,7 +5,7 @@ import org.bson.types.ObjectId;
 
 import javax.validation.constraints.NotNull;
 
-public class PerformanceSearchRequest {
+public class PerformanceSearchRequest extends BaseRequest {
     @NotNull
     private ObjectId componentId;
     private Integer max;
