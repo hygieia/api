@@ -2,7 +2,7 @@ package com.capitalone.dashboard.request;
 
 import javax.validation.constraints.NotNull;
 
-public class EncryptionRequest {
+public class EncryptionRequest extends BaseRequest {
 	@NotNull
 	private String message;
 

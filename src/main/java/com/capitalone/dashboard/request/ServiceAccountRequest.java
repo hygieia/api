@@ -2,7 +2,7 @@ package com.capitalone.dashboard.request;
 
 import javax.validation.constraints.NotNull;
 
-public class ServiceAccountRequest {
+public class ServiceAccountRequest extends BaseRequest {
 
     @NotNull
     private String serviceAccount;

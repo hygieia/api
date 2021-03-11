@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DashboardRemoteRequest {
+public class DashboardRemoteRequest extends BaseRequest {
     @Valid
     private DashboardMetaData metaData;
 

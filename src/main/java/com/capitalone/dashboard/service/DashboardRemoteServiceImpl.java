@@ -24,9 +24,9 @@ import com.capitalone.dashboard.settings.ApiSettings;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.bson.types.ObjectId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,7 +39,7 @@ import java.util.Set;
 
 @Service
 public class DashboardRemoteServiceImpl implements DashboardRemoteService {
-    private static final Log LOG = LogFactory.getLog(DashboardRemoteServiceImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DashboardRemoteServiceImpl.class);
     private final CollectorRepository collectorRepository;
     private final CustomRepositoryQuery customRepositoryQuery;
     private final DashboardRepository dashboardRepository;
@@ -114,7 +114,7 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
             if (userInfoService.isUserValid(owner.getUsername(), owner.getAuthType())) {
                 validOwners.add(owner);
             } else {
-                LOG.warn(METHOD_NAME + " Invalid owner passed in the request : " + owner.getUsername());
+                LOG.warn(" correlation_id=" + request.getClientReference() + " Invalid owner passed in the request dashboard_invalid_owner=" + owner.getUsername());
             }
         }
 
@@ -139,6 +139,7 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
             dashboard.setOwners(new ArrayList<Owner>(uniqueOwners));
             dashboard.setConfigurationItemBusAppName(request.getMetaData().getBusinessApplication());
             dashboard.setConfigurationItemBusServName(request.getMetaData().getBusinessService());
+            dashboard.setClientReference(request.getClientReference());
 //            if (!isUpdate) {
 //                throw new HygieiaException("Dashboard " + dashboard.getTitle() + " (id =" + dashboard.getId() + ") already exists", HygieiaException.DUPLICATE_DATA);
 //            }
@@ -204,9 +205,9 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
             dashboardService.deleteWidget(dashboard,CollectorType.CodeQuality);
         }
 
-        LOG.info("DashboardTitle=" + dashboard.getTitle() + ", ExistingTypes=" + existingTypes.size() +
-                " " + existingTypes + ", IncomingTypes=" + incomingTypes.size() + " " + incomingTypes
-                + ", deleteSet=" + deleteSet.size() + " " + deleteSet);
+        LOG.info("correlation_id="+ request.getClientReference() + ", dashboard_title=" + dashboard.getTitle() + ", existing_widget_types=" + existingTypes.size() +
+                " " + existingTypes + ", incoming_widget_types=" + incomingTypes.size() + " " + incomingTypes
+                + ", deleted_widgets_set=" + deleteSet.size() + " " + deleteSet);
 
         componentRepository.save(component);
         return (dashboard != null) ? dashboardService.get(dashboard.getId()) : null;
@@ -228,8 +229,8 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
                 }
             }
         }
-        LOG.warn(String.format("MultipleDashboards=%d, businessService=%s, businessApplication=%s, title=%s, selected=%s",
-                dashboards.size(), businessService, businessApplication, title, dashboard.getId()));
+        LOG.warn(String.format("correlation_id=%s, count_dashboards=%d, ba=%s, component=%s, dashboard_title=%s, selected_dashboard_id=%s",
+                request.getClientReference(), dashboards.size(), businessService, businessApplication, title, dashboard.getId()));
         return dashboard;
     }
 

@@ -10,6 +10,7 @@ import com.capitalone.dashboard.service.ApiTokenServiceImpl;
 import com.capitalone.dashboard.service.AuthenticationService;
 import com.capitalone.dashboard.service.AutoDiscoveryService;
 import com.capitalone.dashboard.service.BinaryArtifactService;
+import com.capitalone.dashboard.service.BuildCommonService;
 import com.capitalone.dashboard.service.BuildService;
 import com.capitalone.dashboard.service.BusCompOwnerService;
 import com.capitalone.dashboard.service.CloudInstanceService;
@@ -246,8 +247,8 @@ import org.springframework.context.annotation.ComponentScan;
 	 @Bean
 	 public DashboardRemoteService dashboardRemoteService() {return Mockito.mock(DashboardRemoteService.class);}
 
-@Bean
-    public TemplateService templateService() {
+	 @Bean
+     public TemplateService templateService() {
         return Mockito.mock(TemplateService.class);
     }
 
@@ -295,5 +296,9 @@ import org.springframework.context.annotation.ComponentScan;
 
 	 @Bean
 	 public AutoDiscoveryService autoDiscoveryService(){return Mockito.mock(AutoDiscoveryService.class);}
+
+	 @Bean
+	 public BuildCommonService buildCommonService() { return Mockito.mock(BuildCommonService.class); }
+
  }
 

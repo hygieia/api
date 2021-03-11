@@ -6,7 +6,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import java.util.List;
 
-public class PipelineSearchRequest {
+public class PipelineSearchRequest extends BaseRequest {
     /** {@link CollectorItem} teamdashboard collector item id */
     @NotEmpty
     private List<ObjectId> collectorItemId;

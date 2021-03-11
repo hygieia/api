@@ -54,6 +54,8 @@ public class ApiSettings {
     @Value("${encryptRemoteCreatePayload:true}")
     private boolean encryptRemoteCreatePayload;
 
+    private String hygieia_ui_url="";
+
     public Map<String, String> getFunctional() {
         return functional;
     }
@@ -205,4 +207,8 @@ public class ApiSettings {
     public boolean isEncryptRemoteCreatePayload() { return encryptRemoteCreatePayload; }
 
     public void setEncryptRemoteCreatePayload(boolean encryptRemoteCreatePayload) { this.encryptRemoteCreatePayload = encryptRemoteCreatePayload; }
+
+    public String getHygieia_ui_url() { return hygieia_ui_url; }
+
+    public void setHygieia_ui_url(String hygieia_ui_url) { this.hygieia_ui_url = hygieia_ui_url; }
 }

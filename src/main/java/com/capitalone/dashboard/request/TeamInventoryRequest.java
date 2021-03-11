@@ -2,7 +2,7 @@ package com.capitalone.dashboard.request;
 
 import org.bson.types.ObjectId;
 
-public class TeamInventoryRequest {
+public class TeamInventoryRequest extends BaseRequest {
 	
 	 private ObjectId componentId;
 	 private String teamId;

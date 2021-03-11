@@ -4,7 +4,7 @@ import org.bson.types.ObjectId;
 
 import javax.validation.constraints.NotNull;
 
-public class LibraryPolicyRequest {
+public class LibraryPolicyRequest extends BaseRequest {
     @NotNull
     private ObjectId componentId;
     private Integer max;

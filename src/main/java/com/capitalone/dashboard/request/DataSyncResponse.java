@@ -1,10 +1,8 @@
 package com.capitalone.dashboard.request;
 
-import com.capitalone.dashboard.model.CollectorItem;
-
 import java.util.List;
 
-public class DataSyncResponse {
+public class DataSyncResponse extends BaseRequest {
     int componentCount;
     List<String> components;
     int collectorItemCount;

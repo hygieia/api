@@ -1,6 +1,6 @@
 package com.capitalone.dashboard.request;
 
-public class SonarDataSyncRequest {
+public class SonarDataSyncRequest extends BaseRequest {
 
     private String syncFrom;
     private String syncTo;

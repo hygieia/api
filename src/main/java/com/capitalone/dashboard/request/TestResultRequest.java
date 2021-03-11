@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TestResultRequest {
+public class TestResultRequest extends BaseRequest {
     @NotNull
     private ObjectId componentId;
     private Integer max;

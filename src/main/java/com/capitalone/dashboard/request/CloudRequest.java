@@ -4,7 +4,7 @@ import org.bson.types.ObjectId;
 
 import javax.validation.constraints.NotNull;
 
-public class CloudRequest {
+public class CloudRequest extends BaseRequest {
     @NotNull
     private ObjectId id;
 

@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull;
 /**
  * Created by yaf107 on 1/11/16.
  */
-public class CollectorRequest {
+public class CollectorRequest extends BaseRequest {
     @NotNull
     private String name;
     @NotNull
