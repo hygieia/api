@@ -61,6 +61,7 @@ public class LoggingFilter implements Filter {
 
     private static final String UNKNOWN_USER = "unknown";
 
+
     @Autowired
     private RequestLogRepository requestLogRepository;
 
