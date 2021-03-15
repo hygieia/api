@@ -61,7 +61,6 @@ public class LoggingFilter implements Filter {
 
     private static final String UNKNOWN_USER = "unknown";
 
-    private static final String PING = "ping";
 
     @Autowired
     private RequestLogRepository requestLogRepository;
@@ -82,12 +81,6 @@ public class LoggingFilter implements Filter {
         Map<String, String> requestMap = this.getTypesafeRequestMap(httpServletRequest);
         BufferedRequestWrapper bufferedRequest = new BufferedRequestWrapper(httpServletRequest);
         BufferedResponseWrapper bufferedResponse = new BufferedResponseWrapper(httpServletResponse);
-
-        // no need further action for ping
-        if(StringUtils.containsIgnoreCase(httpServletRequest.getRequestURI(), PING)){
-            chain.doFilter(bufferedRequest, bufferedResponse);
-            return;
-        }
 
         if (httpServletRequest.getMethod().equals(HttpMethod.PUT.toString()) ||
                 (httpServletRequest.getMethod().equals(HttpMethod.POST.toString())) ||

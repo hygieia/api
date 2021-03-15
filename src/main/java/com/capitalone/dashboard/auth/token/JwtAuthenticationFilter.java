@@ -27,6 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final Logger LOGGER = Logger.getLogger(JwtAuthenticationFilter.class);
 	private TokenAuthenticationService tokenAuthenticationService;
+    private static final String PING = "ping";
 	
 	@Autowired
 	public JwtAuthenticationFilter(TokenAuthenticationService tokenAuthenticationService){
@@ -52,17 +53,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 filterChain.doFilter(request, response);
             } finally {
-                String parameters = MapUtils.isEmpty(request.getParameterMap())? "NONE" :
-                        Collections.list(request.getParameterNames()).stream()
-                                .map(p -> p + ":" + Arrays.asList( request.getParameterValues(p)) )
-                                .collect(Collectors.joining(","));
-                LOGGER.info(" correlation_id=" + correlation_id + ", requester=" + (authHeader == null ? "READ_ONLY" : apiUser )
-                        + ", duration=" + (System.currentTimeMillis() - startTime)
-                        + ", uri=" + request.getRequestURI()
-                        + ", request_method=" + request.getMethod()
-                        + ", response_code=" + (response == null ? 0 : response.getStatus())
-                        + ", client_ip=" + request.getRemoteAddr()
-                        + (StringUtils.equalsIgnoreCase(request.getMethod(), "GET") ? ", request_params="+parameters :  StringUtils.EMPTY ));
+                // no logging on ping request
+                if(!StringUtils.containsIgnoreCase(request.getRequestURI(), PING)) {
+                    String parameters = MapUtils.isEmpty(request.getParameterMap()) ? "NONE" :
+                            Collections.list(request.getParameterNames()).stream()
+                                    .map(p -> p + ":" + Arrays.asList(request.getParameterValues(p)))
+                                    .collect(Collectors.joining(","));
+                    LOGGER.info(" correlation_id=" + correlation_id + ", requester=" + (authHeader == null ? "READ_ONLY" : apiUser)
+                            + ", duration=" + (System.currentTimeMillis() - startTime)
+                            + ", uri=" + request.getRequestURI()
+                            + ", request_method=" + request.getMethod()
+                            + ", response_code=" + (response == null ? 0 : response.getStatus())
+                            + ", client_ip=" + request.getRemoteAddr()
+                            + (StringUtils.equalsIgnoreCase(request.getMethod(), "GET") ? ", request_params=" + parameters : StringUtils.EMPTY));
+                }
             }
             return;
         }
@@ -85,17 +89,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 tokenAuthenticationService.addAuthentication(response, authentication);
             }
         } finally {
-            String parameters = MapUtils.isEmpty(request.getParameterMap())? "NONE" :
-                    Collections.list(request.getParameterNames()).stream()
-                            .map(p -> p + ":" + Arrays.asList( request.getParameterValues(p)) )
-                            .collect(Collectors.joining(","));
-            LOGGER.info("correlation_id=" + correlation_id + ", requester=" + ( authentication == null || authentication.getPrincipal() == null ? apiUser : authentication.getPrincipal() )
-                    + ", duration=" + (System.currentTimeMillis() - startTime)
-                    + ", uri=" + request.getRequestURI()
-                    + ", request_method=" + request.getMethod()
-                    + ", status=" + (response == null ? 0 : response.getStatus())
-                    + ", client_ip=" + request.getRemoteAddr()
-                    + (StringUtils.equalsIgnoreCase(request.getMethod(), "GET") ? ", request_params="+parameters :  StringUtils.EMPTY ));
+            // no logging on ping request
+            if(!StringUtils.containsIgnoreCase(request.getRequestURI(), PING)) {
+                String parameters = MapUtils.isEmpty(request.getParameterMap()) ? "NONE" :
+                        Collections.list(request.getParameterNames()).stream()
+                                .map(p -> p + ":" + Arrays.asList(request.getParameterValues(p)))
+                                .collect(Collectors.joining(","));
+                LOGGER.info("correlation_id=" + correlation_id + ", requester=" + (authentication == null || authentication.getPrincipal() == null ? apiUser : authentication.getPrincipal())
+                        + ", duration=" + (System.currentTimeMillis() - startTime)
+                        + ", uri=" + request.getRequestURI()
+                        + ", request_method=" + request.getMethod()
+                        + ", status=" + (response == null ? 0 : response.getStatus())
+                        + ", client_ip=" + request.getRemoteAddr()
+                        + (StringUtils.equalsIgnoreCase(request.getMethod(), "GET") ? ", request_params=" + parameters : StringUtils.EMPTY));
+            }
         }
     }
 }
