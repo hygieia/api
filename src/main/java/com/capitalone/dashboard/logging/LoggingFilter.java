@@ -102,6 +102,7 @@ public class LoggingFilter implements Filter {
                 requestLog.setApiUser(StringUtils.isNotEmpty(apiUser) ? apiUser : UNKNOWN_USER);
                 requestLog.setRequestSize(httpServletRequest.getContentLengthLong());
                 requestLog.setRequestContentType(httpServletRequest.getContentType());
+                requestLog.setApplication("hygieia-api");
 
                 chain.doFilter(bufferedRequest, bufferedResponse);
                 requestLog.setResponseContentType(httpServletResponse.getContentType());
