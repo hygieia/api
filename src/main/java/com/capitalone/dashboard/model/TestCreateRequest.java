@@ -1,10 +1,12 @@
 package com.capitalone.dashboard.model;
 
 
+import com.capitalone.dashboard.request.BaseRequest;
+
 import javax.validation.constraints.NotNull;
 
 
-public class TestCreateRequest {
+public class TestCreateRequest extends BaseRequest {
 
     /**
      * Type of test
@@ -35,9 +37,6 @@ public class TestCreateRequest {
     private String testResult;
 
     private String jobUrl;
-
-    private String clientReference;
-
 
     public String getTestType() {
         return testType;
@@ -112,11 +111,4 @@ public class TestCreateRequest {
         this.targetServiceName = targetServiceName;
     }
 
-    public String getClientReference() {
-        return clientReference;
-    }
-
-    public void setClientReference(String clientReference) {
-        this.clientReference = clientReference;
-    }
 }
