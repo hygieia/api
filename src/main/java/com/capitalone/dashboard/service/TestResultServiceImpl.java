@@ -627,18 +627,20 @@ public class TestResultServiceImpl implements TestResultService {
     }
 
     private void associateBuildToTestResult(String buildUrl, String clientReference, TestResult testResult){
-        Build build = buildRepository.findByBuildUrl(buildUrl);
-        if(Objects.nonNull(build)){
-            build.setClientReference(clientReference);
-            testResult.setBuildId(build.getId());
-            buildRepository.save(build);
-        }else{
-            Build baseBuild = new Build();
-            baseBuild.setBuildUrl(buildUrl);
-            baseBuild.setBuildStatus(BuildStatus.InProgress);
-            baseBuild.setClientReference(clientReference);
-            baseBuild = buildRepository.save(baseBuild);
-            testResult.setBuildId(baseBuild.getId());
+        if(Objects.nonNull(buildUrl)){
+            Build build = buildRepository.findByBuildUrl(buildUrl);
+            if(Objects.nonNull(build)){
+                build.setClientReference(clientReference);
+                testResult.setBuildId(build.getId());
+                buildRepository.save(build);
+            }else{
+                Build baseBuild = new Build();
+                baseBuild.setBuildUrl(buildUrl);
+                baseBuild.setBuildStatus(BuildStatus.InProgress);
+                baseBuild.setClientReference(clientReference);
+                baseBuild = buildRepository.save(baseBuild);
+                testResult.setBuildId(baseBuild.getId());
+            }
         }
     }
 
