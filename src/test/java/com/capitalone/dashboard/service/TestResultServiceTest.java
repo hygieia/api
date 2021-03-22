@@ -1,6 +1,7 @@
 package com.capitalone.dashboard.service;
 
 import com.capitalone.dashboard.misc.HygieiaException;
+import com.capitalone.dashboard.model.Build;
 import com.capitalone.dashboard.model.Collector;
 import com.capitalone.dashboard.model.CollectorItem;
 import com.capitalone.dashboard.model.TestCapability;
@@ -13,6 +14,7 @@ import com.capitalone.dashboard.model.TestSuiteType;
 import com.capitalone.dashboard.model.DataResponse;
 import com.capitalone.dashboard.model.Component;
 import com.capitalone.dashboard.model.CollectorType;
+import com.capitalone.dashboard.repository.BuildRepository;
 import com.capitalone.dashboard.repository.CollectorRepository;
 import com.capitalone.dashboard.repository.ComponentRepository;
 import com.capitalone.dashboard.repository.TestResultRepository;
@@ -42,6 +44,7 @@ public class TestResultServiceTest {
     @Mock private CollectorRepository collectorRepository;
     @Mock private CollectorService collectorService;
     @Mock private ComponentRepository componentRepository;
+    @Mock private BuildRepository buildRepository;
     @Mock private ApiSettings apiSettings;
     @InjectMocks private TestResultServiceImpl testResultService;
 
@@ -291,6 +294,7 @@ public class TestResultServiceTest {
         data.setSource("aSource");
         data.setConfigurationItem("testConfigItem");
         data.setTimeStamp("2020-01-14T02:26:22.635 +0000");
+        data.setClientReference("testClientReference");
         data.setTestResult(encodedTestResult);
         return data;
     }
@@ -304,6 +308,7 @@ public class TestResultServiceTest {
         when(collectorRepository.findOne(collectorId)).thenReturn(new Collector());
         when(collectorService.createCollector(any(Collector.class))).thenReturn(new Collector());
         when(collectorService.createCollectorItem(any(CollectorItem.class))).thenReturn(new CollectorItem());
+        when(buildRepository.findByBuildUrl(any(String.class))).thenReturn(new Build());
         when(apiSettings.getFunctional()).thenReturn( new HashMap<String, String>() {{
             put("cucumber", "cucumber");
         }}
@@ -326,6 +331,7 @@ public class TestResultServiceTest {
         when(collectorRepository.findOne(collectorId)).thenReturn(new Collector());
         when(collectorService.createCollector(any(Collector.class))).thenReturn(new Collector());
         when(collectorService.createCollectorItem(any(CollectorItem.class))).thenReturn(new CollectorItem());
+        when(buildRepository.findByBuildUrl(any(String.class))).thenReturn(new Build());
         when(apiSettings.getUnit()).thenReturn("junit");
 
         TestResult testResult = makeJunitTestResult();

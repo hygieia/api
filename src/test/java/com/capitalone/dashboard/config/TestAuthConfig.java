@@ -5,6 +5,7 @@ import com.capitalone.dashboard.auth.AuthProperties;
 import com.capitalone.dashboard.auth.AuthenticationResponseService;
 import com.capitalone.dashboard.repository.ApiTokenRepository;
 import com.capitalone.dashboard.repository.AuthenticationRepository;
+import com.capitalone.dashboard.repository.BuildRepository;
 import com.capitalone.dashboard.repository.DashboardRepository;
 import com.capitalone.dashboard.repository.UserInfoRepository;
 import com.capitalone.dashboard.service.ApiTokenService;
@@ -67,6 +68,11 @@ public class TestAuthConfig {
     @Bean
     public DashboardRepository dashboardRepository() {
         return Mockito.mock(DashboardRepository.class);
+    }
+
+    @Bean
+    public BuildRepository buildRepository() {
+        return Mockito.mock(BuildRepository.class);
     }
 
     @Bean

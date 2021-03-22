@@ -95,6 +95,7 @@ public class DefaultTestResultController {
     public ResponseEntity<String> createTest(@Valid @RequestBody TestCreateRequest request) throws HygieiaException {
         String correlation_id = httpServletRequest.getHeader(CommonConstants.HEADER_CLIENT_CORRELATION_ID);
         String requester = httpServletRequest.getHeader(CommonConstants.HEADER_API_USER);
+        request.setClientReference(correlation_id);
         String response = testResultService.createTest(request);
 
         //temporary fix to ensure backward compatibility
