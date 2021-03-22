@@ -182,10 +182,11 @@ public class BuildServiceImpl implements BuildService {
                 populateDashboardId(response);
             }
         }
+        String clientReference = Objects.nonNull(build.getClientReference())? build.getClientReference() : request.getClientReference();
         // Will be refactored soon
         CollectorItem buildCollectorItem = collectorItemRepository.findOne(build.getCollectorItemId());
         if (buildCollectorItem != null) {
-            LOGGER.info("correlation_id=" + request.getClientReference()
+            LOGGER.info("correlation_id=" + clientReference
                     + ", build_url=" + build.getBuildUrl()
                     + ", build_duration_millis=" + build.getDuration()
                     + ", build_started_by=" + build.getStartedBy()
@@ -200,7 +201,7 @@ public class BuildServiceImpl implements BuildService {
             if (CollectionUtils.isNotEmpty(build.getStages()) && !(BuildStatus.Success.equals(build.getBuildStatus()))) {
                 for (BuildStage buildStage : build.getStages()) {
                     if(Objects.isNull(buildStage)) continue;
-                    LOGGER.info("correlation_id=" + request.getClientReference()
+                    LOGGER.info("correlation_id=" + clientReference
                             + ", build_url=" + build.getBuildUrl()
                             + ", build_duration_millis=" + build.getDuration()
                             + ", build_started_by=" + build.getStartedBy()
@@ -293,8 +294,8 @@ public class BuildServiceImpl implements BuildService {
                 request.getNumber());
         if (build == null) {
             build = new Build();
+            build.setClientReference(request.getClientReference());
         }
-        build.setClientReference(request.getClientReference());
         build.setNumber(request.getNumber());
         build.setBuildUrl(request.getBuildUrl());
         build.setStartTime(request.getStartTime());

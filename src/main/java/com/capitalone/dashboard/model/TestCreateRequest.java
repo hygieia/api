@@ -36,6 +36,8 @@ public class TestCreateRequest {
 
     private String jobUrl;
 
+    private String clientReference;
+
 
     public String getTestType() {
         return testType;
@@ -108,5 +110,13 @@ public class TestCreateRequest {
 
     public void setTargetServiceName(String targetServiceName) {
         this.targetServiceName = targetServiceName;
+    }
+
+    public String getClientReference() {
+        return clientReference;
+    }
+
+    public void setClientReference(String clientReference) {
+        this.clientReference = clientReference;
     }
 }

@@ -5,6 +5,7 @@ import com.capitalone.dashboard.model.*;
 import com.capitalone.dashboard.model.quality.CucumberJsonReport;
 import com.capitalone.dashboard.model.quality.JunitXmlReport;
 import com.capitalone.dashboard.model.quality.JunitXmlReportV2;
+import com.capitalone.dashboard.repository.BuildRepository;
 import com.capitalone.dashboard.repository.CollectorRepository;
 import com.capitalone.dashboard.repository.ComponentRepository;
 import com.capitalone.dashboard.repository.TestResultRepository;
@@ -39,6 +40,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -48,6 +50,7 @@ public class TestResultServiceImpl implements TestResultService {
     private final TestResultRepository testResultRepository;
     private final ComponentRepository componentRepository;
     private final CollectorRepository collectorRepository;
+    private final BuildRepository buildRepository;
     private final CollectorService collectorService;
     private final CmdbService cmdbService;
     private final ApiSettings apiSettings;
@@ -58,12 +61,14 @@ public class TestResultServiceImpl implements TestResultService {
     public TestResultServiceImpl(TestResultRepository testResultRepository,
                                  ComponentRepository componentRepository,
                                  CollectorRepository collectorRepository,
+                                 BuildRepository buildRepository,
                                  CollectorService collectorService,
                                  CmdbService cmdbService,
                                  ApiSettings apiSettings) {
         this.testResultRepository = testResultRepository;
         this.componentRepository = componentRepository;
         this.collectorRepository = collectorRepository;
+        this.buildRepository = buildRepository;
         this.collectorService = collectorService;
         this.cmdbService = cmdbService;
         this.apiSettings = apiSettings;
@@ -614,8 +619,27 @@ public class TestResultServiceImpl implements TestResultService {
         testResult.setUnknownStatusCount(cucumberTestCapabilityTransformer.getUnknownStatusTestSuiteCount());
         testResult.setTimestamp(convertTimestamp(request.getTimeStamp()));
         testResult.getTestCapabilities().addAll(testCapabilities);
+        // associate build data
+        associateBuildToTestResult(request.getJobUrl(), request.getClientReference(), testResult);
+        testResult.setClientReference(request.getClientReference());
         TestResult result = testResultRepository.save(testResult);
         return result;
+    }
+
+    private void associateBuildToTestResult(String buildUrl, String clientReference, TestResult testResult){
+        Build build = buildRepository.findByBuildUrl(buildUrl);
+        if(Objects.nonNull(build)){
+            build.setClientReference(clientReference);
+            testResult.setBuildId(build.getId());
+            buildRepository.save(build);
+        }else{
+            Build baseBuild = new Build();
+            baseBuild.setBuildUrl(buildUrl);
+            baseBuild.setBuildStatus(BuildStatus.InProgress);
+            baseBuild.setClientReference(clientReference);
+            baseBuild = buildRepository.save(baseBuild);
+            testResult.setBuildId(baseBuild.getId());
+        }
     }
 
 
@@ -637,6 +661,9 @@ public class TestResultServiceImpl implements TestResultService {
         testResult.setTotalCount(junitXmlReport.getTests());
         testResult.setUnknownStatusCount(testCapability.getUnknownStatusTestSuiteCount());
         testResult.setTimestamp(convertTimestamp(request.getTimeStamp()));
+        // associate build data
+        associateBuildToTestResult(request.getJobUrl(), request.getClientReference(), testResult);
+        testResult.setClientReference(request.getClientReference());
         TestResult result = testResultRepository.save(testResult);
         return result;
     }
