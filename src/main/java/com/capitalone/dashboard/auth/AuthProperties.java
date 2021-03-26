@@ -28,6 +28,13 @@ public class AuthProperties {
 	private String ldapServerUrl;
 	private List<AuthType> authenticationProviders = Lists.newArrayList();
 
+	private String openIdClientId;
+	private String openIdClientSecret;
+	private String openIdServerHost;
+	private String openIdRedirectUri;
+	private String openIdGrantType;
+	private String openIdScope;
+
 	private String adDomain;
 	private String adRootDn;
 	private String adUserRootDn;
@@ -258,6 +265,54 @@ public class AuthProperties {
 
 	public void setUserDisplayName(String userDisplayName) {
 		this.userDisplayName = userDisplayName;
+	}
+
+	public String getOpenIdServerHost() {
+		return openIdServerHost;
+	}
+
+	public void setOpenIdServerHost(String openIdServerHost) {
+		this.openIdServerHost = openIdServerHost;
+	}
+
+	public String getOpenIdClientId() {
+		return openIdClientId;
+	}
+
+	public void setOpenIdClientId(String openIdClientId) {
+		this.openIdClientId = openIdClientId;
+	}
+
+	public String getOpenIdClientSecret() {
+		return openIdClientSecret;
+	}
+
+	public void setOpenIdClientSecret(String openIdClientSecret) {
+		this.openIdClientSecret = openIdClientSecret;
+	}
+
+	public String getOpenIdRedirectUri() {
+		return openIdRedirectUri;
+	}
+
+	public void setOpenIdRedirectUri(String openIdRedirectUri) {
+		this.openIdRedirectUri = openIdRedirectUri;
+	}
+
+	public String getOpenIdGrantType() {
+		return openIdGrantType;
+	}
+
+	public void setOpenIdGrantType(String openIdGrantType) {
+		this.openIdGrantType = openIdGrantType;
+	}
+
+	public String getOpenIdScope() {
+		return openIdScope;
+	}
+
+	public void setOpenIdScope(String openIdScope) {
+		this.openIdScope = openIdScope;
 	}
 
 }
