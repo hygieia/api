@@ -77,6 +77,8 @@ public class OpenIdAuthenticationServiceImpl implements OpenIdAuthenticationServ
             if (Objects.isNull(accessToken)) return null;
 
             JSONObject userInfoObj = getOpenIdUserInfo(accessToken);
+            if (Objects.isNull(userInfoObj)) return null;
+
 			String username = (String) userInfoObj.get("sub");
             Collection<? extends GrantedAuthority> authorities = getAuthorities(Collections.singletonList(UserRole.ROLE_USER.name()));
             PreAuthenticatedAuthenticationToken authentication = new PreAuthenticatedAuthenticationToken(username, null, authorities);
