@@ -141,9 +141,7 @@ public class OpenIdAuthenticationServiceImpl implements OpenIdAuthenticationServ
 
     private Collection<? extends GrantedAuthority> getAuthorities(Collection<String> roles) {
         Collection<GrantedAuthority> authorities = Sets.newHashSet();
-        roles.forEach(role -> {
-            authorities.add(new SimpleGrantedAuthority(role));
-        });
+        roles.forEach(role -> authorities.add(new SimpleGrantedAuthority(role)));
         return authorities;
     }
 }
