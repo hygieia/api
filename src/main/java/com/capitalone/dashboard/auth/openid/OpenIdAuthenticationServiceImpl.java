@@ -1,6 +1,7 @@
 package com.capitalone.dashboard.auth.openid;
 
 import com.capitalone.dashboard.auth.AuthProperties;
+import com.capitalone.dashboard.auth.ldap.CustomUserDetails;
 import com.capitalone.dashboard.client.RestClient;
 import com.capitalone.dashboard.model.AuthType;
 import com.capitalone.dashboard.model.UserRole;
@@ -79,15 +80,24 @@ public class OpenIdAuthenticationServiceImpl implements OpenIdAuthenticationServ
             JSONObject userInfoObj = getOpenIdUserInfo(accessToken);
             if (Objects.isNull(userInfoObj)) return null;
 
-			String username = (String) userInfoObj.get("sub");
+            CustomUserDetails principle = getUserDetails(userInfoObj);
             Collection<? extends GrantedAuthority> authorities = getAuthorities(Collections.singletonList(UserRole.ROLE_USER.name()));
-            PreAuthenticatedAuthenticationToken authentication = new PreAuthenticatedAuthenticationToken(username, null, authorities);
+            PreAuthenticatedAuthenticationToken authentication = new PreAuthenticatedAuthenticationToken(principle, null, authorities);
             authentication.setDetails(AuthType.SSO);
             return authentication;
 
         } catch (ExpiredJwtException | SignatureException | MalformedJwtException | ParseException e) {
             return null;
         }
+    }
+
+    private CustomUserDetails getUserDetails(JSONObject userInfoObj) {
+        CustomUserDetails customUserDetails = new CustomUserDetails();
+        customUserDetails.setUsername((String) userInfoObj.get("sub"));
+        customUserDetails.setFirstName((String) userInfoObj.get("FirstName"));
+        customUserDetails.setLastName((String) userInfoObj.get("LastName"));
+        customUserDetails.setEmailAddress((String) userInfoObj.get("Email"));
+        return customUserDetails;
     }
 
     private boolean isValid(String authHeader) {
