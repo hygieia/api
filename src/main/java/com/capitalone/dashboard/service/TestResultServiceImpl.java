@@ -6,6 +6,7 @@ import com.capitalone.dashboard.model.quality.CucumberJsonReport;
 import com.capitalone.dashboard.model.quality.JunitXmlReport;
 import com.capitalone.dashboard.model.quality.JunitXmlReportV2;
 import com.capitalone.dashboard.repository.BuildRepository;
+import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.repository.CollectorRepository;
 import com.capitalone.dashboard.repository.ComponentRepository;
 import com.capitalone.dashboard.repository.TestResultRepository;
@@ -13,6 +14,7 @@ import com.capitalone.dashboard.request.CollectorRequest;
 import com.capitalone.dashboard.request.PerfTestDataCreateRequest;
 import com.capitalone.dashboard.request.TestDataCreateRequest;
 import com.capitalone.dashboard.settings.ApiSettings;
+import com.capitalone.dashboard.util.HygieiaUtils;
 import com.capitalone.dashboard.util.TestResultConstants;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
@@ -50,6 +52,7 @@ public class TestResultServiceImpl implements TestResultService {
     private final TestResultRepository testResultRepository;
     private final ComponentRepository componentRepository;
     private final CollectorRepository collectorRepository;
+    private final CollectorItemRepository collectorItemRepository;
     private final BuildRepository buildRepository;
     private final CollectorService collectorService;
     private final CmdbService cmdbService;
@@ -62,6 +65,7 @@ public class TestResultServiceImpl implements TestResultService {
                                  ComponentRepository componentRepository,
                                  CollectorRepository collectorRepository,
                                  BuildRepository buildRepository,
+                                 CollectorItemRepository collectorItemRepository,
                                  CollectorService collectorService,
                                  CmdbService cmdbService,
                                  ApiSettings apiSettings) {
@@ -69,6 +73,7 @@ public class TestResultServiceImpl implements TestResultService {
         this.componentRepository = componentRepository;
         this.collectorRepository = collectorRepository;
         this.buildRepository = buildRepository;
+        this.collectorItemRepository = collectorItemRepository;
         this.collectorService = collectorService;
         this.cmdbService = cmdbService;
         this.apiSettings = apiSettings;
@@ -626,21 +631,26 @@ public class TestResultServiceImpl implements TestResultService {
         return result;
     }
 
-    private void associateBuildToTestResult(String buildUrl, String clientReference, TestResult testResult){
-        if(Objects.nonNull(buildUrl)){
-            Build build = buildRepository.findByBuildUrl(buildUrl);
-            if(Objects.nonNull(build)){
-                build.setClientReference(clientReference);
-                testResult.setBuildId(build.getId());
-                buildRepository.save(build);
-            }else{
-                Build baseBuild = new Build();
-                baseBuild.setBuildUrl(buildUrl);
-                baseBuild.setBuildStatus(BuildStatus.InProgress);
-                baseBuild.setClientReference(clientReference);
-                baseBuild = buildRepository.save(baseBuild);
-                testResult.setBuildId(baseBuild.getId());
+    private void associateBuildToTestResult(String buildUrl, String clientReference, TestResult testResult) {
+        if (Objects.isNull(buildUrl)) return;
+        Build build = buildRepository.findByBuildUrl(buildUrl);
+        if (Objects.nonNull(build)) {
+            build.setClientReference(clientReference);
+            testResult.setBuildId(build.getId());
+            buildRepository.save(build);
+        } else {
+            Build baseBuild = new Build();
+            baseBuild.setBuildUrl(buildUrl);
+            String trailedBuildUrl = HygieiaUtils.normalizeJobUrl(buildUrl);
+            Collector collector = collectorRepository.findByName(apiSettings.getBuildCollectorName());
+            CollectorItem buildCollectorItem = collectorItemRepository.findByJobUrl(collector.getId(), trailedBuildUrl);
+            if(Objects.nonNull(buildCollectorItem)){
+                baseBuild.setCollectorItemId(buildCollectorItem.getId());
             }
+            baseBuild.setBuildStatus(BuildStatus.InProgress);
+            baseBuild.setClientReference(clientReference);
+            baseBuild = buildRepository.save(baseBuild);
+            testResult.setBuildId(baseBuild.getId());
         }
     }
 

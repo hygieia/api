@@ -35,6 +35,9 @@ public class ApiSettings {
     @Value("${gitToolName:Github}")
     private String gitToolName;
 
+    @Value("${buildCollectorName:Hudson}")
+    private String buildCollectorName;
+
     private WebHookSettings webHook;
 
     private String capturePattern;
@@ -211,4 +214,12 @@ public class ApiSettings {
     public String getHygieia_ui_url() { return hygieia_ui_url; }
 
     public void setHygieia_ui_url(String hygieia_ui_url) { this.hygieia_ui_url = hygieia_ui_url; }
+
+    public String getBuildCollectorName() {
+        return buildCollectorName;
+    }
+
+    public void setBuildCollectorName(String buildCollectorName) {
+        this.buildCollectorName = buildCollectorName;
+    }
 }
