@@ -7,10 +7,12 @@ import com.capitalone.dashboard.auth.apitoken.ApiTokenRequestFilter;
 import com.capitalone.dashboard.auth.ldap.CustomUserDetailsContextMapper;
 import com.capitalone.dashboard.auth.ldap.LdapLoginRequestFilter;
 import com.capitalone.dashboard.auth.sso.SsoAuthenticationFilter;
+import com.capitalone.dashboard.auth.openid.OpenIdAuthenticationFilter;
 import com.capitalone.dashboard.auth.standard.StandardLoginRequestFilter;
 import com.capitalone.dashboard.auth.token.JwtAuthenticationFilter;
 import com.capitalone.dashboard.auth.webhook.github.GithubWebHookAuthService;
 import com.capitalone.dashboard.auth.webhook.github.GithubWebHookRequestFilter;
+import com.capitalone.dashboard.client.RestClient;
 import com.capitalone.dashboard.model.AuthType;
 import com.capitalone.dashboard.settings.ApiSettings;
 import org.apache.commons.lang3.StringUtils;
@@ -31,6 +33,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.ldap.authentication.NullLdapAuthoritiesPopulator;
 import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAuthenticationProvider;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
@@ -99,6 +102,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilterBefore(ssoAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(ldapLoginRequestFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(apiTokenRequestFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(openIdAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(githubWebhookRequestFilter(), UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling().authenticationEntryPoint(new Http401AuthenticationEntryPoint("Authorization"));
@@ -179,6 +183,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
+    protected OpenIdAuthenticationFilter openIdAuthenticationFilter() throws Exception {
+        return new OpenIdAuthenticationFilter("/login/openid", authenticationManager(), authenticationResultHandler, restClient());
+    }
+
+    @Bean
     protected LdapLoginRequestFilter ldapLoginRequestFilter() throws Exception {
         return new LdapLoginRequestFilter("/login/ldap", authenticationManager(), authenticationResultHandler);
     }
@@ -198,6 +207,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         provider.setUseAuthenticationRequestCredentials(true);
         provider.setUserDetailsContextMapper(new CustomUserDetailsContextMapper());
         return provider;
+    }
+
+    @Bean
+    public RestClient restClient() {
+        return new RestClient(RestTemplate::new);
     }
 
 }
