@@ -59,7 +59,7 @@
 
     <properties>
         <!-- Dependencies -->
-        <com.capitalone.dashboard.core.version>3.14.12</com.capitalone.dashboard.core.version>
+        <com.capitalone.dashboard.core.version>3.14.13</com.capitalone.dashboard.core.version>
         <spring-security.version>4.2.18.RELEASE</spring-security.version>
         <tomcat.version>8.5.57</tomcat.version>
         <commons-beanutils.version>1.9.4</commons-beanutils.version>

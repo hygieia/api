@@ -5,6 +5,7 @@ import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.Collector;
 import com.capitalone.dashboard.model.CollectorItem;
 import com.capitalone.dashboard.model.CollectorType;
+import com.capitalone.dashboard.model.DataResponse;
 import com.capitalone.dashboard.request.CollectorItemRequest;
 import com.capitalone.dashboard.request.CollectorRequest;
 import com.capitalone.dashboard.service.CollectorService;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.validation.Valid;
+import javax.xml.crypto.Data;
 import java.util.List;
 import java.util.Map;
 
@@ -56,6 +58,11 @@ public class CollectorController {
             consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     public Collector createCollector(@Valid @RequestBody CollectorRequest request) {
         return collectorService.createCollector(request.toCollector());
+    }
+
+    @RequestMapping(value = "/collector", method = GET, produces = APPLICATION_JSON_VALUE)
+    public Iterable<Collector> collectors() {
+        return collectorService.all();
     }
 
 
