@@ -100,7 +100,10 @@ public class CodeQualityServiceImpl implements CodeQualityService {
         }
         String instanceUrl = (String)item.getOptions().get("instanceUrl");
         String projectId = (String) item.getOptions().get("projectId");
-        String reportUrl = getReportURL(instanceUrl,"dashboard/index/",projectId);
+        String reportUrl = "";
+        if ( instanceUrl != null ) {
+            reportUrl = getReportURL(instanceUrl,"dashboard/index/",projectId);
+        }
         Collector collector = collectorRepository.findOne(item.getCollectorId());
         long lastExecuted = (collector == null) ? 0 : collector.getLastExecuted();
         return new DataResponse<>(result, lastExecuted,reportUrl);
