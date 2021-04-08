@@ -17,6 +17,7 @@ import com.capitalone.dashboard.request.CodeQualityCreateRequest;
 import com.capitalone.dashboard.request.CodeQualityRequest;
 import com.capitalone.dashboard.request.CollectorRequest;
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Splitter;
 import com.querydsl.core.BooleanBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
@@ -28,6 +29,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -86,8 +88,9 @@ public class CodeQualityServiceImpl implements CodeQualityService {
                 String reportUrl = (String) item.getOptions().get("reportUrl");
 
                 // If name is null, use the first part of the description
-                if( name.equals(null) || name.equals("")) {
-                    name = item.getDescription().split(":")[0];
+                if( name.equals("") ) {
+                    List<String> splitDescription = Splitter.on(":").splitToList(item.getDescription());
+                    name = splitDescription.get(0);
                 }
 
                 tempCQ.setName(name);
