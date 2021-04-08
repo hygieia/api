@@ -80,17 +80,21 @@ public class CodeQualityServiceImpl implements CodeQualityService {
 
         collectorItems.forEach(item -> {
             CodeQuality tempCQ = codeQualityRepository.findTop1ByCollectorItemIdOrderByTimestampDesc(item.getId());
-            String name = (String) item.getOptions().get("projectName");
-            String reportUrl = (String) item.getOptions().get("reportUrl");
 
-            // If name is null, use the first part of the description
-            if(name.equals("") || name.equals(null)) {
-                name = item.getDescription().split(":")[0];
+            if(tempCQ != null){
+                String name = (String) item.getOptions().get("projectName");
+                String reportUrl = (String) item.getOptions().get("reportUrl");
+
+                // If name is null, use the first part of the description
+                if( name.equals(null) || name.equals("")) {
+                    name = item.getDescription().split(":")[0];
+                }
+
+                tempCQ.setName(name);
+                tempCQ.setUrl(reportUrl);
+                codeQualities.add(tempCQ);
             }
 
-            tempCQ.setName(name);
-            tempCQ.setUrl(reportUrl);
-            codeQualities.add(tempCQ);
         });
 
         return codeQualities;
