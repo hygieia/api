@@ -83,7 +83,7 @@ public class CodeQualityServiceImpl implements CodeQualityService {
             String reportUrl = (String) item.getOptions().get("reportUrl");
 
             // If name is null, use the first part of the description
-            if(name == "" || name == null) {
+            if(name.equals("") || name.equals(null)) {
                 name = item.getDescription().split(":")[0];
             }
 
