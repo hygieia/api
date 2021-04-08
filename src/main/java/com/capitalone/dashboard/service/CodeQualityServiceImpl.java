@@ -69,6 +69,7 @@ public class CodeQualityServiceImpl implements CodeQualityService {
         return searchType(request);
     }
 
+    @Override
     public Iterable<CodeQuality> getAllSecurityScans(CodeQualityRequest request) {
 
         Component component = componentRepository.findOne(request.getComponentId());
