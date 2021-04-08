@@ -26,6 +26,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -66,6 +67,32 @@ public class CodeQualityServiceImpl implements CodeQualityService {
         }
 
         return searchType(request);
+    }
+
+    public Iterable<CodeQuality> getAllSecurityScans(CodeQualityRequest request) {
+
+        Component component = componentRepository.findOne(request.getComponentId());
+
+        Iterable<CollectorItem> collectorItems = component.getCollectorItems(CodeQualityType.SecurityAnalysis.collectorType());
+
+        ArrayList<CodeQuality> codeQualities = new ArrayList<CodeQuality>();
+
+        collectorItems.forEach(item -> {
+            CodeQuality tempCQ = codeQualityRepository.findTop1ByCollectorItemIdOrderByTimestampDesc(item.getId());
+            String name = (String) item.getOptions().get("projectName");
+            String reportUrl = (String) item.getOptions().get("reportUrl");
+
+            // If name is null, use the first part of the description
+            if(name == "" || name == null) {
+                name = item.getDescription().split(":")[0];
+            }
+
+            tempCQ.setName(name);
+            tempCQ.setUrl(reportUrl);
+            codeQualities.add(tempCQ);
+        });
+
+        return codeQualities;
     }
 
     private DataResponse<Iterable<CodeQuality>> emptyResponse() {
