@@ -73,7 +73,7 @@ public class CodeQualityServiceImpl implements CodeQualityService {
 
         Component component = componentRepository.findOne(request.getComponentId());
 
-        Iterable<CollectorItem> collectorItems = component.getCollectorItems(CodeQualityType.SecurityAnalysis.collectorType());
+        Iterable<CollectorItem> collectorItems = component.getCollectorItems(request.getType().collectorType());
 
         ArrayList<CodeQuality> codeQualities = new ArrayList<CodeQuality>();
 
