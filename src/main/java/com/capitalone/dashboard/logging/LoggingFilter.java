@@ -109,10 +109,10 @@ public class LoggingFilter implements Filter {
 
                 boolean skipBody = settings.checkIgnoreBodyEndPoint(endPointURI);
                 if ((httpServletRequest.getContentType() != null) && (new MimeType(httpServletRequest.getContentType()).match(new MimeType(APPLICATION_JSON_VALUE)))) {
-                    requestLog.setRequestBody(bufferedRequest.getRequestBody());
+                    requestLog.setRequestBody(JSON.parse(bufferedRequest.getRequestBody()));
                 }
                 if ((bufferedResponse.getContentType() != null) && (new MimeType(bufferedResponse.getContentType()).match(new MimeType(APPLICATION_JSON_VALUE)))) {
-                    requestLog.setResponseBody( skipBody ? StringUtils.EMPTY : bufferedResponse.getContent());
+                    requestLog.setResponseBody( skipBody ? StringUtils.EMPTY : JSON.parse(bufferedResponse.getContent()));
                 }
             }
             catch (MimeTypeParseException e) {
