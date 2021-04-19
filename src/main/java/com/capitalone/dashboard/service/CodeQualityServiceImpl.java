@@ -72,7 +72,7 @@ public class CodeQualityServiceImpl implements CodeQualityService {
     }
 
     @Override
-    public Iterable<CodeQuality> getAllSecurityScans(CodeQualityRequest request) {
+    public Iterable<CodeQuality> getAllSecurityScansForUIWidget(CodeQualityRequest request) {
 
         Component component = componentRepository.findOne(request.getComponentId());
 
@@ -83,21 +83,22 @@ public class CodeQualityServiceImpl implements CodeQualityService {
         collectorItems.forEach(item -> {
             CodeQuality tempCQ = codeQualityRepository.findTop1ByCollectorItemIdOrderByTimestampDesc(item.getId());
 
-            if(tempCQ != null){
-                String name = (String) item.getOptions().get("projectName");
-                String reportUrl = (String) item.getOptions().get("reportUrl");
-
-                // If name is null, use the first part of the description
-                if( name.equals("") ) {
-                    List<String> splitDescription = Splitter.on(":").splitToList(item.getDescription());
-                    name = splitDescription.get(0);
-                }
-
-                tempCQ.setName(name);
-                tempCQ.setUrl(reportUrl);
-                codeQualities.add(tempCQ);
+            if(tempCQ == null){
+                return;
             }
 
+            String name = (String) item.getOptions().get("projectName");
+            String reportUrl = (String) item.getOptions().get("reportUrl");
+
+            // If name is null, use the first part of the description
+            if( StringUtils.isEmpty(name) ) {
+                List<String> splitDescription = Splitter.on(":").splitToList(item.getDescription());
+                name = splitDescription.get(0);
+            }
+
+            tempCQ.setName(name);
+            tempCQ.setUrl(reportUrl);
+            codeQualities.add(tempCQ);
         });
 
         return codeQualities;
