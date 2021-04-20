@@ -72,13 +72,15 @@ public class CodeQualityController {
         request.setClientReference(httpServletRequest.getHeader(CommonConstants.HEADER_CLIENT_CORRELATION_ID));
         String requester = httpServletRequest.getHeader(CommonConstants.HEADER_API_USER);
         String response = codeQualityService.createV2(request);
-        LOGGER.info("correlation_id=" + request.getClientReference() + ", application=hygieia, service=api, uri=" + httpServletRequest.getRequestURI()
-                + ", requester=" + requester + ", response_status=success, response_code=" +HttpStatus.CREATED.value()
-                + ", response_status_message=" + response + ", build_url=" + request.getBuildUrl()
-                + ", code_quality_type="+request.getType().toString() + ", code_quality_project_id=" + request.getProjectId()
-                + ", code_quality_project_name="+request.getProjectName() + ", code_quality_project_version=" + request.getProjectVersion()
-                + ", code_quality_nicename=" + request.getNiceName() + ", code_quality_tool=" + request.getToolName()
-                + ", code_quality_project_url=" + request.getProjectUrl() + ", code_quality_server=" + request.getServerUrl());
+        StringBuilder log = new StringBuilder();
+        log.append("correlation_id=" + request.getClientReference() + ", application=hygieia, service=api, uri=" + httpServletRequest.getRequestURI());
+        log.append( ", requester=" + requester + ", response_status=success, response_code=" +HttpStatus.CREATED.value());
+        log.append( ", response_status_message=" + response + ", build_url=" + request.getBuildUrl());
+        log.append( ", code_quality_type="+request.getType().toString() + ", code_quality_project_id=" + request.getProjectId());
+        log.append( ", code_quality_project_name="+request.getProjectName() + ", code_quality_project_version=" + request.getProjectVersion());
+        log.append( ", code_quality_nicename=" + request.getNiceName() + ", code_quality_tool=" + request.getToolName());
+        log.append( ", code_quality_project_url=" + request.getProjectUrl() + ", code_quality_server=" + request.getServerUrl());
+        LOGGER.info(log.toString());
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
