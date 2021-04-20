@@ -102,12 +102,12 @@ public class DefaultTestResultController {
         boolean success = !StringUtils.containsIgnoreCase(response, "Hygieia does not support");
         HttpStatus httpStatus = success ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST;
         String response_status = success ? "success" : "failed";
-
-        LOGGER.info("correlation_id=" + correlation_id + ", test_type=" + request.getTestType() + ", test_source_format="+request.getSourceFormat() +
-                ", test_source=" + request.getSource() + ", target_app_name=" + request.getTargetAppName() +
-                ", target_service_name=" + request.getTargetServiceName() + ", test_job_url=" + request.getJobUrl() +
-                ", application=hygieia, service=api, uri=" + httpServletRequest.getRequestURI() + ", requester=" + requester +
-                ", response_status=" + response_status + ", response_code=" + httpStatus.value() + ", response_status_message=" + response);
+        LOGGER.info("correlation_id=" + correlation_id + ", application=hygieia, service=api, uri=" + httpServletRequest.getRequestURI() +
+                        ", requester=" + requester + ", response_status=" + response_status + ", response_code=" + httpStatus.value() +
+                        ", response_status_message=" + response + ", test_type=" + request.getTestType() +
+                        ", test_source_format="+request.getSourceFormat() + ", test_source=" + request.getSource() +
+                        ", target_app_name=" + request.getTargetAppName() + ", target_service_name=" + request.getTargetServiceName() +
+                        ", test_job_url=" + request.getJobUrl());
 
         return ResponseEntity
                 .status(httpStatus)

@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -36,7 +35,6 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 public class BuildController {
 
     private final HttpServletRequest httpServletRequest;
-    private final HttpServletResponse httpServletResponse;
     private final BuildService buildService;
     private final BuildCommonService buildCommonService;
 
@@ -44,11 +42,10 @@ public class BuildController {
 
     @Autowired
     public BuildController(HttpServletRequest httpServletRequest, BuildService buildService,
-                           BuildCommonService buildCommonService, HttpServletResponse httpServletResponse) {
+                           BuildCommonService buildCommonService) {
         this.httpServletRequest = httpServletRequest;
         this.buildService = buildService;
         this.buildCommonService = buildCommonService;
-        this.httpServletResponse = httpServletResponse;
     }
 
     @InitBinder
@@ -90,9 +87,10 @@ public class BuildController {
         request.setClientReference(httpServletRequest.getHeader(CommonConstants.HEADER_CLIENT_CORRELATION_ID));
         String requester = httpServletRequest.getHeader(CommonConstants.HEADER_API_USER);
         BuildDataCreateResponse response = buildService.createV3(request);
-        String response_message = "Successfully created build : "+ response.getId();
-        LOGGER.info("correlation_id="+response.getClientReference() +", application=hygieia, service=api, uri=" + httpServletRequest.getRequestURI()+", requester="+requester+
-                ", response_status=success, response_code=" +HttpStatus.CREATED.value()+", response_status_message="+response_message);
+        String response_message = "Successfully created/updated build : "+ response.getId();
+        LOGGER.info("correlation_id="+response.getClientReference() +", application=hygieia, service=api, uri=" + httpServletRequest.getRequestURI()
+                + ", requester=" + requester + ", response_status=success, response_code=" + HttpStatus.CREATED.value()
+                + ", response_status_message=" + response_message + ", build_url=" + request.getBuildUrl());
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .header(CommonConstants.HEADER_CLIENT_CORRELATION_ID,response.getClientReference())

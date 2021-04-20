@@ -8,6 +8,9 @@ import com.capitalone.dashboard.model.DataResponse;
 import com.capitalone.dashboard.request.CodeQualityCreateRequest;
 import com.capitalone.dashboard.request.CodeQualityRequest;
 import com.capitalone.dashboard.service.CodeQualityService;
+import com.capitalone.dashboard.util.CommonConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -26,10 +30,14 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 @RestController
 public class CodeQualityController {
 
+    private final HttpServletRequest httpServletRequest;
     private final CodeQualityService codeQualityService;
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(CodeQualityController.class);
+
     @Autowired
-    public CodeQualityController(CodeQualityService codeQualityService) {
+    public CodeQualityController(HttpServletRequest httpServletRequest, CodeQualityService codeQualityService) {
+        this.httpServletRequest = httpServletRequest;
         this.codeQualityService = codeQualityService;
     }
 
@@ -60,8 +68,17 @@ public class CodeQualityController {
 
     @RequestMapping(value = "/v2/quality/static-analysis", method = POST,
             consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> createStaticAnanlysisV2(@Valid @RequestBody CodeQualityCreateRequest request) throws HygieiaException {
+    public ResponseEntity<String> createStaticAnalysisV2(@Valid @RequestBody CodeQualityCreateRequest request) throws HygieiaException {
+        request.setClientReference(httpServletRequest.getHeader(CommonConstants.HEADER_CLIENT_CORRELATION_ID));
+        String requester = httpServletRequest.getHeader(CommonConstants.HEADER_API_USER);
         String response = codeQualityService.createV2(request);
+        LOGGER.info("correlation_id=" + request.getClientReference() + ", application=hygieia, service=api, uri=" + httpServletRequest.getRequestURI()
+                + ", requester=" + requester + ", response_status=success, response_code=" +HttpStatus.CREATED.value()
+                + ", response_status_message=" + response + ", build_url=" + request.getBuildUrl()
+                + ", code_quality_type="+request.getType().toString() + ", code_quality_project_id=" + request.getProjectId()
+                + ", code_quality_project_name="+request.getProjectName() + ", code_quality_project_version=" + request.getProjectVersion()
+                + ", code_quality_nicename=" + request.getNiceName() + ", code_quality_tool=" + request.getToolName()
+                + ", code_quality_project_url=" + request.getProjectUrl() + ", code_quality_server=" + request.getServerUrl());
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
