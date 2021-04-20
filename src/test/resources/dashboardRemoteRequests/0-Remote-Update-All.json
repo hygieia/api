@@ -129,5 +129,6 @@
     }
   ],
   "featureEntries" : [],
-  "deploymentEntries" : []
+  "deploymentEntries" : [],
+  "infraStructureScanEntries": []
 }
