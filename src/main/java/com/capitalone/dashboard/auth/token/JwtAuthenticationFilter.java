@@ -59,7 +59,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             Collections.list(request.getParameterNames()).stream()
                                     .map(p -> p + ":" + Arrays.asList(request.getParameterValues(p)))
                                     .collect(Collectors.joining(","));
-                    LOGGER.info(" correlation_id=" + correlation_id + ", requester=" + (authHeader == null ? "READ_ONLY" : apiUser)
+                    apiUser = (authHeader == null) ? ( StringUtils.isNotEmpty(apiUser) ? apiUser : "READ_ONLY") : apiUser;
+                    LOGGER.info(" correlation_id=" + correlation_id + " application=hygieia, service=api" +
+                            ", requester=" + apiUser
                             + ", duration=" + (System.currentTimeMillis() - startTime)
                             + ", uri=" + request.getRequestURI()
                             + ", request_method=" + request.getMethod()
@@ -95,7 +97,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         Collections.list(request.getParameterNames()).stream()
                                 .map(p -> p + ":" + Arrays.asList(request.getParameterValues(p)))
                                 .collect(Collectors.joining(","));
-                LOGGER.info("correlation_id=" + correlation_id + ", requester=" + (authentication == null || authentication.getPrincipal() == null ? apiUser : authentication.getPrincipal())
+                LOGGER.info("correlation_id=" + correlation_id + " application=hygieia, service=api"
+                        + ", requester=" + (authentication == null || authentication.getPrincipal() == null ? apiUser : authentication.getPrincipal())
                         + ", duration=" + (System.currentTimeMillis() - startTime)
                         + ", uri=" + request.getRequestURI()
                         + ", request_method=" + request.getMethod()
