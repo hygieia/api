@@ -5,6 +5,7 @@ import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.RequestLog;
 import com.capitalone.dashboard.repository.RequestLogRepository;
 import com.capitalone.dashboard.settings.ApiSettings;
+import com.capitalone.dashboard.util.CommonConstants;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -106,6 +107,10 @@ public class LoggingFilter implements Filter {
                 requestLog.setApplication("hygieia-api");
 
                 chain.doFilter(bufferedRequest, bufferedResponse);
+                String request_client_reference = bufferedRequest.getHeader(CommonConstants.HEADER_CLIENT_CORRELATION_ID);
+                String response_client_reference = bufferedResponse.getHeader(CommonConstants.HEADER_CLIENT_CORRELATION_ID);
+                String clientReference = StringUtils.isEmpty(request_client_reference) ? response_client_reference : request_client_reference;
+                requestLog.setClientReference(clientReference);
                 requestLog.setResponseContentType(httpServletResponse.getContentType());
 
                 boolean skipBody = settings.checkIgnoreBodyEndPoint(endPointURI);
