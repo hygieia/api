@@ -40,12 +40,14 @@ public class GenericCollectorItemController {
         request.setClientReference(httpServletRequest.getHeader(CommonConstants.HEADER_CLIENT_CORRELATION_ID));
         String requester = httpServletRequest.getHeader(CommonConstants.HEADER_API_USER);
         String response = genericCollectorItemService.create(request);
-        LOGGER.info("correlation_id=" + request.getClientReference() + ", application=hygieia, service=api, uri=" + httpServletRequest.getRequestURI()
-                + ", requester=" + requester + ", response_status=success, response_code=" +HttpStatus.CREATED.value()
-                + ", response_status_message=" + response + ", build_url=" + request.getBuildUrl()
-                + ", gce_request_pattern=" + request.getPattern() + ", gce_tool=" + request.getToolName()
-                + ", gce_capture_pattern="+request.getPattern() + ", gce_source=" + request.getSource()
-                + ", gce_related_coll_item=" + request.getRelatedCollectorItemId() + ", gce_raw_data=" + request.getRawData());
+        StringBuilder log = new StringBuilder();
+        log.append("correlation_id=" + request.getClientReference() + ", application=hygieia, service=api, uri=" + httpServletRequest.getRequestURI());
+        log.append(", requester=" + requester + ", response_status=success, response_code=" +HttpStatus.CREATED.value());
+        log.append(", response_status_message=" + response + ", build_url=" + request.getBuildUrl());
+        log.append(", gce_request_pattern=" + request.getPattern() + ", gce_tool=" + request.getToolName());
+        log.append(", gce_capture_pattern="+request.getPattern() + ", gce_source=" + request.getSource());
+        log.append(", gce_related_coll_item=" + request.getRelatedCollectorItemId() + ", gce_raw_data=" + request.getRawData());
+        LOGGER.info(log.toString());
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
