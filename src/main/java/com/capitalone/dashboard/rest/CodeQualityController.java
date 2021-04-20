@@ -72,4 +72,12 @@ public class CodeQualityController {
         request.setType(CodeQualityType.SecurityAnalysis);
         return codeQualityService.search(request);
     }
+
+    @RequestMapping(value = "/quality/security-analysis/ui-widget", method = GET, produces = APPLICATION_JSON_VALUE)
+    public Iterable<CodeQuality> qualitySecurityAnalysisAll(@Valid CodeQualityRequest request) {
+        request.setType(CodeQualityType.SecurityAnalysis);
+        return codeQualityService.getAllSecurityScansForUIWidget(request);
+    }
+
+
 }

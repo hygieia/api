@@ -10,6 +10,8 @@ import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
@@ -112,15 +114,19 @@ public class LoggingFilter implements Filter {
                 requestLog.setResponseContentType(httpServletResponse.getContentType());
 
                 boolean skipBody = settings.checkIgnoreBodyEndPoint(endPointURI);
+                JSONParser jsonParser = new JSONParser();
                 if ((httpServletRequest.getContentType() != null) && (new MimeType(httpServletRequest.getContentType()).match(new MimeType(APPLICATION_JSON_VALUE)))) {
-                    requestLog.setRequestBody(bufferedRequest.getRequestBody());
+                    requestLog.setRequestBody(jsonParser.parse(bufferedRequest.getRequestBody()));
                 }
                 if ((bufferedResponse.getContentType() != null) && (new MimeType(bufferedResponse.getContentType()).match(new MimeType(APPLICATION_JSON_VALUE)))) {
-                    requestLog.setResponseBody( skipBody ? StringUtils.EMPTY : bufferedResponse.getContent());
+                    requestLog.setResponseBody( skipBody ? StringUtils.EMPTY : jsonParser.parse(bufferedResponse.getContent()));
                 }
             }
             catch (MimeTypeParseException e) {
                 LOGGER.error("Invalid MIME Type detected. Request MIME type=" + httpServletRequest.getContentType() + ". Response MIME Type=" + bufferedResponse.getContentType());
+            }
+            catch (ParseException e) {
+                LOGGER.error("request / response json parsing failed. Error : "+ e.getMessage());
             }
             catch (Exception e){
                 LOGGER.error("Internal Error =" + e.getMessage());
