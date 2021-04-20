@@ -17,6 +17,7 @@ import com.capitalone.dashboard.request.CodeQualityCreateRequest;
 import com.capitalone.dashboard.request.CodeQualityRequest;
 import com.capitalone.dashboard.request.CollectorRequest;
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Splitter;
 import com.querydsl.core.BooleanBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
@@ -26,7 +27,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -66,6 +69,39 @@ public class CodeQualityServiceImpl implements CodeQualityService {
         }
 
         return searchType(request);
+    }
+
+    @Override
+    public Iterable<CodeQuality> getAllSecurityScansForUIWidget(CodeQualityRequest request) {
+
+        Component component = componentRepository.findOne(request.getComponentId());
+
+        Iterable<CollectorItem> collectorItems = component.getCollectorItems(request.getType().collectorType());
+
+        ArrayList<CodeQuality> codeQualities = new ArrayList<CodeQuality>();
+
+        collectorItems.forEach(item -> {
+            CodeQuality tempCQ = codeQualityRepository.findTop1ByCollectorItemIdOrderByTimestampDesc(item.getId());
+
+            if(tempCQ == null){
+                return;
+            }
+
+            String name = (String) item.getOptions().get("projectName");
+            String reportUrl = (String) item.getOptions().get("reportUrl");
+
+            // If name is null, use the first part of the description
+            if( StringUtils.isEmpty(name) ) {
+                List<String> splitDescription = Splitter.on(":").splitToList(item.getDescription());
+                name = splitDescription.get(0);
+            }
+
+            tempCQ.setName(name);
+            tempCQ.setUrl(reportUrl);
+            codeQualities.add(tempCQ);
+        });
+
+        return codeQualities;
     }
 
     private DataResponse<Iterable<CodeQuality>> emptyResponse() {
