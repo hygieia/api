@@ -90,7 +90,8 @@ public class BuildController {
         String response_message = "Successfully created/updated build : "+ response.getId();
         LOGGER.info("correlation_id="+response.getClientReference() +", application=hygieia, service=api, uri=" + httpServletRequest.getRequestURI()
                 + ", requester=" + requester + ", response_status=success, response_code=" + HttpStatus.CREATED.value()
-                + ", response_status_message=" + response_message + ", build_url=" + request.getBuildUrl());
+                + ", response_status_message=" + response_message + ", build_url=" + request.getBuildUrl()
+                + ", build_status=" + BuildStatus.fromString(request.getBuildStatus()));
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .header(CommonConstants.HEADER_CLIENT_CORRELATION_ID,response.getClientReference())
