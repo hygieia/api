@@ -216,7 +216,7 @@ public class CodeQualityServiceImpl implements CodeQualityService {
         try {
             quality.setBuildId(new ObjectId(request.getHygieiaId()));
         } catch(Exception e) {
-            LOGGER.info("Bad hygieia id passed in : bad_hygieiaid=" + request.getHygieiaId() + ", build_url=" +request.getBuildUrl());
+//            LOGGER.info("Bad hygieia id passed in : bad_hygieiaid=" + request.getHygieiaId() + ", build_url=" +request.getBuildUrl());
         }
         quality.setName(request.getProjectName());
         quality.setType(CodeQualityType.StaticAnalysis);
