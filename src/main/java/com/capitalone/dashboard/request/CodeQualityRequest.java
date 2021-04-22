@@ -13,6 +13,7 @@ public class CodeQualityRequest extends BaseRequest {
     private Long dateBegins;
     private Long dateEnds;
     private CodeQualityType type;
+    private ObjectId collectorItemId;
 
     public ObjectId getComponentId() {
         return componentId;
@@ -61,6 +62,10 @@ public class CodeQualityRequest extends BaseRequest {
     public void setType(CodeQualityType type) {
         this.type = type;
     }
+
+    public ObjectId getCollectorItemId() { return collectorItemId; }
+
+    public void setCollectorItemId(ObjectId collectorItemId) { this.collectorItemId = collectorItemId; }
 
     public boolean validDateRange() {
         return dateBegins != null || dateEnds != null;
