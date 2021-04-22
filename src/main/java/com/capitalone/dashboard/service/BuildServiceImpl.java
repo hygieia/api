@@ -182,7 +182,8 @@ public class BuildServiceImpl implements BuildService {
                 populateDashboardId(response);
             }
         }
-        String clientReference = Objects.nonNull(build.getClientReference())? build.getClientReference() : request.getClientReference();
+        String clientReference = StringUtils.isNotEmpty(build.getClientReference()) ? build.getClientReference() : request.getClientReference();
+        response.setClientReference(clientReference);
         // Will be refactored soon
         CollectorItem buildCollectorItem = collectorItemRepository.findOne(build.getCollectorItemId());
         if (buildCollectorItem != null) {
@@ -217,7 +218,6 @@ public class BuildServiceImpl implements BuildService {
                 }
             }
         }
-
         return response;
     }
 

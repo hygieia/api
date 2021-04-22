@@ -41,7 +41,8 @@ public class BuildController {
     private static final Logger LOGGER = LoggerFactory.getLogger(BuildController.class);
 
     @Autowired
-    public BuildController(HttpServletRequest httpServletRequest, BuildService buildService, BuildCommonService buildCommonService) {
+    public BuildController(HttpServletRequest httpServletRequest, BuildService buildService,
+                           BuildCommonService buildCommonService) {
         this.httpServletRequest = httpServletRequest;
         this.buildService = buildService;
         this.buildCommonService = buildCommonService;
@@ -86,11 +87,14 @@ public class BuildController {
         request.setClientReference(httpServletRequest.getHeader(CommonConstants.HEADER_CLIENT_CORRELATION_ID));
         String requester = httpServletRequest.getHeader(CommonConstants.HEADER_API_USER);
         BuildDataCreateResponse response = buildService.createV3(request);
-        String response_message = "Successfully created build : "+ response.getId();
-        LOGGER.info("correlation_id="+request.getClientReference() +", application=hygieia, service=api, uri=" + httpServletRequest.getRequestURI()+", requester="+requester+
-                ", response_status=success, response_code=" +HttpStatus.CREATED.value()+", response_status_message="+response_message);
+        String response_message = "Successfully created/updated build : "+ response.getId();
+        LOGGER.info("correlation_id="+response.getClientReference() +", application=hygieia, service=api, uri=" + httpServletRequest.getRequestURI()
+                + ", requester=" + requester + ", response_status=success, response_code=" + HttpStatus.CREATED.value()
+                + ", response_status_message=" + response_message + ", build_url=" + request.getBuildUrl()
+                + ", build_status=" + BuildStatus.fromString(request.getBuildStatus()));
         return ResponseEntity
                 .status(HttpStatus.CREATED)
+                .header(CommonConstants.HEADER_CLIENT_CORRELATION_ID,response.getClientReference())
                 .body(response);
     }
 }

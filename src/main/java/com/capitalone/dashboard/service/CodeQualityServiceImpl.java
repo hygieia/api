@@ -22,6 +22,8 @@ import com.querydsl.core.BooleanBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.joda.time.LocalDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -50,6 +52,7 @@ public class CodeQualityServiceImpl implements CodeQualityService {
         this.collectorRepository = collectorRepository;
         this.collectorService = collectorService;
     }
+    private static final Logger LOGGER = LoggerFactory.getLogger(CodeQualityServiceImpl.class);
 
     @Override
     public DataResponse<Iterable<CodeQuality>> search(CodeQualityRequest request) {
@@ -210,7 +213,11 @@ public class CodeQualityServiceImpl implements CodeQualityService {
             quality = new CodeQuality();
         }
         quality.setCollectorItemId(collectorItem.getId());
-        quality.setBuildId(new ObjectId(request.getHygieiaId()));
+        try {
+            quality.setBuildId(new ObjectId(request.getHygieiaId()));
+        } catch(Exception e) {
+            LOGGER.info("Bad hygieia id passed in : bad_hygieiaid=" + request.getHygieiaId() + ", build_url=" +request.getBuildUrl());
+        }
         quality.setName(request.getProjectName());
         quality.setType(CodeQualityType.StaticAnalysis);
         quality.setUrl(request.getProjectUrl());

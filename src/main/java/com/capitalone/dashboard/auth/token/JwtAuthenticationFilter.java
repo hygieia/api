@@ -44,7 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String correlation_id = request.getHeader(CommonConstants.HEADER_CLIENT_CORRELATION_ID);
         apiUser = (StringUtils.isEmpty(apiUser)? "API_USER" : apiUser);
         correlation_id = (StringUtils.isEmpty(correlation_id)) ? "NULL" : correlation_id;
-        if(response != null)
+        if(response != null && !StringUtils.equals("NULL", correlation_id))
             response.addHeader(CommonConstants.HEADER_CLIENT_CORRELATION_ID, correlation_id);
         /*
          * apiToken based authentication
@@ -53,13 +53,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 filterChain.doFilter(request, response);
             } finally {
+                String response_correlation_id = null;
+                if(response != null ){
+                    response_correlation_id = response.getHeader(CommonConstants.HEADER_CLIENT_CORRELATION_ID);
+                    correlation_id = StringUtils.isNotEmpty(response_correlation_id) ? response_correlation_id : correlation_id;
+                    response.addHeader(CommonConstants.HEADER_CLIENT_CORRELATION_ID, correlation_id);
+                }
                 // no logging on ping request
                 if(!StringUtils.containsIgnoreCase(request.getRequestURI(), PING)) {
                     String parameters = MapUtils.isEmpty(request.getParameterMap()) ? "NONE" :
                             Collections.list(request.getParameterNames()).stream()
                                     .map(p -> p + ":" + Arrays.asList(request.getParameterValues(p)))
                                     .collect(Collectors.joining(","));
-                    LOGGER.info(" correlation_id=" + correlation_id + ", requester=" + (authHeader == null ? "READ_ONLY" : apiUser)
+                    apiUser = (authHeader == null) ? ( StringUtils.isNotEmpty(apiUser) ? apiUser : "READ_ONLY") : apiUser;
+                    LOGGER.info(" correlation_id=" + correlation_id + " application=hygieia, service=api" +
+                            ", requester=" + apiUser
                             + ", duration=" + (System.currentTimeMillis() - startTime)
                             + ", uri=" + request.getRequestURI()
                             + ", request_method=" + request.getMethod()
@@ -95,7 +103,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         Collections.list(request.getParameterNames()).stream()
                                 .map(p -> p + ":" + Arrays.asList(request.getParameterValues(p)))
                                 .collect(Collectors.joining(","));
-                LOGGER.info("correlation_id=" + correlation_id + ", requester=" + (authentication == null || authentication.getPrincipal() == null ? apiUser : authentication.getPrincipal())
+                LOGGER.info("correlation_id=" + correlation_id + " application=hygieia, service=api"
+                        + ", requester=" + (authentication == null || authentication.getPrincipal() == null ? apiUser : authentication.getPrincipal())
                         + ", duration=" + (System.currentTimeMillis() - startTime)
                         + ", uri=" + request.getRequestURI()
                         + ", request_method=" + request.getMethod()
