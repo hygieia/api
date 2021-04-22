@@ -44,7 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String correlation_id = request.getHeader(CommonConstants.HEADER_CLIENT_CORRELATION_ID);
         apiUser = (StringUtils.isEmpty(apiUser)? "API_USER" : apiUser);
         correlation_id = (StringUtils.isEmpty(correlation_id)) ? "NULL" : correlation_id;
-        if(response != null)
+        if(response != null && !StringUtils.equals("NULL", correlation_id))
             response.addHeader(CommonConstants.HEADER_CLIENT_CORRELATION_ID, correlation_id);
         /*
          * apiToken based authentication
@@ -53,6 +53,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 filterChain.doFilter(request, response);
             } finally {
+                String response_correlation_id = null;
+                if(response != null ){
+                    response_correlation_id = response.getHeader(CommonConstants.HEADER_CLIENT_CORRELATION_ID);
+                    correlation_id = StringUtils.isNotEmpty(response_correlation_id) ? response_correlation_id : correlation_id;
+                    response.addHeader(CommonConstants.HEADER_CLIENT_CORRELATION_ID, correlation_id);
+                }
                 // no logging on ping request
                 if(!StringUtils.containsIgnoreCase(request.getRequestURI(), PING)) {
                     String parameters = MapUtils.isEmpty(request.getParameterMap()) ? "NONE" :
