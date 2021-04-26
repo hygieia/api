@@ -566,12 +566,12 @@ public class DashboardRemoteRequest extends BaseRequest {
 
         @Override
         public String getWidgetId() {
-            return "infraScan0";
+            return "infrascan0";
         }
 
         @Override
         public String getWidgetName() {
-            return "infraScan";
+            return "infrascan";
         }
 
         @Override
