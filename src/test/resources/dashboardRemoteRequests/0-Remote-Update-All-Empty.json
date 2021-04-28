@@ -42,5 +42,6 @@
   "securityScanEntries" : [],
   "staticCodeEntries" : [],
   "featureEntries" : [],
-  "deploymentEntries" : []
+  "deploymentEntries" : [],
+  "infraStructureScanEntries": []
 }
