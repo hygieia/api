@@ -15,7 +15,7 @@ public interface CodeQualityService {
      * @return quality data matching criteria
      */
     DataResponse<Iterable<CodeQuality>> search(CodeQualityRequest request);
-    Iterable<CodeQuality> getAllSecurityScansForUIWidget(CodeQualityRequest request);
+    DataResponse<Iterable<CodeQuality>> getCodeQualityForWidget(CodeQualityRequest request);
 
     String create(CodeQualityCreateRequest request) throws HygieiaException;
     String createV2(CodeQualityCreateRequest request) throws HygieiaException;
