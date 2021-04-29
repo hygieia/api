@@ -15,4 +15,13 @@ public interface LibraryPolicyService {
      * @return quality data matching criteria
      */
     DataResponse<List<LibraryPolicyResult>> search(LibraryPolicyRequest request);
+
+
+    /**
+     * Finds the most recent LibraryPolicy result for a specific collectorItemId
+     * @param request collectorItemId componentId
+     * @return data response of matching LibraryPolicy
+     */
+    DataResponse<Iterable<LibraryPolicyResult>> getLibraryPolicyForWidget(LibraryPolicyRequest request);
+
 }

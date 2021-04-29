@@ -94,4 +94,13 @@ public class LibraryPolicyServiceImpl implements LibraryPolicyService {
         Component component = componentRepository.findOne(request.getComponentId());
         return (component != null) ? component.getCollectorItems(CollectorType.LibraryPolicy) : null;
     }
+
+    @Override
+    public DataResponse<Iterable<LibraryPolicyResult>> getLibraryPolicyForWidget(LibraryPolicyRequest request) {
+        List<LibraryPolicyResult> results = new ArrayList<>();
+        LibraryPolicyResult scan = libraryPolicyResultsRepository.findTopByCollectorItemIdOrderByTimestampDesc(request.getCollectorItemId());
+        results.add(scan);
+        return new DataResponse<>(results, System.currentTimeMillis());
+    }
+
 }
