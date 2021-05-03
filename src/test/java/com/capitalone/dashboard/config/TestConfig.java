@@ -46,6 +46,7 @@ import com.capitalone.dashboard.service.TeamService;
 import com.capitalone.dashboard.service.TemplateService;
 import com.capitalone.dashboard.service.TestResultService;
 import com.capitalone.dashboard.service.UserInfoService;
+import com.capitalone.dashboard.service.InfraStructureService;
 import com.capitalone.dashboard.util.PaginationHeaderUtility;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
@@ -288,4 +289,7 @@ public class TestConfig {
 
     @Bean
     public BuildCommonService buildCommonService() { return Mockito.mock(BuildCommonService.class); }
+
+    @Bean
+    public InfraStructureService infraStructureService() { return Mockito.mock(InfraStructureService.class); }
 }
