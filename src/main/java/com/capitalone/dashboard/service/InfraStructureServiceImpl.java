@@ -1,7 +1,7 @@
 package com.capitalone.dashboard.service;
 
-import com.capitalone.dashboard.model.*;
-import com.capitalone.dashboard.repository.ComponentRepository;
+import com.capitalone.dashboard.model.InfrastructureScan;
+import com.capitalone.dashboard.model.DataResponse;
 import com.capitalone.dashboard.repository.InfrastructureScanRepository;
 import com.capitalone.dashboard.request.InfraStructureRequest;
 import org.slf4j.Logger;
