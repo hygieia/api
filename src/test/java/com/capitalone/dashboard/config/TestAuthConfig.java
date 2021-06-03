@@ -54,6 +54,8 @@ import com.capitalone.dashboard.service.TemplateService;
 import com.capitalone.dashboard.service.TestResultService;
 import com.capitalone.dashboard.service.UserInfoService;
 import com.capitalone.dashboard.service.UserInfoServiceImpl;
+import com.capitalone.dashboard.service.InfraStructureService;
+import com.capitalone.dashboard.service.InfraStructureServiceImpl;
 import com.capitalone.dashboard.util.PaginationHeaderUtility;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -318,5 +320,8 @@ public class TestAuthConfig {
 
     @Bean
     public BuildCommonService buildCommonService() { return Mockito.mock(BuildCommonService.class); }
+
+    @Bean
+    public InfraStructureService infraStructureService() { return Mockito.mock(InfraStructureService.class); }
 }
 
