@@ -9,6 +9,9 @@ import com.capitalone.dashboard.request.CodeQualityRequest;
 import com.capitalone.dashboard.request.LibraryPolicyRequest;
 import com.capitalone.dashboard.service.CodeQualityService;
 import com.capitalone.dashboard.service.LibraryPolicyService;
+import com.capitalone.dashboard.model.InfrastructureScan;
+import com.capitalone.dashboard.request.InfraStructureRequest;
+import com.capitalone.dashboard.service.InfraStructureService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,13 +27,15 @@ public class WidgetController {
 
     private final CodeQualityService codeQualityService;
     private final LibraryPolicyService libraryPolicyService;
+    private final InfraStructureService infraStructureService;
 
     @Autowired
-    public WidgetController(CodeQualityService codeQualityService, LibraryPolicyService libraryPolicyService) {
+    public WidgetController(CodeQualityService codeQualityService, LibraryPolicyService libraryPolicyService,
+                            InfraStructureService infraStructureService) {
         this.codeQualityService = codeQualityService;
         this.libraryPolicyService = libraryPolicyService;
+        this.infraStructureService = infraStructureService;
     }
-
 
     @RequestMapping(value = "/ui-widget/code-quality", method = GET, produces = APPLICATION_JSON_VALUE)
     public DataResponse<Iterable<CodeQuality>> widgetCodeQuality(@Valid CodeQualityRequest request) {
@@ -43,5 +48,8 @@ public class WidgetController {
         return libraryPolicyService.getLibraryPolicyForWidget(request);
     }
 
-
+    @RequestMapping(value = "/ui-widget/infra-scan", method = GET, produces = APPLICATION_JSON_VALUE)
+    public DataResponse<Iterable<InfrastructureScan>> widgetInfraScan(@Valid InfraStructureRequest request) {
+        return infraStructureService.getInfraScanForWidget(request);
+    }
 }
