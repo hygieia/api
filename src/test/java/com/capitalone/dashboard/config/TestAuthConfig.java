@@ -55,8 +55,9 @@ import com.capitalone.dashboard.service.TestResultService;
 import com.capitalone.dashboard.service.UserInfoService;
 import com.capitalone.dashboard.service.UserInfoServiceImpl;
 import com.capitalone.dashboard.service.InfraStructureService;
-import com.capitalone.dashboard.service.InfraStructureServiceImpl;
+import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.util.PaginationHeaderUtility;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -67,6 +68,8 @@ import org.springframework.context.annotation.ComponentScan;
 @ComponentScan(basePackages = {"com.capitalone.dashboard.auth"})
 public class TestAuthConfig {
 
+    @Mock
+    private ApiSettings apiSettings;
     @Bean
     public DashboardRepository dashboardRepository() {
         return Mockito.mock(DashboardRepository.class);
@@ -94,7 +97,7 @@ public class TestAuthConfig {
 
     @Bean
     public UserInfoService userInfoService() {
-        return new UserInfoServiceImpl(userInfoRepository(), authProperties());
+        return new UserInfoServiceImpl(userInfoRepository(), authProperties(), apiSettings);
     }
 
     @Bean
