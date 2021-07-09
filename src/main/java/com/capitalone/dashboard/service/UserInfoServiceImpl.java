@@ -200,7 +200,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 	private Properties setProperties() {
 		Properties props = new Properties();
 		props.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-		props.put("java.naming.security.protocol", "ssl");
+		props.put("java.naming.security.protocol", "TLSv1.2");
 		props.put(Context.SECURITY_AUTHENTICATION, "simple");
 
 		try {
