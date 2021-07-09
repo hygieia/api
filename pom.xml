@@ -5,7 +5,7 @@
     <artifactId>api</artifactId>
     <packaging>jar</packaging>
     <name>${project.groupId}:${project.artifactId}</name>
-    <version>3.4.21-SNAPSHOT</version>
+    <version>3.4.22-SNAPSHOT</version>
     <description>Hygieia Rest API Layer</description>
     <url>https://github.com/Hygieia/api</url>
 
@@ -69,7 +69,7 @@
         <commons-lang.version>3.10</commons-lang.version>
         <fongo.version>2.2.0-RC2</fongo.version>
         <guava.version>29.0-jre</guava.version>
-        <hibernate-validator.version>5.4.2.Final</hibernate-validator.version>
+        <hibernate-validator.version>6.1.5.Final</hibernate-validator.version>
         <jackson.version>2.10.3</jackson.version>
         <jasypt.version>1.18</jasypt.version>
         <logback.version>1.2.3</logback.version>
