@@ -5,7 +5,7 @@
     <artifactId>api</artifactId>
     <packaging>jar</packaging>
     <name>${project.groupId}:${project.artifactId}</name>
-    <version>3.4.1-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
     <description>Hygieia Rest API Layer</description>
     <url>https://github.com/Hygieia/api</url>
 
@@ -44,6 +44,16 @@
             <organization>CapitalOne</organization>
             <organizationUrl>http://www.capitalone.com</organizationUrl>
         </developer>
+        <developer>
+            <id>erictice</id>
+            <name>Eric Tice</name>
+            <email>eric.tice@wipro.com</email>
+            <url>https://github.com/erictice</url>
+            <roles>
+                <role>maintainer</role>
+            </roles>
+            <timezone>America/Chicago</timezone>
+        </developer>
     </developers>
 
     <organization>
@@ -59,21 +69,21 @@
 
     <properties>
         <!-- Dependencies -->
-        <com.capitalone.dashboard.core.version>3.14.0</com.capitalone.dashboard.core.version>
-        <spring-security.version>4.2.18.RELEASE</spring-security.version>
+        <com.capitalone.dashboard.core.version>4.0.0</com.capitalone.dashboard.core.version>
+        <spring-security.version>5.4.5.RELEASE</spring-security.version>
         <tomcat.version>8.5.57</tomcat.version>
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
-        <commons-codec.version>1.14</commons-codec.version>
+        <commons-codec.version>1.15</commons-codec.version>
         <commons-collections4.version>4.1</commons-collections4.version>
         <commons-io.version>2.4</commons-io.version>
         <commons-lang.version>3.10</commons-lang.version>
         <fongo.version>2.2.0-RC2</fongo.version>
         <guava.version>29.0-jre</guava.version>
-        <hibernate-validator.version>5.4.2.Final</hibernate-validator.version>
-        <jackson.version>2.10.3</jackson.version>
+        <hibernate-validator.version>6.1.5.Final</hibernate-validator.version>
+        <jackson.version>2.11.4</jackson.version>
         <jasypt.version>1.18</jasypt.version>
         <logback.version>1.2.3</logback.version>
-        <mongodb.version>3.6.4</mongodb.version>
+        <mongodb.version>4.0.0</mongodb.version>
         <jjwt.version>0.6.0</jjwt.version>
         <springfox.version>2.4.0</springfox.version>
         <assertj.version>3.9.0</assertj.version>
@@ -84,8 +94,8 @@
         <jacoco.maven.plugin.version>0.8.3</jacoco.maven.plugin.version>
         <jacoco.coverage.percentage.minimum>0.200</jacoco.coverage.percentage.minimum>
         <jacoco.classes.missed.minimum>300</jacoco.classes.missed.minimum>
-        <java.compilation.source>1.8</java.compilation.source>
-        <java.compilation.target>1.8</java.compilation.target>
+        <java.compilation.source>14</java.compilation.source>
+        <java.compilation.target>14</java.compilation.target>
         <maven.compiler.plugin.version>3.1</maven.compiler.plugin.version>
         <maven.changes.plugin.version>2.12.1</maven.changes.plugin.version>
         <maven.checkstyle.plugin.version>3.0.0</maven.checkstyle.plugin.version>
@@ -136,6 +146,13 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+             <version>2.5.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.tomcat.embed</groupId>
+                    <artifactId>tomcat-embed-websocket</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -155,7 +172,14 @@
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+              <version>2.5.0</version>
             <scope>test</scope>
         </dependency>
 
