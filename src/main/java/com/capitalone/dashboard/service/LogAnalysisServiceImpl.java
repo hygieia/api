@@ -38,7 +38,7 @@ public class LogAnalysisServiceImpl implements LogAnalysisService {
     if (null == request) {
       return emptyResponse();
     }
-    Component component = componentRepository.findOne(request.getComponentId());
+    Component component = componentRepository.findById(request.getComponentId()).get();
     if (null == component) {
       return emptyResponse();
     }
@@ -54,11 +54,11 @@ public class LogAnalysisServiceImpl implements LogAnalysisService {
     if (null == request.getMax()) {
       result = this.repository.findAll(builder.getValue(), log.timestamp.desc());
     } else {
-      PageRequest pageRequest = new PageRequest(0, request.getMax(), Sort.Direction.DESC, "timestamp");
+      PageRequest pageRequest = PageRequest.of(0, request.getMax(), Sort.Direction.DESC, "timestamp");
       result = this.repository.findAll(builder.getValue(), pageRequest);
     }
 
-    Collector collector = collectorRepository.findOne(item.getCollectorId());
+    Collector collector = collectorRepository.findById(item.getCollectorId()).get();
     return new DataResponse<>(result,collector.getLastExecuted());
   }
 

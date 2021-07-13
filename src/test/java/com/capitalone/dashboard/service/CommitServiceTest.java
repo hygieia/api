@@ -50,8 +50,8 @@ public class CommitServiceTest {
         CommitRequest request = new CommitRequest();
         request.setComponentId(componentId);
 
-        when(componentRepository.findOne(request.getComponentId())).thenReturn(makeComponent(collectorItemId, collectorId, true));
-        when(collectorRepository.findOne(collectorId)).thenReturn(collector);
+        when(componentRepository.findById(request.getComponentId()).get()).thenReturn(makeComponent(collectorItemId, collectorId, true));
+        when(collectorRepository.findById(collectorId).get()).thenReturn(collector);
 
         commitService.search(request);
 
@@ -62,7 +62,7 @@ public class CommitServiceTest {
     public void search_Empty_Response_No_Component() {
         CommitRequest request = new CommitRequest();
 
-        when(componentRepository.findOne(request.getComponentId())).thenReturn(null);
+        when(componentRepository.findById(request.getComponentId()).get()).thenReturn(null);
 
         DataResponse<Iterable<Commit>> response = commitService.search(request);
 
@@ -79,7 +79,7 @@ public class CommitServiceTest {
         CommitRequest request = new CommitRequest();
         request.setComponentId(componentId);
 
-        when(componentRepository.findOne(request.getComponentId())).thenReturn(makeComponent(collectorItemId, collectorId, false));
+        when(componentRepository.findById(request.getComponentId()).get()).thenReturn(makeComponent(collectorItemId, collectorId, false));
 
         DataResponse<Iterable<Commit>> response = commitService.search(request);
 

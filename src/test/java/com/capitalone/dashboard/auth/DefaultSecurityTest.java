@@ -1,6 +1,6 @@
 package com.capitalone.dashboard.auth;
  import static com.capitalone.dashboard.fixture.DashboardFixture.makeDashboard;
-import static org.mockito.Matchers.isA;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -9,14 +9,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
- import com.capitalone.dashboard.model.*;
- import org.bson.types.ObjectId;
+import org.bson.types.ObjectId;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
- import org.springframework.boot.test.context.SpringBootTest;
- import org.springframework.http.MediaType;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -31,7 +30,13 @@ import com.capitalone.dashboard.auth.token.TokenAuthenticationServiceImpl;
 import com.capitalone.dashboard.config.TestDefaultAuthConfig;
 import com.capitalone.dashboard.config.WebMVCConfig;
 import com.capitalone.dashboard.config.WebSecurityConfig;
- import com.capitalone.dashboard.repository.AuthenticationRepository;
+import com.capitalone.dashboard.model.AuthType;
+import com.capitalone.dashboard.model.Authentication;
+import com.capitalone.dashboard.model.Dashboard;
+import com.capitalone.dashboard.model.DashboardType;
+import com.capitalone.dashboard.model.UserInfo;
+import com.capitalone.dashboard.model.UserRole;
+import com.capitalone.dashboard.repository.AuthenticationRepository;
 import com.capitalone.dashboard.repository.DashboardRepository;
 import com.capitalone.dashboard.repository.UserInfoRepository;
 import com.capitalone.dashboard.service.DashboardService;
@@ -100,7 +105,7 @@ import com.google.common.collect.Lists;
      	Dashboard dashboard = makeDashboard("t1", "title", "app", "comp","someUser", DashboardType.Team, "ASVTEST", "BAPTEST");
      	String stringObjectId = "54b982620364c80a6136c9f2";
      	ObjectId objectId = new ObjectId(stringObjectId);
-     	when(dashboardTestRepository.findOne(objectId)).thenReturn(dashboard);
+     	when(dashboardTestRepository.findById(objectId).get()).thenReturn(dashboard);
      	
      	doNothing().when(dashboardTestService).delete(isA(ObjectId.class));
      	mockMvc.perform(delete("/dashboard/"+ stringObjectId)

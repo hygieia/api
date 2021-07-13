@@ -53,7 +53,7 @@ public class ScopeServiceImpl implements ScopeService {
 
 		for (Scope scope : scopes) {
 		    Collector collector = collectorRepository
-				.findOne(scope.getCollectorId());
+				.findById(scope.getCollectorId()).get();
 		    scope.setCollector(collector);
 		}
 
@@ -75,7 +75,7 @@ public class ScopeServiceImpl implements ScopeService {
 	@Override
 	public DataResponse<List<Scope>> getScope(ObjectId componentId,
 			String scopeId) {
-		Component component = componentRepository.findOne(componentId);
+		Component component = componentRepository.findById(componentId).get();
 		CollectorItem item = component.getCollectorItems()
 				.get(CollectorType.AgileTool).get(0);
 		QScopeOwner team = new QScopeOwner("team");
@@ -87,7 +87,7 @@ public class ScopeServiceImpl implements ScopeService {
 		List<Scope> scope = scopeRepository.getScopeById(scopeId);
 
 		Collector collector = collectorRepository
-				.findOne(item.getCollectorId());
+				.findById(item.getCollectorId()).get();
 
 		return new DataResponse<>(scope, collector.getLastExecuted());
 	}

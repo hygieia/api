@@ -71,7 +71,7 @@ public class LogAnalysisServiceImplTest {
     long startTime = System.currentTimeMillis()-1000;
     LogAnalysisSearchRequest request = new LogAnalysisSearchRequest();
     request.setComponentId(ObjectId.get());
-    when(mockComponentRepository.findOne(any(ObjectId.class))).thenReturn(null);
+    when(mockComponentRepository.findById(any(ObjectId.class)).get()).thenReturn(null);
 
     DataResponse<Iterable<LogAnalysis>> response =subject.search(request);
 
@@ -86,7 +86,7 @@ public class LogAnalysisServiceImplTest {
     LogAnalysisSearchRequest request = new LogAnalysisSearchRequest();
     request.setComponentId(ObjectId.get());
     Component component = mock(Component.class);
-    when(mockComponentRepository.findOne(any(ObjectId.class))).thenReturn(component);
+    when(mockComponentRepository.findById(any(ObjectId.class)).get()).thenReturn(component);
     when(component.getFirstCollectorItemForType(eq(CollectorType.Log))).thenReturn(null);
 
     DataResponse<Iterable<LogAnalysis>> response =subject.search(request);
@@ -102,7 +102,7 @@ public class LogAnalysisServiceImplTest {
     LogAnalysisSearchRequest request = new LogAnalysisSearchRequest();
     request.setComponentId(ObjectId.get());
     Component component = mock(Component.class);
-    when(mockComponentRepository.findOne(any(ObjectId.class))).thenReturn(component);
+    when(mockComponentRepository.findById(any(ObjectId.class)).get()).thenReturn(component);
     CollectorItem item = mock(CollectorItem.class);
     when(component.getFirstCollectorItemForType(eq(CollectorType.Log))).thenReturn(item);
     ObjectId itemId = ObjectId.get();
@@ -114,7 +114,7 @@ public class LogAnalysisServiceImplTest {
     when(mockLogAnalyzerRepository.findAll(any(Predicate.class),any(OrderSpecifier.class))).thenReturn(items);
 
     Collector mockCollector = mock(Collector.class);
-    when(mockCollectorRepository.findOne(any(ObjectId.class))).thenReturn(mockCollector);
+    when(mockCollectorRepository.findById(any(ObjectId.class)).get()).thenReturn(mockCollector);
     when(mockCollector.getLastExecuted()).thenReturn(23L);
 
     DataResponse<Iterable<LogAnalysis>> response =subject.search(request);
@@ -141,7 +141,7 @@ public class LogAnalysisServiceImplTest {
     request.setMax(100);
     request.setComponentId(ObjectId.get());
     Component component = mock(Component.class);
-    when(mockComponentRepository.findOne(any(ObjectId.class))).thenReturn(component);
+    when(mockComponentRepository.findById(any(ObjectId.class)).get()).thenReturn(component);
     CollectorItem item = mock(CollectorItem.class);
     when(component.getFirstCollectorItemForType(eq(CollectorType.Log))).thenReturn(item);
     ObjectId itemId = ObjectId.get();
@@ -154,7 +154,7 @@ public class LogAnalysisServiceImplTest {
     when(mockLogAnalyzerRepository.findAll(any(Predicate.class),any(PageRequest.class))).thenReturn(items);
 
     Collector mockCollector = mock(Collector.class);
-    when(mockCollectorRepository.findOne(any(ObjectId.class))).thenReturn(mockCollector);
+    when(mockCollectorRepository.findById(any(ObjectId.class)).get()).thenReturn(mockCollector);
     when(mockCollector.getLastExecuted()).thenReturn(23L);
 
     DataResponse<Iterable<LogAnalysis>> response =subject.search(request);

@@ -1,5 +1,7 @@
 package com.capitalone.dashboard.auth.access;
 
+import java.util.Optional;
+
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -21,10 +23,11 @@ public class MethodLevelSecurityHandler {
 	}
 	
 	public boolean isOwnerOfDashboard(ObjectId dashboardId) {
-		Dashboard dashboard = dashboardRepository.findOne(dashboardId);
-		if (dashboard == null) {
+		Optional<Dashboard> optDash = dashboardRepository.findById(dashboardId);
+		if (optDash == null) {
 			return false;
 		}
+		Dashboard dashboard = optDash.get(); 
 		
 		String username = AuthenticationUtil.getUsernameFromContext();
 		AuthType authType = AuthenticationUtil.getAuthTypeFromContext();

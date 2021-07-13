@@ -65,7 +65,7 @@ public class RallyFeatureServiceImpl implements RallyFeatureService {
 
 	
 	public CollectorItem getCollectorItem(RallyFeatureRequest request) {
-		Component component = componentRepository.findOne(request.getComponentId());
+		Component component = componentRepository.findById(request.getComponentId()).get();
 		if (component == null) {
 			return null;
 		}

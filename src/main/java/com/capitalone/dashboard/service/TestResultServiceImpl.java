@@ -71,7 +71,7 @@ public class TestResultServiceImpl implements TestResultService {
 
     @Override
     public DataResponse<Iterable<TestResult>> search(com.capitalone.dashboard.request.TestResultRequest request) {
-        Component component = componentRepository.findOne(request.getComponentId());
+        Component component = componentRepository.findById(request.getComponentId()).get();
 
         if ((component == null) || !component.getCollectorItems().containsKey(CollectorType.Test)) {
             return new DataResponse<>(null, 0L);
@@ -80,7 +80,7 @@ public class TestResultServiceImpl implements TestResultService {
         validateAllCollectorItems(request, component, result);
         //One collector per Type. get(0) is hardcoded.
         if (!CollectionUtils.isEmpty(component.getCollectorItems().get(CollectorType.Test)) && (component.getCollectorItems().get(CollectorType.Test).get(0) != null)) {
-            Collector collector = collectorRepository.findOne(component.getCollectorItems().get(CollectorType.Test).get(0).getCollectorId());
+            Collector collector = collectorRepository.findById(component.getCollectorItems().get(CollectorType.Test).get(0).getCollectorId()).get();
             if (collector != null) {
                 return new DataResponse<>(pruneToDepth(result, request.getDepth()), collector.getLastExecuted());
             }
@@ -109,7 +109,7 @@ public class TestResultServiceImpl implements TestResultService {
         if (request.getMax() == null) {
             result.addAll(Lists.newArrayList(testResultRepository.findAll(builder.getValue(), testResult.timestamp.desc())));
         } else {
-            PageRequest pageRequest = new PageRequest(0, request.getMax(), Sort.Direction.DESC, "timestamp");
+            PageRequest pageRequest = PageRequest.of(0, request.getMax(), Sort.Direction.DESC, "timestamp");
             result.addAll(Lists.newArrayList(testResultRepository.findAll(builder.getValue(), pageRequest).getContent()));
         }
     }
@@ -669,8 +669,9 @@ public class TestResultServiceImpl implements TestResultService {
             return configurationItem;
         }
         else if (StringUtils.isNotBlank(targetAppName) ){
+        	
             List<Cmdb> cmdb = cmdbService.configurationItemsByTypeWithFilter("", targetAppName,
-                   new PageRequest(0, 1)).getContent();
+                   PageRequest.of(0, 1)).getContent();
            if(cmdb.size() > 0){
                return cmdb.get(0).getConfigurationItem();
            }

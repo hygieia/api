@@ -56,7 +56,7 @@ public class LibraryPolicyDataSyncDelegate {
                     lp.sort(Comparator.comparing(LibraryPolicyResult::getTimestamp).reversed());
                     LibraryPolicyResult libraryPolicyResult = lp.stream().filter(Objects::nonNull).findFirst().orElse(null);
                     if (Objects.nonNull(libraryPolicyResult)) {
-                        CollectorItem collectorItem = dataSyncServiceImpl.getCollectorItemRepository().findOne(libraryPolicyResult.getCollectorItemId());
+                        CollectorItem collectorItem = dataSyncServiceImpl.getCollectorItemRepository().findById(libraryPolicyResult.getCollectorItemId()).get();
                         List<CollectorItem> suspectCollectorItems = dataSyncUtils.deleteCollectorItems(collectorItems,collectorItem,suspects);
                         collectorItemsCount += suspectCollectorItems.size();
                         if (CollectionUtils.isEmpty(components)) continue;

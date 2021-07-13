@@ -103,7 +103,7 @@ public class DataSyncServiceTest {
         when(dataSyncService.getGitRequestRepository().findTopByCollectorItemIdOrderByTimestampDesc(any())).thenReturn(getGitRequest(collectorItemId, 1584127005000L));
         when(dataSyncService.getGitRequestRepository().findTopByCollectorItemIdOrderByTimestampDesc(any())).thenReturn(getGitRequest(collectorItemId2, 1581621405000L));
         when(dataSyncService.getComponentRepository().findBySCMCollectorItemId(any())).thenReturn(Arrays.asList(getComponent(collectorItemId)));
-        when(dataSyncService.getCollectorItemRepository().findOne(any(ObjectId.class))).thenReturn(getGitRepo(collectorItemId, "http://github.com/repo1", "master"));
+        when(dataSyncService.getCollectorItemRepository().findById(any(ObjectId.class)).get()).thenReturn(getGitRepo(collectorItemId, "http://github.com/repo1", "master"));
         DataSyncResponse response = dataSyncService.refresh(getDataSyncRequest(GITHUB));
         assertEquals(response.getCollectorItemCount(), 1);
         assertEquals(response.getComponentCount(), 2);
@@ -122,7 +122,7 @@ public class DataSyncServiceTest {
         when(dataSyncService.getCodeQualityRepository().findTop1ByCollectorItemIdOrderByTimestampDesc(any())).thenReturn(getCodeQuality(collectorItemId, 1584127005000L));
         when(dataSyncService.getCodeQualityRepository().findTop1ByCollectorItemIdOrderByTimestampDesc(any())).thenReturn(getCodeQuality(collectorItemId2, 1581621405000L));
         when(dataSyncService.getComponentRepository().findByCodeQualityCollectorItems(any())).thenReturn(Arrays.asList(getComponent(collectorItemId)));
-        when(dataSyncService.getCollectorItemRepository().findOne(any(ObjectId.class))).thenReturn(getSonarProject(collectorItemId, "sonarProjectName1", "http://sonarqube.com"));
+        when(dataSyncService.getCollectorItemRepository().findById(any(ObjectId.class)).get()).thenReturn(getSonarProject(collectorItemId, "sonarProjectName1", "http://sonarqube.com"));
         DataSyncResponse response = dataSyncService.refresh(getDataSyncRequest(SONAR));
         assertEquals(response.getCollectorItemCount(), 1);
         assertEquals(response.getComponentCount(), 2);
@@ -142,7 +142,7 @@ public class DataSyncServiceTest {
         when(dataSyncService.getBinaryArtifactRepository().findTopByCollectorItemIdOrderByTimestampDesc(any())).thenReturn(getBinaryArtifact(collectorItemId, 1584127005000L));
         when(dataSyncService.getBinaryArtifactRepository().findTopByCollectorItemIdOrderByTimestampDesc(any())).thenReturn(getBinaryArtifact(collectorItemId2, 1581621405000L));
         when(dataSyncService.getComponentRepository().findByArtifactCollectorItems(any())).thenReturn(Arrays.asList(getComponent(collectorItemId)));
-        when(dataSyncService.getCollectorItemRepository().findOne(any(ObjectId.class))).thenReturn(getArtifactItem(collectorItemId, "artifactName1", "repoName", "path", "http://artifactory.com"));
+        when(dataSyncService.getCollectorItemRepository().findById(any(ObjectId.class)).get()).thenReturn(getArtifactItem(collectorItemId, "artifactName1", "repoName", "path", "http://artifactory.com"));
         DataSyncResponse response = dataSyncService.refresh(getDataSyncRequest(ARTIFACTORY));
         assertEquals(response.getCollectorItemCount(), 1);
         assertEquals(response.getComponentCount(), 2);
@@ -161,7 +161,7 @@ public class DataSyncServiceTest {
         when(dataSyncService.getCodeQualityRepository().findTop1ByCollectorItemIdOrderByTimestampDesc(any())).thenReturn(getCodeQuality(collectorItemId, 1584127005000L));
         when(dataSyncService.getCodeQualityRepository().findTop1ByCollectorItemIdOrderByTimestampDesc(any())).thenReturn(getCodeQuality(collectorItemId2, 1581621405000L));
         when(dataSyncService.getComponentRepository().findByStaticSecurityScanCollectorItems(any())).thenReturn(Arrays.asList(getComponent(collectorItemId)));
-        when(dataSyncService.getCollectorItemRepository().findOne(any(ObjectId.class))).thenReturn(getStaticSecurityCollectorItem(collectorItemId, "staticSecurityProjectName1", "http://nexusiq.com"));
+        when(dataSyncService.getCollectorItemRepository().findById(any(ObjectId.class)).get()).thenReturn(getStaticSecurityCollectorItem(collectorItemId, "staticSecurityProjectName1", "http://nexusiq.com"));
         DataSyncResponse response = dataSyncService.refresh(getDataSyncRequest(STATIC_SECURITY));
         assertEquals(response.getCollectorItemCount(), 1);
         assertEquals(response.getComponentCount(), 2);
@@ -180,7 +180,7 @@ public class DataSyncServiceTest {
         when(dataSyncService.getLibraryPolicyResultsRepository().findTopByCollectorItemIdOrderByTimestampDesc(any())).thenReturn(getLibraryPolicy(collectorItemId, 1584127005000L));
         when(dataSyncService.getLibraryPolicyResultsRepository().findTopByCollectorItemIdOrderByTimestampDesc(any())).thenReturn(getLibraryPolicy(collectorItemId2, 1581621405000L));
         when(dataSyncService.getComponentRepository().findByLibraryPolicyCollectorItems(any())).thenReturn(Arrays.asList(getComponent(collectorItemId)));
-        when(dataSyncService.getCollectorItemRepository().findOne(any(ObjectId.class))).thenReturn(getLibraryPolicyCollectorItem(collectorItemId, "libraryPolicyProjectName1", "http://whitesource.com"));
+        when(dataSyncService.getCollectorItemRepository().findById(any(ObjectId.class)).get()).thenReturn(getLibraryPolicyCollectorItem(collectorItemId, "libraryPolicyProjectName1", "http://whitesource.com"));
         DataSyncResponse response = dataSyncService.refresh(getDataSyncRequest(LIBRARY_POLICY));
         assertEquals(response.getCollectorItemCount(), 1);
         assertEquals(response.getComponentCount(), 2);

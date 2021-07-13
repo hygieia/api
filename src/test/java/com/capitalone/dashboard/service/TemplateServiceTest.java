@@ -54,7 +54,7 @@ public class TemplateServiceTest {
     public void test_find() throws Exception {
         ObjectId templateId = ObjectId.get();
         Template template = new Template("template1", getWidgetsAndOrder(), getWidgetsAndOrder());
-        when(templateRepository.findOne(templateId)).thenReturn(template);
+        when(templateRepository.findById(templateId).get()).thenReturn(template);
         Template actual = templateService.get(templateId);
         assertEquals(actual, template);
     }

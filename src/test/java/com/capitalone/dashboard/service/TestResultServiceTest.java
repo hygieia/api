@@ -52,7 +52,7 @@ public class TestResultServiceTest {
 
         TestDataCreateRequest request = makeTestDateCreateRequest();
 
-        when(collectorRepository.findOne(collectorId)).thenReturn(new Collector());
+        when(collectorRepository.findById(collectorId).get()).thenReturn(new Collector());
         when(collectorService.createCollector(any(Collector.class))).thenReturn(new Collector());
         when(collectorService.createCollectorItem(any(CollectorItem.class))).thenReturn(new CollectorItem());
 
@@ -70,7 +70,7 @@ public class TestResultServiceTest {
 
         TestDataCreateRequest request = makeTestDateCreateRequest();
 
-        when(collectorRepository.findOne(collectorId)).thenReturn(new Collector());
+        when(collectorRepository.findById(collectorId).get()).thenReturn(new Collector());
         when(collectorService.createCollector(any(Collector.class))).thenReturn(new Collector());
         when(collectorService.createCollectorItem(any(CollectorItem.class))).thenReturn(new CollectorItem());
 
@@ -89,8 +89,8 @@ public class TestResultServiceTest {
 
         TestResultRequest request = new TestResultRequest();
 
-        when(componentRepository.findOne(request.getComponentId())).thenReturn(makeComponent(collectorItemId, collectorId, false));
-        when(collectorRepository.findOne(collectorId)).thenReturn(new Collector());
+        when(componentRepository.findById(request.getComponentId()).get()).thenReturn(makeComponent(collectorItemId, collectorId, false));
+        when(collectorRepository.findById(collectorId).get()).thenReturn(new Collector());
 
         DataResponse<Iterable<TestResult>> response = testResultService.search(request);
 
@@ -103,8 +103,8 @@ public class TestResultServiceTest {
         ObjectId collectorId = ObjectId.get();
         TestResultRequest request = new TestResultRequest();
 
-        when(componentRepository.findOne(request.getComponentId())).thenReturn(null);
-        when(collectorRepository.findOne(collectorId)).thenReturn(new Collector());
+        when(componentRepository.findById(request.getComponentId()).get()).thenReturn(null);
+        when(collectorRepository.findById(collectorId).get()).thenReturn(new Collector());
 
         DataResponse<Iterable<TestResult>> response = testResultService.search(request);
 
@@ -301,7 +301,7 @@ public class TestResultServiceTest {
 
         TestCreateRequest request = makePrefTestCreateRequest();
 
-        when(collectorRepository.findOne(collectorId)).thenReturn(new Collector());
+        when(collectorRepository.findById(collectorId).get()).thenReturn(new Collector());
         when(collectorService.createCollector(any(Collector.class))).thenReturn(new Collector());
         when(collectorService.createCollectorItem(any(CollectorItem.class))).thenReturn(new CollectorItem());
         when(apiSettings.getFunctional()).thenReturn( new HashMap<String, String>() {{
@@ -323,7 +323,7 @@ public class TestResultServiceTest {
 
         TestCreateRequest request = makeJunitTestCreateRequest("PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48dGVzdHN1aXRlIGVycm9ycz0iMCIgZmFpbHVyZXM9IjAiIGhvc3RuYW1lPSJzb21lSG9zdCIgbmFtZT0ic2FtcGxlVGVzdCIgc2tpcHBlZD0iMCIgdGVzdHM9IjEiIHRpbWU9IjAuNTU1IiB0aW1lc3RhbXA9IjIwMjAtMTEtMDVUMTI6MjQ6MDIuMjkzNTQyIj48dGVzdGNhc2UgY2xhc3NuYW1lPSJ0ZXN0cy5zYW1wbGVUZXN0Q2FzZSIgbmFtZT0idGVzdF9kdW1teSIgdGltZT0iMC4wMDEiIC8+PC90ZXN0c3VpdGU+");
 
-        when(collectorRepository.findOne(collectorId)).thenReturn(new Collector());
+        when(collectorRepository.findById(collectorId).get()).thenReturn(new Collector());
         when(collectorService.createCollector(any(Collector.class))).thenReturn(new Collector());
         when(collectorService.createCollectorItem(any(CollectorItem.class))).thenReturn(new CollectorItem());
         when(apiSettings.getUnit()).thenReturn("junit");
@@ -342,7 +342,7 @@ public class TestResultServiceTest {
 
         TestCreateRequest request = makeJunitTestCreateRequest("PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48dGVzdHN1aXRlcz48dGVzdHN1aXRlIGVycm9ycz0iMCIgZmFpbHVyZXM9IjAiIGhvc3RuYW1lPSJzb21lSG9zdCIgbmFtZT0ic2FtcGxlVGVzdCIgc2tpcHBlZD0iMCIgdGVzdHM9IjEiIHRpbWU9IjAuNTU1IiB0aW1lc3RhbXA9IjIwMjAtMTEtMDVUMTI6MjQ6MDIuMjkzNTQyIj48dGVzdGNhc2UgY2xhc3NuYW1lPSJ0ZXN0cy5zYW1wbGVUZXN0Q2FzZSIgbmFtZT0idGVzdF9kdW1teSIgdGltZT0iMC4wMDEiIC8+PC90ZXN0c3VpdGU+PC90ZXN0c3VpdGVzPg==");
 
-        when(collectorRepository.findOne(collectorId)).thenReturn(new Collector());
+        when(collectorRepository.findById(collectorId).get()).thenReturn(new Collector());
         when(collectorService.createCollector(any(Collector.class))).thenReturn(new Collector());
         when(collectorService.createCollectorItem(any(CollectorItem.class))).thenReturn(new CollectorItem());
         when(apiSettings.getUnit()).thenReturn("junit");
@@ -361,7 +361,7 @@ public class TestResultServiceTest {
 
         TestCreateRequest request = makeJunitTestCreateRequest("PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48dGVzdHN1aXRlcz48dGVzdHN1aXRlIGVycm9ycz0iMCIgZmFpbHVyZXM9IjAiIGhvc3RuYW1lPSJzb21lSG9zdDEiIG5hbWU9InNhbXBsZVRlc3QxIiBza2lwcGVkPSIwIiB0ZXN0cz0iMSIgdGltZT0iMC41NTUiIHRpbWVzdGFtcD0iMjAyMC0xMS0wNVQxMjoyNDowMi4yOTM1NDIiPjx0ZXN0Y2FzZSBjbGFzc25hbWU9InRlc3RzLnNhbXBsZVRlc3RDYXNlIiBuYW1lPSJ0ZXN0X2R1bW15IiB0aW1lPSIwLjAwMSIgLz48L3Rlc3RzdWl0ZT48dGVzdHN1aXRlIGVycm9ycz0iMCIgZmFpbHVyZXM9IjAiIGhvc3RuYW1lPSJzb21lSG9zdDIiIG5hbWU9InNhbXBsZVRlc3QyIiBza2lwcGVkPSIwIiB0ZXN0cz0iMiIgdGltZT0iMC41NTUiIHRpbWVzdGFtcD0iMjAyMC0xMS0wNVQxMjoyNDowMi4yOTM1NDIiPjx0ZXN0Y2FzZSBjbGFzc25hbWU9InRlc3RzLnNhbXBsZVRlc3RDYXNlMSIgbmFtZT0idGVzdF9kdW1teTEiIHRpbWU9IjAuMDAxIiAvPjx0ZXN0Y2FzZSBjbGFzc25hbWU9InRlc3RzLnNhbXBsZVRlc3RDYXNlMiIgbmFtZT0idGVzdF9kdW1teTIiIHRpbWU9IjAuMDAxIiAvPjwvdGVzdHN1aXRlPjwvdGVzdHN1aXRlcz4=");
 
-        when(collectorRepository.findOne(collectorId)).thenReturn(new Collector());
+        when(collectorRepository.findById(collectorId).get()).thenReturn(new Collector());
         when(collectorService.createCollector(any(Collector.class))).thenReturn(new Collector());
         when(collectorService.createCollectorItem(any(CollectorItem.class))).thenReturn(new CollectorItem());
         when(apiSettings.getUnit()).thenReturn("junit");

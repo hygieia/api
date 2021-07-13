@@ -118,12 +118,12 @@ public class CollectorServiceTest {
 
 		CollectorItem c1 = makeCollectorItemWithOptions(true,uniqueOptions,ObjectId.get(),1557332269095L);
 		CollectorItem c2 = makeCollectorItemWithOptions(true,uniqueOptions2,ObjectId.get(),1557947220000L);
-		when(collectorRepository.findOne(any(ObjectId.class))).thenReturn(c);
+		when(collectorRepository.findById(any(ObjectId.class)).get()).thenReturn(c);
 		when(collectorItemRepository.findAllByOptionMapAndCollectorIdsIn(anyMap(),anyList())).thenReturn(Arrays.asList(c2));
 		when(collectorItemRepository.save(any(CollectorItem.class))).thenReturn(c1);
 		CollectorItem actual = collectorService.createCollectorItem(c1);
 		assertTrue(actual.getId().equals(c2.getId()));
-		verify(collectorRepository,times(1)).findOne(any(ObjectId.class));
+		verify(collectorRepository,times(1)).findById(any(ObjectId.class)).get();
 		verify(collectorItemRepository,times(1)).findAllByOptionMapAndCollectorIdsIn(anyMap(),anyList());
 		verify(collectorItemRepository,times(1)).save(any(CollectorItem.class));
 	}
@@ -143,12 +143,12 @@ public class CollectorServiceTest {
 
 		CollectorItem c1 = makeCollectorItemWithOptions(true,uniqueOptions,ObjectId.get(),1557947220000L);
 		CollectorItem c2 = makeCollectorItemWithOptions(true,uniqueOptions2,ObjectId.get(),1557332269095L);
-		when(collectorRepository.findOne(any(ObjectId.class))).thenReturn(c);
+		when(collectorRepository.findById(any(ObjectId.class)).get()).thenReturn(c);
 		when(collectorItemRepository.findAllByOptionMapAndCollectorIdsIn(anyMap(),anyList())).thenReturn(Arrays.asList(c1));
 		when(collectorItemRepository.save(any(CollectorItem.class))).thenReturn(c2);
 		CollectorItem actual = collectorService.createCollectorItem(c2);
 		assertTrue(actual.getId().equals(c1.getId()));
-		verify(collectorRepository,times(1)).findOne(any(ObjectId.class));
+		verify(collectorRepository,times(1)).findById(any(ObjectId.class)).get();
 		verify(collectorItemRepository,times(1)).findAllByOptionMapAndCollectorIdsIn(anyMap(),anyList());
 		verify(collectorItemRepository,times(1)).save(any(CollectorItem.class));
 	}
@@ -168,12 +168,12 @@ public class CollectorServiceTest {
 
 		CollectorItem c1 = makeCollectorItemWithOptions(false,uniqueOptions,ObjectId.get(),1557332269095L);
 		CollectorItem c2 = makeCollectorItemWithOptions(true,uniqueOptions2,ObjectId.get(),1557332269095L);
-		when(collectorRepository.findOne(any(ObjectId.class))).thenReturn(c);
+		when(collectorRepository.findById(any(ObjectId.class)).get()).thenReturn(c);
 		when(collectorItemRepository.findAllByOptionMapAndCollectorIdsIn(anyMap(),anyList())).thenReturn(Arrays.asList(c1));
 		when(collectorItemRepository.save(any(CollectorItem.class))).thenReturn(c2);
 		CollectorItem actual = collectorService.createCollectorItem(c2);
 		assertTrue(actual.getId().equals(c1.getId()));
-		verify(collectorRepository,times(1)).findOne(any(ObjectId.class));
+		verify(collectorRepository,times(1)).findById(any(ObjectId.class));
 		verify(collectorItemRepository,times(1)).findAllByOptionMapAndCollectorIdsIn(anyMap(),anyList());
 		verify(collectorItemRepository,times(1)).save(any(CollectorItem.class));
 	}
@@ -187,12 +187,12 @@ public class CollectorServiceTest {
 		uniqueOptions.put("instanceUrl","https://a.com");
 
 		CollectorItem c1 = makeCollectorItemWithOptions(false,uniqueOptions,ObjectId.get(),1557332269095L);
-		when(collectorRepository.findOne(any(ObjectId.class))).thenReturn(c);
+		when(collectorRepository.findById(any(ObjectId.class)).get()).thenReturn(c);
 		when(collectorItemRepository.findAllByOptionMapAndCollectorIdsIn(anyMap(),anyList())).thenReturn(null);
 		when(collectorItemRepository.save(any(CollectorItem.class))).thenReturn(c1);
 		CollectorItem actual = collectorService.createCollectorItem(c1);
 		assertNotNull(actual);
-		verify(collectorRepository,times(1)).findOne(any(ObjectId.class));
+		verify(collectorRepository,times(1)).findById(any(ObjectId.class));
 		verify(collectorItemRepository,times(1)).findAllByOptionMapAndCollectorIdsIn(anyMap(),anyList());
 		verify(collectorItemRepository,times(1)).save(any(CollectorItem.class));
 	}
@@ -221,12 +221,12 @@ public class CollectorServiceTest {
 		CollectorItem c1 = makeCollectorItemWithOptions(false,uniqueOptions,ObjectId.get(),1557947220000L);
 		CollectorItem c2 = makeCollectorItemWithOptions(true,uniqueOptions2,ObjectId.get(),1557947220000L);
 		CollectorItem c3 = makeCollectorItemWithOptions(true,uniqueOptions3,ObjectId.get(),1557332269095L);
-		when(collectorRepository.findOne(any(ObjectId.class))).thenReturn(c);
+		when(collectorRepository.findById(any(ObjectId.class)).get()).thenReturn(c);
 		when(collectorItemRepository.findAllByOptionMapAndCollectorIdsIn(anyMap(),anyList())).thenReturn(Arrays.asList(c1,c3));
 		when(collectorItemRepository.save(any(CollectorItem.class))).thenReturn(c2);
 		CollectorItem actual = collectorService.createCollectorItem(c2);
 		assertTrue(actual.getId().equals(c3.getId()));
-		verify(collectorRepository,times(1)).findOne(any(ObjectId.class));
+		verify(collectorRepository,times(1)).findById(any(ObjectId.class));
 		verify(collectorItemRepository,times(1)).findAllByOptionMapAndCollectorIdsIn(anyMap(),anyList());
 		verify(collectorItemRepository,times(1)).save(any(CollectorItem.class));
 	}
@@ -255,13 +255,13 @@ public class CollectorServiceTest {
 		CollectorItem c2 = makeCollectorItemWithOptions(true,uniqueOptions2,ObjectId.get(),1557947220000L);
 		CollectorItem c3 = makeCollectorItemWithOptions(true,uniqueOptions3,ObjectId.get(),1557860820000L);
 		CollectorItem c4 = makeCollectorItemWithOptions(true,uniqueOptions3,ObjectId.get(),1557949459000L);
-		when(collectorRepository.findOne(any(ObjectId.class))).thenReturn(c);
+		when(collectorRepository.findById(any(ObjectId.class)).get()).thenReturn(c);
 
 		when(collectorItemRepository.findAllByOptionMapAndCollectorIdsIn(anyMap(),anyList())).thenReturn(Arrays.asList(c1,c3,c4));
 		when(collectorItemRepository.save(any(CollectorItem.class))).thenReturn(c2);
 		CollectorItem actual = collectorService.createCollectorItem(c2);
 		assertTrue(actual.getId().equals(c4.getId()));
-		verify(collectorRepository,times(1)).findOne(any(ObjectId.class));
+		verify(collectorRepository,times(1)).findById(any(ObjectId.class));
 		verify(collectorItemRepository,times(1)).findAllByOptionMapAndCollectorIdsIn(anyMap(),anyList());
 		verify(collectorItemRepository,times(1)).save(any(CollectorItem.class));
 	}

@@ -59,7 +59,7 @@ public class ServiceServiceTest {
     public void get() {
         ObjectId id = ObjectId.get();
         serviceService.get(id);
-        verify(serviceRepository).findOne(id);
+        verify(serviceRepository).findById(id).get();
     }
 
     @Test
@@ -72,21 +72,29 @@ public class ServiceServiceTest {
         List<Owner> owners = new ArrayList<>();
         owners.add(new Owner("amit", AuthType.STANDARD));
         final Dashboard dashboard = new Dashboard("template", "title", new Application("app"), owners, DashboardType.Team, "ASVTEST","BAPTEST",activeWidgets, false, ScoreDisplayType.HEADER);
-        when(dashboardRepository.findOne(id)).thenReturn(dashboard);
+        when(dashboardRepository.findById(id).get()).thenReturn(dashboard);
 
         Service service=serviceService.create(id, name,url);
 
         verify(serviceRepository).save(argThat(new ArgumentMatcher<Service>() {
-            @Override
-            public boolean matches(Object o) {
-
-                Service service = (Service) o;
-               //return true;
-                return service.getName().equals(name) &&
-                        service.getDashboardId().equals(id) &&
-                        service.getStatus().equals(ServiceStatus.Warning) &&
-                        service.getApplicationName().equals(dashboard.getApplication().getName());
-            }
+//            @Override
+//            public boolean matches(Object o) {
+//
+//                Service service = (Service) o;
+//               //return true;
+//                return service.getName().equals(name) &&
+//                        service.getDashboardId().equals(id) &&
+//                        service.getStatus().equals(ServiceStatus.Warning) &&
+//                        service.getApplicationName().equals(dashboard.getApplication().getName());
+//            }
+        	@Override
+			public boolean matches(Service argument) {
+        		return argument.getName().equals(name) &&
+        		argument.getDashboardId().equals(id) &&
+        		argument.getStatus().equals(ServiceStatus.Warning) &&
+        		argument.getApplicationName().equals(dashboard.getApplication().getName());
+			}
+        	
         }));
     }
 
@@ -111,8 +119,8 @@ public class ServiceServiceTest {
         verify(serviceRepository).save(argThat(new ArgumentMatcher<Service>() {
 
             @Override
-            public boolean matches(Object o) {
-                return ((Service) o).getLastUpdated() > 0;
+			public boolean matches(Service argument) {
+                return argument.getLastUpdated() > 0;
             }
         }));
     }
@@ -123,7 +131,7 @@ public class ServiceServiceTest {
         ObjectId serviceId = ObjectId.get();
         Service service = new Service();
         service.setDashboardId(dashId);
-        when(serviceRepository.findOne(serviceId)).thenReturn(service);
+        when(serviceRepository.findById(serviceId).get()).thenReturn(service);
 
         serviceService.delete(dashId, serviceId);
 
@@ -136,15 +144,14 @@ public class ServiceServiceTest {
         ObjectId serviceId = ObjectId.get();
         Service service = new Service();
         service.setDashboardId(ObjectId.get());
-        when(serviceRepository.findOne(serviceId)).thenReturn(service);
+        when(serviceRepository.findById(serviceId).get()).thenReturn(service);
 
         serviceService.addDependentService(dashId, serviceId);
 
         verify(serviceRepository).save(argThat(new ArgumentMatcher<Service>() {
-            @Override
-            public boolean matches(Object o) {
-                Service service = (Service) o;
-                return service.getDependedBy().contains(dashId);
+        	@Override
+			public boolean matches(Service argument) {
+                return argument.getDependedBy().contains(dashId);
             }
         }));
     }
@@ -155,16 +162,21 @@ public class ServiceServiceTest {
         ObjectId serviceId = ObjectId.get();
         Service service = new Service();
         service.setDashboardId(dashId);
-        when(serviceRepository.findOne(serviceId)).thenReturn(service);
+        when(serviceRepository.findById(serviceId).get()).thenReturn(service);
 
         serviceService.deleteDependentService(dashId, serviceId);
 
         verify(serviceRepository).save(argThat(new ArgumentMatcher<Service>() {
-            @Override
-            public boolean matches(Object o) {
-                Service service = (Service) o;
-                return !service.getDependedBy().contains(dashId);
-            }
+//            @Override
+//            public boolean matches(Object o) {
+//                Service service = (Service) o;
+//                return !service.getDependedBy().contains(dashId);
+//            }
+
+			@Override
+			public boolean matches(Service argument) {
+				return !argument.getDependedBy().contains(dashId);
+			}
         }));
     }
 

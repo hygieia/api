@@ -1,5 +1,15 @@
 package com.capitalone.dashboard.service;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang3.ObjectUtils;
+import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.capitalone.dashboard.model.BinaryArtifact;
 import com.capitalone.dashboard.model.Build;
 import com.capitalone.dashboard.model.DataResponse;
@@ -9,15 +19,6 @@ import com.capitalone.dashboard.repository.BuildRepository;
 import com.capitalone.dashboard.repository.JobRepository;
 import com.capitalone.dashboard.request.BinaryArtifactCreateRequest;
 import com.capitalone.dashboard.request.BinaryArtifactSearchRequest;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.apache.commons.lang3.ObjectUtils;
-import org.bson.types.ObjectId;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
 public class BinaryArtifactServiceImpl implements BinaryArtifactService {
@@ -73,10 +74,9 @@ public class BinaryArtifactServiceImpl implements BinaryArtifactService {
     }
     
     private Build getBuildById(ObjectId buildId){
-    	return buildRepository.findOne(buildId);
+    	return buildRepository.findById(buildId).get();
     }
 
-    @Override
     public String create(BinaryArtifactCreateRequest request) {
 		BinaryArtifact ba = new BinaryArtifact();
 		ba.setArtifactName(request.getArtifactName());
@@ -126,7 +126,7 @@ public class BinaryArtifactServiceImpl implements BinaryArtifactService {
 				ba.setBuildNumber(build.getNumber());
 			}
 			
-			JobCollectorItem ci = jobRepository.findOne(build.getCollectorItemId());
+			JobCollectorItem ci = jobRepository.findById(build.getCollectorItemId()).get();
 			if (ci != null) {
 				if (ba.getInstanceUrl() == null) {
 					ba.setInstanceUrl(ci.getInstanceUrl());

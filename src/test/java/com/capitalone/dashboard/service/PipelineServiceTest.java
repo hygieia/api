@@ -74,8 +74,8 @@ public class PipelineServiceTest {
         pipelines.add(pipeline);
 
         when(pipelineRepository.findByCollectorItemId(dashboardCollectorItemId)).thenReturn(pipeline);
-        when(collectorItemRepository.findOne(pipeline.getCollectorItemId())).thenReturn(dashboardCollectorItem);
-        when(dashboardRepository.findOne(new ObjectId((String)dashboardCollectorItem.getOptions().get("dashboardId")))).thenReturn(dashboard);
+        when(collectorItemRepository.findById(pipeline.getCollectorItemId()).get()).thenReturn(dashboardCollectorItem);
+        when(dashboardRepository.findById(new ObjectId((String)dashboardCollectorItem.getOptions().get("dashboardId"))).get()).thenReturn(dashboard);
 
         PipelineResponse expected = makePipelineResponse(pipeline, dashboard);
 

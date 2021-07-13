@@ -46,7 +46,7 @@ public class FeatureFlagServiceImpl implements FeatureFlagService {
 
     @Override
     public void deleteFlags(ObjectId id){
-        featureFlagRepository.delete(id);
+        featureFlagRepository.deleteById(id);
     }
 
 }

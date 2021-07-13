@@ -71,7 +71,9 @@ public class CollectorServiceImpl implements CollectorService {
 
     @Override
     public List<Collector> collectorsById(ObjectId id) {
-        return collectorRepository.findById(id);
+    	List<Collector> ids = new ArrayList<Collector>();
+    	ids.add(collectorRepository.findById(id).get());
+        return ids;
     }
 
     @Override
@@ -151,11 +153,11 @@ public class CollectorServiceImpl implements CollectorService {
 
     @Override
     public CollectorItem getCollectorItem(ObjectId id) throws HygieiaException {
-        CollectorItem item = collectorItemRepository.findOne(id);
+        CollectorItem item = collectorItemRepository.findById(id).get();
         if(item == null){
             throw new HygieiaException("Failed to find collectorItem by Id.", HygieiaException.BAD_DATA);
         }
-        item.setCollector(collectorRepository.findOne(item.getCollectorId()));
+        item.setCollector(collectorRepository.findById(item.getCollectorId()).get());
         return item;
     }
 
@@ -179,7 +181,7 @@ public class CollectorServiceImpl implements CollectorService {
         if (collectorItem==null){
             return Collections.emptyList();
         }
-        Collector collector = collectorRepository.findOne(collectorItem.getCollectorId());
+        Collector collector = collectorRepository.findById(collectorItem.getCollectorId()).get();
         if (collector == null){
             return Collections.emptyList();
         }
@@ -199,7 +201,7 @@ public class CollectorServiceImpl implements CollectorService {
     // just update the new credentials.
     @Override
     public CollectorItem createCollectorItemSelectOptions(CollectorItem item, Map<String, Object> allOptions, Map<String, Object> uniqueOptions) {
-        Collector collector =  collectorRepository.findOne(item.getCollectorId());
+        Collector collector =  collectorRepository.findById(item.getCollectorId()).get();
         Map<String,Object> uniqueFieldsFromCollector = collector.getUniqueFields();
         List<CollectorItem> existing = customRepositoryQuery.findCollectorItemsBySubsetOptions(
                 item.getCollectorId(), allOptions, uniqueOptions,uniqueFieldsFromCollector);
@@ -282,7 +284,7 @@ public class CollectorServiceImpl implements CollectorService {
     public List<CollectorItem> getCollectorItemForComponent(String id, String type) {
         ObjectId oid = new ObjectId(id);
         CollectorType ctype = CollectorType.fromString(type);
-        Component component = componentRepository.findOne(oid);
+        Component component = componentRepository.findById(oid).get();
 
         List<CollectorItem> items = component.getCollectorItems(ctype);
 
@@ -292,13 +294,13 @@ public class CollectorServiceImpl implements CollectorService {
         for (CollectorItem item : items) {
             ids.add(item.getId());
         }
-        return (List<CollectorItem>) collectorItemRepository.findAll(ids);
+        return (List<CollectorItem>) collectorItemRepository.findAllById(ids);
     }
 
     @Override
     public void deletePropertiesInCollectorById(String id) {
         ObjectId objectId = new ObjectId(id);
-        Collector collectorById = collectorRepository.findOne(objectId);
+        Collector collectorById = collectorRepository.findById(objectId).get();
         Map<String, Object> blankMap = new HashMap<>();
 
         if(collectorById.getProperties().size() > 0) {
@@ -335,7 +337,7 @@ public class CollectorServiceImpl implements CollectorService {
         }
 
         //delete the collector item.
-        collectorItemRepository.delete(objectId);
+        collectorItemRepository.deleteById(objectId);
     }
 
     private Collector collectorById(ObjectId collectorId, List<Collector> collectors) {

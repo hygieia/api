@@ -149,8 +149,8 @@ public class DynamicPipelineServiceImplTest {
 		List<Environment> environments = setupEnvironments();
 		List<BinaryArtifact> binaryArtifacts = setupBinaryArtifacts();
 
-		Mockito.when(collectorItemRepository.findOne(Mockito.eq(COLLECTOR_ITEM_PIPELINE_ID))).thenReturn(pipelineCI);
-		Mockito.when(dashboardRepository.findOne(Mockito.eq(DASHBOARD_ID))).thenReturn(dashboard);
+		Mockito.when(collectorItemRepository.findById(Mockito.eq(COLLECTOR_ITEM_PIPELINE_ID)).get()).thenReturn(pipelineCI);
+		Mockito.when(dashboardRepository.findById(Mockito.eq(DASHBOARD_ID)).get()).thenReturn(dashboard);
 		Mockito.when(commitService.search(Mockito.any(CommitRequest.class))).thenReturn(new DataResponse<>(commits, 0));
 		Mockito.when(buildService.search(Mockito.any(BuildSearchRequest.class))).thenReturn(new DataResponse<>(builds, 0));
 		Mockito.when(deployService.getDeployStatus(Mockito.eq(COMPONENT_ID))).thenReturn(new DataResponse<>(environments, 0));
@@ -223,8 +223,8 @@ public class DynamicPipelineServiceImplTest {
 		List<Environment> environments = setupEnvironments();
 		List<BinaryArtifact> binaryArtifacts = setupBinaryArtifacts();
 
-		Mockito.when(collectorItemRepository.findOne(Mockito.eq(COLLECTOR_ITEM_PIPELINE_ID))).thenReturn(pipelineCI);
-		Mockito.when(dashboardRepository.findOne(Mockito.eq(DASHBOARD_ID))).thenReturn(dashboard);
+		Mockito.when(collectorItemRepository.findById(Mockito.eq(COLLECTOR_ITEM_PIPELINE_ID)).get()).thenReturn(pipelineCI);
+		Mockito.when(dashboardRepository.findById(Mockito.eq(DASHBOARD_ID)).get()).thenReturn(dashboard);
 		Mockito.when(commitService.search(Mockito.any(CommitRequest.class))).thenReturn(new DataResponse<>(commits, 0));
 		Mockito.when(buildService.search(Mockito.any(BuildSearchRequest.class))).thenReturn(new DataResponse<>(builds, 0));
 		Mockito.when(deployService.getDeployStatus(Mockito.eq(COMPONENT_ID))).thenReturn(new DataResponse<>(environments, 0));

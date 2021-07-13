@@ -1,6 +1,7 @@
 package com.capitalone.dashboard.rest;
 
 import com.capitalone.dashboard.model.DataResponse;
+import com.capitalone.dashboard.model.score.QScoreMetric;
 import com.capitalone.dashboard.model.score.ScoreMetric;
 import com.capitalone.dashboard.service.ScoreService;
 import org.bson.types.ObjectId;

@@ -164,8 +164,8 @@ public class TeamServiceImplTest {
 
     @Test
     public void testGetTeam() {
-        when(componentRepository.findOne(mockComponentId)).thenReturn(mockComponent);
-        when(collectorRepository.findOne(mockItem2.getCollectorId())).thenReturn(mockJiraCollector);
+        when(componentRepository.findById(mockComponentId).get()).thenReturn(mockComponent);
+        when(collectorRepository.findById(mockItem2.getCollectorId()).get()).thenReturn(mockJiraCollector);
         when(teamRepository.findByTeamId(Mockito.anyString()))
                 .thenReturn(mockJiraTeam);
 

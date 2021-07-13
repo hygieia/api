@@ -2,7 +2,7 @@ package com.capitalone.dashboard.request;
 
 import com.capitalone.dashboard.model.CollectorItem;
 import org.bson.types.ObjectId;
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.constraints.NotEmpty;
 
 import java.util.List;
 

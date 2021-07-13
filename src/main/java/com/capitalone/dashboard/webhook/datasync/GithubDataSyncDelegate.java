@@ -55,7 +55,7 @@ public class GithubDataSyncDelegate {
                 gs.sort(Comparator.comparing(GitRequest::getTimestamp).reversed());
                 GitRequest pullRequest = gs.stream().filter(Objects::nonNull).findFirst().orElse(null);
                 if (Objects.nonNull(pullRequest)) {
-                    CollectorItem collectorItem = dataSyncServiceImpl.getCollectorItemRepository().findOne(pullRequest.getCollectorItemId());
+                    CollectorItem collectorItem = dataSyncServiceImpl.getCollectorItemRepository().findById(pullRequest.getCollectorItemId()).get();
                     List<CollectorItem> suspectCollectorItems = dataSyncUtils.deleteCollectorItems(collectorItems, collectorItem, suspects);
                     collectorItemsCount += suspectCollectorItems.size();
                     if (CollectionUtils.isEmpty(components)) continue;

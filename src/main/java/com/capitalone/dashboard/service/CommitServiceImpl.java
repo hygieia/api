@@ -55,7 +55,7 @@ public class CommitServiceImpl implements CommitService {
         BooleanBuilder builder = new BooleanBuilder();
 
         CollectorItem item = null;
-        Component component = componentRepository.findOne(request.getComponentId());
+        Component component = componentRepository.findById(request.getComponentId()).get();
 
         if ( (component == null)
                 || ((item = component.getLastUpdatedCollectorItemForType(CollectorType.SCM)) == null) ) {
@@ -88,7 +88,7 @@ public class CommitServiceImpl implements CommitService {
             builder.and(commit.scmCommitLog.contains(request.getMessageContains()));
         }
 
-        Collector collector = collectorRepository.findOne(item.getCollectorId());
+        Collector collector = collectorRepository.findById(item.getCollectorId()).get();
         return new DataResponse<>(commitRepository.findAll(builder.getValue()), collector.getLastExecuted());
     }
 

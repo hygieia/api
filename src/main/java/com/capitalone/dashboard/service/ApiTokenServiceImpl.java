@@ -1,17 +1,14 @@
 package com.capitalone.dashboard.service;
 
-import com.capitalone.dashboard.misc.HygieiaException;
-import com.capitalone.dashboard.model.ApiToken;
-import com.capitalone.dashboard.model.AuthType;
-import com.capitalone.dashboard.model.Authentication;
-import com.capitalone.dashboard.model.UserInfo;
-import com.capitalone.dashboard.model.UserRole;
-import com.capitalone.dashboard.repository.ApiTokenRepository;
-import com.capitalone.dashboard.repository.UserInfoRepository;
-import com.capitalone.dashboard.util.Encryption;
-import com.capitalone.dashboard.util.EncryptionException;
-import com.capitalone.dashboard.util.UnsafeDeleteException;
-import com.google.common.collect.Sets;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
@@ -22,15 +19,16 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashSet;
-import java.util.List;
+import com.capitalone.dashboard.misc.HygieiaException;
+import com.capitalone.dashboard.model.ApiToken;
+import com.capitalone.dashboard.model.UserInfo;
+import com.capitalone.dashboard.model.UserRole;
+import com.capitalone.dashboard.repository.ApiTokenRepository;
+import com.capitalone.dashboard.repository.UserInfoRepository;
+import com.capitalone.dashboard.util.Encryption;
+import com.capitalone.dashboard.util.EncryptionException;
+import com.capitalone.dashboard.util.UnsafeDeleteException;
+import com.google.common.collect.Sets;
 
 @Component
 public class ApiTokenServiceImpl implements ApiTokenService {
@@ -101,26 +99,28 @@ public class ApiTokenServiceImpl implements ApiTokenService {
 
     @Override
     public void deleteToken(ObjectId id) {
-        ApiToken apiToken = apiTokenRepository.findOne(id);
+        Optional<ApiToken> apiToken = apiTokenRepository.findById(id);
 
         if(apiToken == null) {
             throw new UnsafeDeleteException("Cannot delete token ");
         }else{
-            apiTokenRepository .delete(apiToken);
+        	ApiToken token = apiToken.get();
+            apiTokenRepository.delete(token);
         }
     }
     @Override
     public String updateToken(Long expirationDt, ObjectId id) throws HygieiaException{
-        ApiToken apiToken = apiTokenRepository.findOne(id);
+    	Optional<ApiToken> apiToken = apiTokenRepository.findById(id);
+    	ApiToken token = null;
         if(apiToken == null) {
             throw new HygieiaException("Cannot find token ", HygieiaException.BAD_DATA);
         }else{
-
-            apiToken.setExpirationDt(expirationDt);
-            apiTokenRepository.save(apiToken);
+        	token = apiToken.get();
+            token.setExpirationDt(expirationDt);
+            apiTokenRepository.save(token);
         }
 
-        return apiToken.getId().toString();
+        return token.getId().toString();
     }
     private Collection<? extends GrantedAuthority> createAuthorities(Collection<UserRole> authorities) {
         Collection<GrantedAuthority> grantedAuthorities = new HashSet<>();

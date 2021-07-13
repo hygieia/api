@@ -50,8 +50,8 @@ public class GitRequestServiceTest {
         GitRequestRequest request = new GitRequestRequest();
         request.setComponentId(componentId);
 
-        when(componentRepository.findOne(request.getComponentId())).thenReturn(makeComponent(collectorItemId, collectorId, true));
-        when(collectorRepository.findOne(collectorId)).thenReturn(collector);
+        when(componentRepository.findById(request.getComponentId()).get()).thenReturn(makeComponent(collectorItemId, collectorId, true));
+        when(collectorRepository.findById(collectorId).get()).thenReturn(collector);
 
         gitRequestService.search(request,"pull", "all");
 
@@ -67,8 +67,8 @@ public class GitRequestServiceTest {
         GitRequestRequest request = new GitRequestRequest();
         request.setComponentId(componentId);
 
-        when(componentRepository.findOne(request.getComponentId())).thenReturn(makeComponent(collectorItemId, collectorId, false));
-        when(collectorRepository.findOne(collectorId)).thenReturn(new Collector());
+        when(componentRepository.findById(request.getComponentId()).get()).thenReturn(makeComponent(collectorItemId, collectorId, false));
+        when(collectorRepository.findById(collectorId).get()).thenReturn(new Collector());
 
         DataResponse<Iterable<GitRequest>> response = gitRequestService.search(request, "pull", "all");
 
@@ -82,8 +82,8 @@ public class GitRequestServiceTest {
 
         GitRequestRequest request = new GitRequestRequest();
 
-        when(componentRepository.findOne(request.getComponentId())).thenReturn(null);
-        when(collectorRepository.findOne(collectorId)).thenReturn(new Collector());
+        when(componentRepository.findById(request.getComponentId()).get()).thenReturn(null);
+        when(collectorRepository.findById(collectorId).get()).thenReturn(new Collector());
 
         DataResponse<Iterable<GitRequest>> response = gitRequestService.search(request, "pull", "all");
 

@@ -43,7 +43,7 @@ public class MethodLevelSecurityHandlerTest {
 	
 	@Test
 	public void testIsOwnerOfDashboard_noDashFound() {
-		when(dashboardRepository.findOne(any(ObjectId.class))).thenReturn(null);
+		when(dashboardRepository.findById(any(ObjectId.class).get())).thenReturn(null);
 		
 		assertFalse(handler.isOwnerOfDashboard(new ObjectId()));
 	}
@@ -54,7 +54,7 @@ public class MethodLevelSecurityHandlerTest {
 		List<String> activeWidgets = new ArrayList<>();
 		Dashboard dashboard = new Dashboard("team", "title", null, null, DashboardType.Team, configItemAppName,configItemComponentName,activeWidgets, false, ScoreDisplayType.HEADER);
 		dashboard.setOwner(USERNAME);
-		when(dashboardRepository.findOne(any(ObjectId.class))).thenReturn(dashboard);
+		when(dashboardRepository.findById(any(ObjectId.class)).get()).thenReturn(dashboard);
 		
 		assertTrue(handler.isOwnerOfDashboard(new ObjectId()));
 	}
@@ -66,7 +66,7 @@ public class MethodLevelSecurityHandlerTest {
 		List<Owner> owners = new ArrayList<>();
 		owners.add(new Owner(USERNAME, AuthType.STANDARD));
 		Dashboard dashboard = new Dashboard("team", "title", null, owners, DashboardType.Team, configItemAppName,configItemComponentName,activeWidgets, false, ScoreDisplayType.HEADER);
-		when(dashboardRepository.findOne(any(ObjectId.class))).thenReturn(dashboard);
+		when(dashboardRepository.findById(any(ObjectId.class)).get()).thenReturn(dashboard);
 		
 		assertTrue(handler.isOwnerOfDashboard(new ObjectId()));
 	}
@@ -77,7 +77,7 @@ public class MethodLevelSecurityHandlerTest {
 		List<String> activeWidgets = new ArrayList<>();
 		Dashboard dashboard = new Dashboard("team", "title", null, null, DashboardType.Team,configItemAppName,configItemComponentName,activeWidgets, false, ScoreDisplayType.HEADER);
 		dashboard.setOwner(SOME_OTHER_USER);
-		when(dashboardRepository.findOne(any(ObjectId.class))).thenReturn(dashboard);
+		when(dashboardRepository.findById(any(ObjectId.class)).get()).thenReturn(dashboard);
 		
 		assertFalse(handler.isOwnerOfDashboard(new ObjectId()));
 	}

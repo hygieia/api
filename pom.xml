@@ -70,7 +70,7 @@
     <properties>
         <!-- Dependencies -->
         <com.capitalone.dashboard.core.version>4.0.0</com.capitalone.dashboard.core.version>
-        <spring-security.version>5.4.5.RELEASE</spring-security.version>
+        <spring-security.version>5.4.5</spring-security.version>
         <tomcat.version>8.5.57</tomcat.version>
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
         <commons-codec.version>1.15</commons-codec.version>
@@ -146,7 +146,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-             <version>2.5.0</version>
+             <version>2.5.2</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.tomcat.embed</groupId>
@@ -154,6 +154,14 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        
+        <!-- https://mvnrepository.com/artifact/log4j/log4j -->
+<dependency>
+    <groupId>log4j</groupId>
+    <artifactId>log4j</artifactId>
+    <version>1.2.17</version>
+</dependency>
+        
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

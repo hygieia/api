@@ -39,7 +39,7 @@ public class CodeQualityServiceTest {
 
         CodeQualityCreateRequest request = makeCodeQualityRequest();
 
-        when(collectorRepository.findOne(collectorId)).thenReturn(new Collector());
+        when(collectorRepository.findById(collectorId).get()).thenReturn(new Collector());
         when(collectorService.createCollector(any(Collector.class))).thenReturn(new Collector());
         when(collectorService.createCollectorItem(any(CollectorItem.class))).thenReturn(new CollectorItem());
 
@@ -57,7 +57,7 @@ public class CodeQualityServiceTest {
 
         CodeQualityCreateRequest request = makeCodeQualityRequest();
 
-        when(collectorRepository.findOne(collectorId)).thenReturn(new Collector());
+        when(collectorRepository.findById(collectorId).get()).thenReturn(new Collector());
         when(collectorService.createCollector(any(Collector.class))).thenReturn(new Collector());
         when(collectorService.createCollectorItem(any(CollectorItem.class))).thenReturn(new CollectorItem());
 
@@ -72,7 +72,7 @@ public class CodeQualityServiceTest {
     @Test
     public void getCollectorItemTest() {
         CodeQualityRequest request = new CodeQualityRequest();
-        when(componentRepository.findOne(request.getComponentId())).thenReturn(null);
+        when(componentRepository.findById(request.getComponentId()).get()).thenReturn(null);
 
         CollectorItem item = codeQualityService.getCollectorItem(request);
 

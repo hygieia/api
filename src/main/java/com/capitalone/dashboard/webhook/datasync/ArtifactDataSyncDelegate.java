@@ -53,7 +53,7 @@ public class ArtifactDataSyncDelegate {
                 bs.sort(Comparator.comparing(BinaryArtifact::getTimestamp).reversed());
                 BinaryArtifact binaryArtifact = bs.stream().filter(Objects::nonNull).findFirst().orElse(null);
                 if (Objects.nonNull(binaryArtifact)) {
-                    CollectorItem collectorItem = dataSyncServiceImpl.getCollectorItemRepository().findOne(binaryArtifact.getCollectorItemId());
+                    CollectorItem collectorItem = dataSyncServiceImpl.getCollectorItemRepository().findById(binaryArtifact.getCollectorItemId()).get();
                     List<CollectorItem> suspectCollectorItems = dataSyncUtils.deleteCollectorItems(collectorItems, collectorItem, suspects);
                     collectorItemsCount += suspectCollectorItems.size();
                     if (CollectionUtils.isEmpty(components)) continue;

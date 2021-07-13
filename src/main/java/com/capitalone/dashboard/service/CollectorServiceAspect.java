@@ -45,7 +45,7 @@ public class CollectorServiceAspect {
     }
 
     private void normalizeOptions(CollectorItem item, Map<String, Object> uniqueOptions) {
-        Collector collector = collectorRepository.findOne(item.getCollectorId());
+        Collector collector = collectorRepository.findById(item.getCollectorId()).get();
         if (collector.getCollectorType() == CollectorType.SCM && isGit(collector)) {
             String repoUrl = (String)uniqueOptions.get("url");
             GitHubParsedUrl gitHubParsed = new GitHubParsedUrl(repoUrl);

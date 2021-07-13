@@ -1,5 +1,21 @@
 package com.capitalone.dashboard.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import javax.validation.constraints.NotNull;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.AutoDiscoveredEntry;
 import com.capitalone.dashboard.model.AutoDiscovery;
@@ -13,19 +29,6 @@ import com.capitalone.dashboard.repository.FeatureFlagRepository;
 import com.capitalone.dashboard.util.FeatureFlagsEnum;
 import com.capitalone.dashboard.util.HygieiaUtils;
 import com.google.common.collect.Iterables;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.bson.types.ObjectId;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service
 public class AutoDiscoveryServiceImpl implements AutoDiscoveryService {
@@ -41,7 +44,7 @@ public class AutoDiscoveryServiceImpl implements AutoDiscoveryService {
         this.featureFlagRepository = featureFlagRepository;
     }
 
-    @Override
+
     public AutoDiscovery save(AutoDiscoveryRemoteRequest request) throws HygieiaException {
         String autoDiscoveryId = request.getAutoDiscoveryId();
         if (autoDiscoveryId==null || !ObjectId.isValid(autoDiscoveryId)) {
@@ -49,24 +52,28 @@ public class AutoDiscoveryServiceImpl implements AutoDiscoveryService {
         }
 
         ObjectId id = new ObjectId(autoDiscoveryId);
-        AutoDiscovery autoDiscovery;
+        Optional<AutoDiscovery> autoDiscovery;
         FeatureFlag featureFlag = featureFlagRepository.findByName(FeatureFlagsEnum.auto_discover.toString());
-
-        if (autoDiscoveryRepository.exists(id)) {
+        AutoDiscovery ad = null;
+        if (autoDiscoveryRepository.existsById(id)) {
             // update existing AutoDiscovery record with the status from request
-            autoDiscovery = autoDiscoveryRepository.findOne(id);
-            updateAutoDiscovery(autoDiscovery, request, featureFlag);
-            autoDiscovery.setModifiedTimestamp(System.currentTimeMillis());
+            autoDiscovery = autoDiscoveryRepository.findById(id);
+            if(autoDiscovery != null) {
+            	throw new HygieiaException("Cannot find autoDiscovery ", HygieiaException.BAD_DATA);
+            } 
+            ad = autoDiscovery.get();
+            updateAutoDiscovery(ad, request, featureFlag);
+            ad.setModifiedTimestamp(System.currentTimeMillis());
         } else {
             // create new AutoDiscovery record
-            autoDiscovery = requestToAutoiscovery(request, featureFlag);
+            ad = requestToAutoiscovery(request, featureFlag);
             long currTime = System.currentTimeMillis();
-            autoDiscovery.setCreatedTimestamp(currTime);
-            autoDiscovery.setModifiedTimestamp(currTime);
+            ad.setCreatedTimestamp(currTime);
+            ad.setModifiedTimestamp(currTime);
         }
 
-        autoDiscoveryRepository.save(autoDiscovery);
-        return autoDiscovery;
+        autoDiscoveryRepository.save(ad);
+        return ad;
     }
 
     /**

@@ -33,7 +33,7 @@ public class DefaultAuthenticationServiceImpl implements AuthenticationService {
     @Override
     public Authentication get(ObjectId id) {
 
-        Authentication authentication = authenticationRepository.findOne(id);
+        Authentication authentication = authenticationRepository.findById(id).get();
         return authentication;
     }
 
@@ -60,7 +60,7 @@ public class DefaultAuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public void delete(ObjectId id) {
-        Authentication authentication = authenticationRepository.findOne(id);
+        Authentication authentication = authenticationRepository.findById(id).get();
         if (authentication != null) {
             authenticationRepository.delete(authentication);
         }

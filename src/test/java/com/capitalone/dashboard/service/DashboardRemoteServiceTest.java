@@ -84,7 +84,7 @@ public class DashboardRemoteServiceTest {
 
         dashboardRemoteService.remoteCreate(request, true);
         List<Dashboard> dashboard = dashboardService.getByTitle("TestSSA");
-        Component component = componentRepository.findOne(dashboard.get(0).getApplication().getComponents().get(0).getId());
+        Component component = componentRepository.findById(dashboard.get(0).getApplication().getComponents().get(0).getId()).get();
         assertEquals(2, component.getCollectorItems().get(CollectorType.SCM).size());
     }
 
@@ -93,7 +93,7 @@ public class DashboardRemoteServiceTest {
         DashboardRemoteRequest request = getRemoteRequest("./dashboardRemoteRequests/0-Remote-Update-All.json");
         dashboardRemoteService.remoteCreate(request, true);
         List<Dashboard> dashboard = dashboardService.getByTitle("TestSSA");
-        Component component = componentRepository.findOne(dashboard.get(0).getApplication().getComponents().get(0).getId());
+        Component component = componentRepository.findById(dashboard.get(0).getApplication().getComponents().get(0).getId()).get();
         assertEquals(3, component.getCollectorItems().get(CollectorType.SCM).size());
         assertEquals(2, component.getCollectorItems().get(CollectorType.Build).size());
         assertEquals(2, component.getCollectorItems().get(CollectorType.LibraryPolicy).size());
@@ -105,7 +105,7 @@ public class DashboardRemoteServiceTest {
         DashboardRemoteRequest request = getRemoteRequest("./dashboardRemoteRequests/0-Remote-Update-All-Empty.json");
         dashboardRemoteService.remoteCreate(request, true);
         List<Dashboard> dashboard = dashboardService.getByTitle("TestSSA");
-        Component component = componentRepository.findOne(dashboard.get(0).getApplication().getComponents().get(0).getId());
+        Component component = componentRepository.findById(dashboard.get(0).getApplication().getComponents().get(0).getId()).get();
         assertNull( component.getCollectorItems().get(CollectorType.SCM));
         assertNull(component.getCollectorItems().get(CollectorType.Build));
         assertNull( component.getCollectorItems().get(CollectorType.LibraryPolicy));
@@ -275,7 +275,7 @@ public class DashboardRemoteServiceTest {
 
         dashboardRemoteService.remoteCreate(request, false);
         List<Dashboard> dashboard = dashboardService.getByTitle("newDashboard3");
-        Component component = componentRepository.findOne(dashboard.get(0).getApplication().getComponents().get(0).getId());
+        Component component = componentRepository.findById(dashboard.get(0).getApplication().getComponents().get(0).getId()).get();
         assertEquals(1, component.getCollectorItems().get(CollectorType.SCM).size());
 
     }
@@ -297,7 +297,7 @@ public class DashboardRemoteServiceTest {
 
         dashboardRemoteService.remoteCreate(request, false);
         List<Dashboard> dashboard = dashboardService.getByTitle("newDashboard4");
-        Component component = componentRepository.findOne(dashboard.get(0).getApplication().getComponents().get(0).getId());
+        Component component = componentRepository.findById(dashboard.get(0).getApplication().getComponents().get(0).getId()).get();
         assertEquals(1, component.getCollectorItems().get(CollectorType.Build).size());
         assertEquals(2, dashboard.get(0).getOwners().size());
     }
@@ -343,7 +343,7 @@ public class DashboardRemoteServiceTest {
 
         dashboardRemoteService.remoteCreate(request, true);
         List<Dashboard> dashboard = dashboardService.getByTitle("TestSSA");
-        Component component = componentRepository.findOne(dashboard.get(0).getApplication().getComponents().get(0).getId());
+        Component component = componentRepository.findById(dashboard.get(0).getApplication().getComponents().get(0).getId()).get();
         assertEquals(2, component.getCollectorItems().get(CollectorType.LibraryPolicy).size());
         assertNull(component.getCollectorItems().get(CollectorType.CodeQuality));
         assertNull(component.getCollectorItems().get(CollectorType.Test));

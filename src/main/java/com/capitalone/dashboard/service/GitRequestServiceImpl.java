@@ -53,7 +53,7 @@ public class GitRequestServiceImpl implements GitRequestService {
         BooleanBuilder builder = new BooleanBuilder();
 
         CollectorItem item = null;
-        Component component = componentRepository.findOne(request.getComponentId());
+        Component component = componentRepository.findById(request.getComponentId()).get();
         if ( (component == null)
                 || ((item = component.getLastUpdatedCollectorItemForType(CollectorType.SCM)) == null) ) {
             Iterable<GitRequest> results = new ArrayList<>();
@@ -75,7 +75,7 @@ public class GitRequestServiceImpl implements GitRequestService {
                 (state.toLowerCase().equals("closed")) || (state.toLowerCase().equals("merged")))) {
             builder.and(gitRequest.state.eq(state));
         }
-        Collector collector = collectorRepository.findOne(item.getCollectorId());
+        Collector collector = collectorRepository.findById(item.getCollectorId()).get();
         if ((collector == null) || (collector.getId() == null)) {
             Iterable<GitRequest> results = new ArrayList<>();
             return new DataResponse<>(results, new Date().getTime());

@@ -38,7 +38,7 @@ public class DataSyncUtils {
     }
 
     public int pages(Collector collector) {
-        Page<CollectorItem> collectorItemsPage = dataSyncServiceImpl.getCollectorItemRepository().findByCollectorIdIn(Collections.singleton(collector.getId()), new PageRequest(MAX_PAGE_SIZE, MAX_PAGE_SIZE));
+        Page<CollectorItem> collectorItemsPage = dataSyncServiceImpl.getCollectorItemRepository().findByCollectorIdIn(Collections.singleton(collector.getId()), PageRequest.of(MAX_PAGE_SIZE, MAX_PAGE_SIZE));
         if (Objects.isNull(collectorItemsPage)) return ZERO;
         return collectorItemsPage.getTotalPages();
     }
@@ -47,7 +47,7 @@ public class DataSyncUtils {
         LOG.info("starting - collecting collector items");
         List<CollectorItem> collectorItems = new ArrayList<>();
         IntStream.range(ZERO, total).forEach(idx -> {
-            Page<CollectorItem> collectorItemsPage = dataSyncServiceImpl.getCollectorItemRepository().findByCollectorIdIn(Collections.singleton(collector.getId()), new PageRequest(idx, MAX_PAGE_SIZE));
+            Page<CollectorItem> collectorItemsPage = dataSyncServiceImpl.getCollectorItemRepository().findByCollectorIdIn(Collections.singleton(collector.getId()), PageRequest.of(idx, MAX_PAGE_SIZE));
             collectorItems.addAll(collectorItemsPage.getContent());
             LOG.info("completed " + idx + " run");
         });
@@ -89,7 +89,7 @@ public class DataSyncUtils {
         suspectsList.removeIf(sci -> sci.getId().equals(first.getId()));
         suspectsList.forEach(sci -> {
             collectorItems.removeIf(cItem -> cItem.getId().equals(sci.getId()));
-            dataSyncServiceImpl.getCollectorItemRepository().delete(sci.getId());
+            dataSyncServiceImpl.getCollectorItemRepository().deleteById(sci.getId());
         });
         if (CollectionUtils.isEmpty(components)) return componentCount;
         int componentsUpdated = updateComponents(collector, components, first, collectorType);
@@ -118,7 +118,7 @@ public class DataSyncUtils {
         suspectCollectorItems.removeIf(cItem -> cItem.getId().equals(collectorItem.getId()));
         suspectCollectorItems.forEach(colItem -> {
             collectorItems.removeIf(cItem -> cItem.getId().equals(colItem.getId()));
-            dataSyncServiceImpl.getCollectorItemRepository().delete(colItem.getId());
+            dataSyncServiceImpl.getCollectorItemRepository().deleteById(colItem.getId());
         });
         return suspectCollectorItems;
     }

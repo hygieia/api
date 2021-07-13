@@ -91,7 +91,7 @@ public class DeployServiceImpl implements DeployService {
 
     @Override
     public DataResponse<List<Environment>> getDeployStatus(ObjectId componentId) {
-        Component component = componentRepository.findOne(componentId);
+        Component component = componentRepository.findById(componentId).get();
 
         Collection<CollectorItem> cis = component.getCollectorItems()
                 .get(CollectorType.Deployment);
@@ -126,7 +126,7 @@ public class DeployServiceImpl implements DeployService {
             });
 
             Collector collector = collectorRepository
-                    .findOne(item.getCollectorId());
+                    .findById(item.getCollectorId()).get();
 
             if (collector.getLastExecuted() > lastExecuted) {
                 lastExecuted = collector.getLastExecuted();
@@ -255,7 +255,7 @@ public class DeployServiceImpl implements DeployService {
             BuildDataCreateRequest buildRequest = buildRequestFromDeployRequest(request);
             BuildDataCreateResponse buildResponse = buildService.createV3(buildRequest);
             ObjectId buildId = buildResponse.getId();
-            Build build  = buildRepository.findOne(buildId);
+            Build build  = buildRepository.findById(buildId).get();
             HashMap<String, String> metadata = new HashMap<>();
             metadata.put("appName", request.getAppName());
             metadata.put("appServiceName",request.getAppServiceName());

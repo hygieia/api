@@ -80,12 +80,12 @@ public class PipelineServiceImpl implements PipelineService {
         /**
          * get the collector item and dashboard
          */
-        CollectorItem dashboardCollectorItem = collectorItemRepository.findOne(pipeline.getCollectorItemId());
+        CollectorItem dashboardCollectorItem = collectorItemRepository.findById(pipeline.getCollectorItemId()).get();
         if(dashboardCollectorItem.getOptions().get("dashboardId") == null) {
             throw new HygieiaException(" Collector Item: " + dashboardCollectorItem.getId() + " is not associated to a dashboard. ", HygieiaException.BAD_DATA);
         }
         String dashboardId = (String) dashboardCollectorItem.getOptions().get("dashboardId");
-        Dashboard dashboard = dashboardRepository.findOne(new ObjectId(dashboardId));
+        Dashboard dashboard = dashboardRepository.findById(new ObjectId(dashboardId)).get();
         if(dashboard == null) {
             throw new HygieiaException(" Dashboard " + dashboardId + " is not found for collectorItem: " + dashboardCollectorItem.getId() + " ", HygieiaException.BAD_DATA);
         }

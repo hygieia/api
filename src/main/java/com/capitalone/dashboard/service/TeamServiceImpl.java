@@ -56,7 +56,7 @@ public class TeamServiceImpl implements TeamService {
 
         for (Team team : teams) {
             Collector collector = collectorRepository
-                    .findOne(team.getCollectorId());
+                    .findById(team.getCollectorId()).get();
             team.setCollector(collector);
         }
 
@@ -78,7 +78,7 @@ public class TeamServiceImpl implements TeamService {
     @Override
     public DataResponse<Team> getTeam(ObjectId componentId,
                                               String teamId) {
-        Component component = componentRepository.findOne(componentId);
+        Component component = componentRepository.findById(componentId).get();
         CollectorItem item = component.getCollectorItems()
                 .get(CollectorType.AgileTool).get(0);
 
@@ -86,7 +86,7 @@ public class TeamServiceImpl implements TeamService {
         Team team = teamRepository.findByTeamId(teamId);
 
         Collector collector = collectorRepository
-                .findOne(item.getCollectorId());
+                .findById(item.getCollectorId()).get();
 
         return new DataResponse<>(team, collector.getLastExecuted());
     }

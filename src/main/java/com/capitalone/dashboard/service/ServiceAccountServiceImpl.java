@@ -40,7 +40,7 @@ public class ServiceAccountServiceImpl implements ServiceAccountService {
 
     @Override
     public String updateAccount(String serviceAccount, String fileNames, ObjectId id){
-        ServiceAccount sa = serviceAccountRepository.findOne(id);
+        ServiceAccount sa = serviceAccountRepository.findById(id).get();
         sa.setServiceAccountName(serviceAccount);
         sa.setFileNames(fileNames);
         serviceAccountRepository.save(sa);
@@ -49,7 +49,7 @@ public class ServiceAccountServiceImpl implements ServiceAccountService {
 
     @Override
     public void deleteAccount(ObjectId id ){
-        serviceAccountRepository.delete(id);
+        serviceAccountRepository.deleteById(id);
     }
 
 

@@ -25,7 +25,7 @@ public class TeamInventoryServiceImpl implements TeamInventoryService {
 	@Override
 	public DataResponse<TeamInventory> getTeamData(String teamName, String teamId) {
 		TeamInventory teamInventory = teamInventoryRepository.findByNameAndTeamId(teamName,teamId);
-		Collector collector = collectorRepository.findOne(teamInventory.getCollectorId());
+		Collector collector = collectorRepository.findById(teamInventory.getCollectorId()).get();
 		return new DataResponse<>(teamInventory, collector.getLastExecuted());
 	}
 }

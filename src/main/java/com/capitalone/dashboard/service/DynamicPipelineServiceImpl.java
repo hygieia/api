@@ -145,8 +145,8 @@ public class DynamicPipelineServiceImpl implements PipelineService {
         /**
          * get the collector item and dashboard
          */
-        CollectorItem dashboardCollectorItem = collectorItemRepository.findOne(pipeline.getCollectorItemId());
-        Dashboard dashboard = dashboardRepository.findOne(new ObjectId((String)dashboardCollectorItem.getOptions().get("dashboardId")));
+        CollectorItem dashboardCollectorItem = collectorItemRepository.findById(pipeline.getCollectorItemId()).get();
+        Dashboard dashboard = dashboardRepository.findById(new ObjectId((String)dashboardCollectorItem.getOptions().get("dashboardId"))).get();
         
         PipelineResponse pipelineResponse = new PipelineResponse();
         pipelineResponse.setCollectorItemId(dashboardCollectorItem.getId());
@@ -202,8 +202,8 @@ public class DynamicPipelineServiceImpl implements PipelineService {
      * @return				the <b>pipeline</b> passed in
      */
     protected Pipeline buildPipeline(Pipeline pipeline, Long lowerBound, Long upperBound) {
-        CollectorItem dashboardCollectorItem = collectorItemRepository.findOne(pipeline.getCollectorItemId());
-        Dashboard dashboard = dashboardRepository.findOne(new ObjectId((String)dashboardCollectorItem.getOptions().get("dashboardId")));
+        CollectorItem dashboardCollectorItem = collectorItemRepository.findById(pipeline.getCollectorItemId()).get();
+        Dashboard dashboard = dashboardRepository.findById(new ObjectId((String)dashboardCollectorItem.getOptions().get("dashboardId"))).get();
 
         // First gather information about our dashboard
         

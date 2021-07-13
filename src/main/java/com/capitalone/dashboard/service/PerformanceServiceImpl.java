@@ -90,16 +90,16 @@ public class PerformanceServiceImpl implements PerformanceService {
             result = performanceRepository.findAll(builder.getValue(), performance.timestamp.desc());
         } else {
             PageRequest pageRequest =
-                    new PageRequest(0, request.getMax(), Sort.Direction.DESC, "timestamp");
+                    PageRequest.of(0, request.getMax(), Sort.Direction.DESC, "timestamp");
             result = performanceRepository.findAll(builder.getValue(), pageRequest).getContent();
         }
-        Collector collector = collectorRepository.findOne(item.getCollectorId());
+        Collector collector = collectorRepository.findById(item.getCollectorId()).get();
         long lastExecuted = (collector == null) ? 0 : collector.getLastExecuted();
         return new DataResponse<>(result, lastExecuted);
     }
 
     protected CollectorItem getCollectorItem(PerformanceSearchRequest request) {
-        Component component = componentRepository.findOne(request.getComponentId());
+        Component component = componentRepository.findById(request.getComponentId()).get();
         if (component == null) {
             return null;
         }

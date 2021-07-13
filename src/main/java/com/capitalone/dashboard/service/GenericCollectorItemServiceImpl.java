@@ -88,7 +88,7 @@ public class GenericCollectorItemServiceImpl implements GenericCollectorItemServ
     @Override
     public String createGenericBinaryArtifactData(GenericCollectorItemCreateRequest request){
         ObjectId id = new ObjectId(request.getBuildId());
-        Build currentBuild = buildRepository.findOne(id);
+        Build currentBuild = buildRepository.findById(id).get();
         String artifactName = captureArtifactAttributes(apiSettings.getCapturePattern(),request.getRawData(),ARTIFACT_NAME);
         String artifactVersion = captureArtifactAttributes(apiSettings.getCapturePattern(),request.getRawData(),ARTIFACT_VERSION);
         String artifactGroupId = captureArtifactAttributes(apiSettings.getCapturePattern(),request.getRawData(),ARTIFACT_GROUP);

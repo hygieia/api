@@ -36,7 +36,7 @@ public class Monitor2ServiceImpl implements Monitor2Service {
 
     @Override
     public Monitor2 get(ObjectId monitor2Id) {
-        return monitor2Repository.findOne(monitor2Id);
+        return monitor2Repository.findById(monitor2Id).get();
     }
 
     @Override
@@ -48,7 +48,7 @@ public class Monitor2ServiceImpl implements Monitor2Service {
         monitor2.setDashboardId(dashboardId);
         monitor2.setLastUpdated(System.currentTimeMillis());
 
-        Dashboard dashboard = dashboardRepository.findOne(dashboardId);
+        Dashboard dashboard = dashboardRepository.findById(dashboardId).get();
         monitor2.setApplicationName(dashboard.getApplication().getName());
 
         return monitor2Repository.save(monitor2);

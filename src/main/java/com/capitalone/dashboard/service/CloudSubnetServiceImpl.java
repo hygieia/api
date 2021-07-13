@@ -37,7 +37,7 @@ public class CloudSubnetServiceImpl implements CloudSubnetService {
 
 
     private CollectorItem getCollectorItem(ObjectId componentId) {
-        Component component = componentRepository.findOne(componentId);
+        Component component = componentRepository.findById(componentId).get();
         if (CollectionUtils.isEmpty(component.getCollectorItems())) return null;
         return component.getCollectorItems().get(CollectorType.Cloud).get(0);
     }
@@ -67,7 +67,7 @@ public class CloudSubnetServiceImpl implements CloudSubnetService {
             }
         }
         if (CollectionUtils.isEmpty(toDelete)) {
-            cloudSubNetworkRepository.delete(toDelete);
+            cloudSubNetworkRepository.deleteAll(toDelete);
         }
         return deletedIds;
     }

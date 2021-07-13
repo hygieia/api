@@ -145,7 +145,7 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
         Set<CollectorType> incomingTypes = new HashSet<>();
         List<DashboardRemoteRequest.Entry> entries = request.getAllEntries();
         Map<String, WidgetRequest> allWidgetRequests = generateRequestWidgetList( entries, dashboard, incomingTypes);
-        Component component = componentRepository.findOne(dashboard.getApplication().getComponents().get(0).getId());
+        Component component = componentRepository.findById(dashboard.getApplication().getComponents().get(0).getId()).get();
         Set<CollectorType> existingTypes = new HashSet<>(component.getCollectorItems().keySet());
 
         //adds widgets

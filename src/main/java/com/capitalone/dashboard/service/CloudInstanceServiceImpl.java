@@ -51,7 +51,7 @@ public class CloudInstanceServiceImpl implements CloudInstanceService {
     }
 
     private CollectorItem getCollectorItem(ObjectId componentId) {
-        Component component = componentRepository.findOne(componentId);
+        Component component = componentRepository.findById(componentId).get();
         if (CollectionUtils.isEmpty(component.getCollectorItems())) return null;
         return component.getCollectorItems().get(CollectorType.Cloud).get(0);
     }
@@ -106,7 +106,7 @@ public class CloudInstanceServiceImpl implements CloudInstanceService {
             }
         }
         if (CollectionUtils.isEmpty(toDelete)) {
-            cloudInstanceRepository.delete(toDelete);
+            cloudInstanceRepository.deleteAll(toDelete);
         }
         return deletedIds;
     }

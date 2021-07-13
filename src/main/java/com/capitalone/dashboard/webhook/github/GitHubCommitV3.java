@@ -111,7 +111,7 @@ public class GitHubCommitV3 extends GitHubV3 {
         List<Commit> commitList = getCommits(commitsObjectList, repoUrl, branch, gitHubWebHookToken, senderObj);
 
         updateCollectorItemLastUpdated(repoUrl, branch);
-        commitRepository.save(commitList);
+        commitRepository.saveAll(commitList);
 
         return result;
     }

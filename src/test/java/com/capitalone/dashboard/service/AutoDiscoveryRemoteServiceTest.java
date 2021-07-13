@@ -183,7 +183,7 @@ public class AutoDiscoveryRemoteServiceTest {
         Gson gson = GsonUtil.getGson();
         String json = IOUtils.toString(Resources.getResource("./collectors/coll.json"));
         List<Collector> collector = gson.fromJson(json, new TypeToken<List<Collector>>(){}.getType());
-        collectorRepository.save(collector);
+        collectorRepository.saveAll(collector);
     }
 
 }

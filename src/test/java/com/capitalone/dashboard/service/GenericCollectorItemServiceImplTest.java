@@ -145,6 +145,6 @@ public class GenericCollectorItemServiceImplTest {
         String json = IOUtils.toString(BinaryArtifactServiceTest.class.getResourceAsStream("coll.json"));
         List<Collector> collector = gson.fromJson(json, new TypeToken<List<Collector>>() {
         }.getType());
-        collectorRepository.save(collector);
+        collectorRepository.saveAll(collector);
     }
 }

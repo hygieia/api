@@ -1,12 +1,14 @@
 package com.capitalone.dashboard.request;
 
-import com.capitalone.dashboard.model.TestSuiteType;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.validation.constraints.NotNull;
+
 import org.bson.types.ObjectId;
 import org.hibernate.validator.constraints.Range;
 
-import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.List;
+import com.capitalone.dashboard.model.TestSuiteType;
 
 public class TestResultRequest {
     @NotNull

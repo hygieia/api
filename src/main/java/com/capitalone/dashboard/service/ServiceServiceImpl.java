@@ -52,7 +52,7 @@ public class ServiceServiceImpl implements ServiceService {
 
     @Override
     public Service get(ObjectId id) {
-        return serviceRepository.findOne(id);
+        return serviceRepository.findById(id).get();
     }
 
     @Override
@@ -63,7 +63,7 @@ public class ServiceServiceImpl implements ServiceService {
         service.setDashboardId(dashboardId);
         service.setStatus(ServiceStatus.Warning);
         service.setLastUpdated(System.currentTimeMillis());
-        Dashboard dashboard = dashboardRepository.findOne(dashboardId);
+        Dashboard dashboard = dashboardRepository.findById(dashboardId).get();
         service.setApplicationName(dashboard.getApplication().getName());
         return serviceRepository.save(service);
     }
@@ -112,7 +112,7 @@ public class ServiceServiceImpl implements ServiceService {
         service.setDashboardId(dashboardId);
         service.setStatus(getServiceStatus(service.getUrl(), dashboardId));
         service.setLastUpdated(System.currentTimeMillis());
-        Dashboard dashboard = dashboardRepository.findOne(dashboardId);
+        Dashboard dashboard = dashboardRepository.findById(dashboardId).get();
         service.setApplicationName(dashboard.getApplication().getName());
         serviceRepository.save(service);
     }

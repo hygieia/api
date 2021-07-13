@@ -52,7 +52,7 @@ public class CmdbServiceImpl implements CmdbService {
     }
     @Override
     public Cmdb configurationItemsByObjectId(ObjectId objectId){
-        Cmdb cmdb = cmdbRepository.findOne(objectId);
+        Cmdb cmdb = cmdbRepository.findById(objectId).get();
         return cmdb;
     }
     @Override

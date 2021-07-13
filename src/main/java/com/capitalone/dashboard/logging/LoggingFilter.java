@@ -1,37 +1,8 @@
 package com.capitalone.dashboard.logging;
 
 
-import com.capitalone.dashboard.misc.HygieiaException;
-import com.capitalone.dashboard.model.RequestLog;
-import com.capitalone.dashboard.repository.RequestLogRepository;
-import com.capitalone.dashboard.settings.ApiSettings;
-import com.mongodb.util.JSON;
-import org.apache.commons.io.output.TeeOutputStream;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-import javax.activation.MimeType;
-import javax.activation.MimeTypeParseException;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ReadListener;
-import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.WriteListener;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -49,7 +20,38 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import javax.activation.MimeType;
+import javax.activation.MimeTypeParseException;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ReadListener;
+import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.WriteListener;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.io.output.TeeOutputStream;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+
+import com.capitalone.dashboard.misc.HygieiaException;
+import com.capitalone.dashboard.model.RequestLog;
+import com.capitalone.dashboard.repository.RequestLogRepository;
+import com.capitalone.dashboard.settings.ApiSettings;
+import com.mongodb.BasicDBObject;
 
 @Component
 @Order(1)
@@ -107,10 +109,10 @@ public class LoggingFilter implements Filter {
 
                 boolean skipBody = settings.checkIgnoreBodyEndPoint(endPointURI);
                 if ((httpServletRequest.getContentType() != null) && (new MimeType(httpServletRequest.getContentType()).match(new MimeType(APPLICATION_JSON_VALUE)))) {
-                    requestLog.setRequestBody(JSON.parse(bufferedRequest.getRequestBody()));
+                    requestLog.setRequestBody(BasicDBObject.parse(bufferedRequest.getRequestBody()));
                 }
                 if ((bufferedResponse.getContentType() != null) && (new MimeType(bufferedResponse.getContentType()).match(new MimeType(APPLICATION_JSON_VALUE)))) {
-                    requestLog.setResponseBody( skipBody ? StringUtils.EMPTY : JSON.parse(bufferedResponse.getContent()));
+                    requestLog.setResponseBody( skipBody ? StringUtils.EMPTY : BasicDBObject.parse(bufferedResponse.getContent()));
                 }
             }
             catch (MimeTypeParseException e) {

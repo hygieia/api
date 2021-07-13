@@ -84,7 +84,7 @@ public class BuildServiceImpl implements BuildService {
     @Override
     public DataResponse<Iterable<Build>> search(BuildSearchRequest request) {
         CollectorItem item = null;
-        Component component = componentRepository.findOne(request.getComponentId());
+        Component component = componentRepository.findById(request.getComponentId()).get();
         if ( (component == null)
                 || ((item = component.getLastUpdatedCollectorItemForType(CollectorType.Build)) == null) ) {
             Iterable<Build> results = new ArrayList<>();
@@ -115,13 +115,13 @@ public class BuildServiceImpl implements BuildService {
             builder.and(build.buildStatus.in(request.getBuildStatuses()));
         }
 
-        Collector collector = collectorRepository.findOne(item.getCollectorId());
+        Collector collector = collectorRepository.findById(item.getCollectorId()).get();
 
         Iterable<Build> result;
         if (request.getMax() == null) {
             result = buildRepository.findAll(builder.getValue());
         } else {
-            PageRequest pageRequest = new PageRequest(0, request.getMax(), Sort.Direction.DESC, "timestamp");
+            PageRequest pageRequest = PageRequest.of(0, request.getMax(), Sort.Direction.DESC, "timestamp");
             result = buildRepository.findAll(builder.getValue(), pageRequest).getContent();
         }
 
@@ -184,7 +184,7 @@ public class BuildServiceImpl implements BuildService {
             }
         }
         // Will be refactored soon
-        CollectorItem buildCollectorItem = collectorItemRepository.findOne(build.getCollectorItemId());
+        CollectorItem buildCollectorItem = collectorItemRepository.findById(build.getCollectorItemId()).get();
         if(buildCollectorItem != null) {
             LOGGER.info("buildUrl=" + build.getBuildUrl()
                     + ", buildDuration=" + build.getDuration()
@@ -202,7 +202,7 @@ public class BuildServiceImpl implements BuildService {
     private void populateDashboardId(BuildDataCreateResponse response) {
         if (response == null) return;
 
-        CollectorItem collectorItem = collectorItemRepository.findOne(response.getCollectorItemId());
+        CollectorItem collectorItem = collectorItemRepository.findById(response.getCollectorItemId()).get();
         if (collectorItem == null) return;
 
         List<Dashboard> dashboards = dashboardService.getDashboardsByCollectorItems

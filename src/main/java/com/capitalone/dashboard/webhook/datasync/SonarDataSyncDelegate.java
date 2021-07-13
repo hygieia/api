@@ -53,7 +53,7 @@ public class SonarDataSyncDelegate {
                 cq.sort(Comparator.comparing(CodeQuality::getTimestamp).reversed());
                 CodeQuality codeQuality = cq.stream().filter(Objects::nonNull).findFirst().orElse(null);
                 if (Objects.nonNull(codeQuality)) {
-                    CollectorItem collectorItem = dataSyncServiceImpl.getCollectorItemRepository().findOne(codeQuality.getCollectorItemId());
+                    CollectorItem collectorItem = dataSyncServiceImpl.getCollectorItemRepository().findById(codeQuality.getCollectorItemId()).get();
                     List<CollectorItem> suspectCollectorItems = dataSyncUtils.deleteCollectorItems(collectorItems, collectorItem, suspects);
                     collectorItemsCount += suspectCollectorItems.size();
                     if (CollectionUtils.isEmpty(components)) continue;
