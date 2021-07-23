@@ -16,7 +16,8 @@ import java.util.stream.Collectors;
 
 import com.capitalone.dashboard.misc.HygieiaException;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -65,7 +66,7 @@ import com.google.common.collect.Multimap;
  */
 @Service("dynamic-pipeline")
 public class DynamicPipelineServiceImpl implements PipelineService {
-	private static final Logger logger = Logger.getLogger(DynamicPipelineServiceImpl.class);
+	private static final Logger logger = LogManager.getLogger(DynamicPipelineServiceImpl.class);
 
     private static final int PROD_COMMIT_DATE_RANGE_DEFAULT = -90;
     

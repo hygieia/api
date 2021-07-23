@@ -6,7 +6,8 @@ import java.util.Properties;
 
 import com.capitalone.dashboard.auth.AuthProperties;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -32,7 +33,7 @@ import javax.naming.directory.SearchResult;
 @Component
 public class UserInfoServiceImpl implements UserInfoService {
 
-	private static final Logger LOGGER = Logger.getLogger(UserInfoServiceImpl.class);
+	private static final Logger LOGGER = LogManager.getLogger(UserInfoServiceImpl.class);
 
 	private UserInfoRepository userInfoRepository;
 	@Autowired

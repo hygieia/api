@@ -27,7 +27,8 @@ import com.google.common.collect.Sets;
 import com.querydsl.core.BooleanBuilder;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.bson.types.ObjectId;
 import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +61,7 @@ public class BuildServiceImpl implements BuildService {
     @Autowired
     private ApiSettings settings;
 
-    private static final Logger LOGGER = Logger.getLogger(BuildService.class);
+    private static final Logger LOGGER = LogManager.getLogger(BuildService.class);
 
     @Autowired
     public BuildServiceImpl(BuildRepository buildRepository,

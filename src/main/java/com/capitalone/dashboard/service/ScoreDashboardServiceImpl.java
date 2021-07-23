@@ -8,7 +8,8 @@ import com.capitalone.dashboard.model.score.ScoreCollectorItem;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.repository.ScoreCollectorItemRepository;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,7 +19,7 @@ import java.util.List;
 @Service
 public class ScoreDashboardServiceImpl implements ScoreDashboardService {
 
-  private static final Logger LOGGER = Logger.getLogger(ScoreDashboardServiceImpl.class);
+  private static final Logger LOGGER = LogManager.getLogger(ScoreDashboardServiceImpl.class);
 
   private final CollectorService collectorService;
   private final ScoreCollectorItemRepository scoreCollectorItemRepository;

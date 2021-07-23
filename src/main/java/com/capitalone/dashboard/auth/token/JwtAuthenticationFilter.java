@@ -11,7 +11,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.core.Authentication;
@@ -24,7 +25,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Order(2)
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private static final Logger LOGGER = Logger.getLogger(JwtAuthenticationFilter.class);
+    private static final Logger LOGGER = LogManager.getLogger(JwtAuthenticationFilter.class);
 	private TokenAuthenticationService tokenAuthenticationService;
 	
 	@Autowired

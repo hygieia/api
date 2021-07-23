@@ -7,7 +7,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
@@ -19,7 +20,7 @@ import com.capitalone.dashboard.auth.AuthenticationResultHandler;
 
 @Component
 public class SsoAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
-	private static final Logger LOGGER = Logger.getLogger(SsoAuthenticationFilter.class);
+	private static final Logger LOGGER = LogManager.getLogger(SsoAuthenticationFilter.class);
 	
 	@Autowired
 	private SsoAuthenticationService ssoAuthenticationService;

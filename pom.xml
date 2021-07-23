@@ -83,6 +83,7 @@
         <jackson.version>2.11.4</jackson.version>
         <jasypt.version>1.18</jasypt.version>
         <logback.version>1.2.3</logback.version>
+        <log4j2.version>2.14.1</log4j2.version>
         <mongodb.version>4.0.0</mongodb.version>
         <jjwt.version>0.6.0</jjwt.version>
         <springfox.version>2.4.0</springfox.version>
@@ -157,10 +158,15 @@
         
         <!-- https://mvnrepository.com/artifact/log4j/log4j -->
 <dependency>
-    <groupId>log4j</groupId>
-    <artifactId>log4j</artifactId>
-    <version>1.2.17</version>
-</dependency>
+    <groupId>org.apache.logging.log4j</groupId>
+    <artifactId>log4j-api</artifactId>
+     <version>${log4j2.version}</version>
+  </dependency>
+  <dependency>
+    <groupId>org.apache.logging.log4j</groupId>
+    <artifactId>log4j-core</artifactId>
+     <version>${log4j2.version}</version>
+  </dependency>
         
 
         <dependency>

@@ -5,7 +5,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -17,7 +18,7 @@ import com.google.common.collect.Sets;
 
 @Component
 public class SsoAuthenticationServiceImpl implements SsoAuthenticationService {
-	private static final Logger LOGGER = Logger.getLogger(SsoAuthenticationServiceImpl.class);
+	private static final Logger LOGGER = LogManager.getLogger(SsoAuthenticationServiceImpl.class);
 
 	@Autowired
 	private SsoAuthenticationUtil ssoAuthenticationUtil;

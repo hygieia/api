@@ -10,7 +10,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -33,7 +34,7 @@ import com.google.common.collect.Sets;
 @Component
 public class ApiTokenServiceImpl implements ApiTokenService {
 
-    private static final Logger LOGGER = Logger.getLogger(ApiTokenServiceImpl.class);
+    private static final Logger LOGGER = LogManager.getLogger(ApiTokenServiceImpl.class);
 
     private ApiTokenRepository apiTokenRepository;
 

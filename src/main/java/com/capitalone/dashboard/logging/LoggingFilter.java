@@ -40,7 +40,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
@@ -57,7 +58,7 @@ import com.mongodb.BasicDBObject;
 @Order(1)
 public class LoggingFilter implements Filter {
 
-    private static final Logger LOGGER = Logger.getLogger("LoggingFilter");
+    private static final Logger LOGGER = LogManager.getLogger("LoggingFilter");
 
     private static final String API_USER_KEY = "apiUser";
 

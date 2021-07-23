@@ -3,7 +3,8 @@ package com.capitalone.dashboard.service;
 import com.capitalone.dashboard.model.ServiceAccount;
 import com.capitalone.dashboard.repository.ServiceAccountRepository;
 import com.google.common.collect.Sets;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -13,7 +14,7 @@ import java.util.Collection;
 @Component
 public class ServiceAccountServiceImpl implements ServiceAccountService {
 
-    private static final Logger LOGGER = Logger.getLogger(ServiceAccountServiceImpl.class);
+    private static final Logger LOGGER = LogManager.getLogger(ServiceAccountServiceImpl.class);
 
 
     private ServiceAccountRepository serviceAccountRepository;

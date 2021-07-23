@@ -20,7 +20,8 @@ import hygieia.transformer.CucumberJsonToTestCapabilityTransformer;
 import hygieia.transformer.JunitXmlToTestCapabilityTransformer;
 import hygieia.transformer.JunitXmlToTestCapabilityTransformerV2;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.bson.types.ObjectId;
 import org.joda.time.format.DateTimeFormat;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +53,7 @@ public class TestResultServiceImpl implements TestResultService {
     private final CmdbService cmdbService;
     private final ApiSettings apiSettings;
 
-    private static final Logger LOGGER = Logger.getLogger(ApiTokenServiceImpl.class);
+    private static final Logger LOGGER = LogManager.getLogger(ApiTokenServiceImpl.class);
 
     @Autowired
     public TestResultServiceImpl(TestResultRepository testResultRepository,
