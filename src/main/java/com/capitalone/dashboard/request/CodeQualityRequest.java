@@ -5,7 +5,7 @@ import org.bson.types.ObjectId;
 
 import javax.validation.constraints.NotNull;
 
-public class CodeQualityRequest {
+public class CodeQualityRequest extends BaseRequest {
     @NotNull
     private ObjectId componentId;
     private Integer max;
@@ -13,6 +13,7 @@ public class CodeQualityRequest {
     private Long dateBegins;
     private Long dateEnds;
     private CodeQualityType type;
+    private ObjectId collectorItemId;
 
     public ObjectId getComponentId() {
         return componentId;
@@ -61,6 +62,10 @@ public class CodeQualityRequest {
     public void setType(CodeQualityType type) {
         this.type = type;
     }
+
+    public ObjectId getCollectorItemId() { return collectorItemId; }
+
+    public void setCollectorItemId(ObjectId collectorItemId) { this.collectorItemId = collectorItemId; }
 
     public boolean validDateRange() {
         return dateBegins != null || dateEnds != null;

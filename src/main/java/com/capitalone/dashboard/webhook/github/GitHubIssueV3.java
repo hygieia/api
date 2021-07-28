@@ -1,5 +1,7 @@
 package com.capitalone.dashboard.webhook.github;
 
+import com.capitalone.dashboard.model.GitHubCollector;
+import com.capitalone.dashboard.repository.BaseCollectorRepository;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.client.RestClient;
@@ -17,20 +19,19 @@ import java.util.Map;
 
 public class GitHubIssueV3 extends GitHubV3 {
     private final  GitRequestRepository gitRequestRepository;
-    private final CollectorItemRepository collectorItemRepository;
 
     public GitHubIssueV3(CollectorService collectorService,
                          RestClient restClient,
                          GitRequestRepository gitRequestRepository,
                          CollectorItemRepository collectorItemRepository,
-                         ApiSettings apiSettings) {
-        super(collectorService, restClient, apiSettings);
+                         ApiSettings apiSettings,
+                         BaseCollectorRepository<GitHubCollector> collectorRepository) {
+        super(collectorService, restClient, apiSettings, collectorItemRepository, collectorRepository);
         this.gitRequestRepository =  gitRequestRepository;
-        this.collectorItemRepository = collectorItemRepository;
     }
 
     @Override
-    public CollectorItemRepository getCollectorItemRepository() { return this.collectorItemRepository; }
+    public CollectorItemRepository getCollectorItemRepository() { return super.collectorItemRepository; }
 
     @Override
     public String process(JSONObject jsonObject) throws MalformedURLException, HygieiaException {
@@ -56,6 +57,7 @@ public class GitHubIssueV3 extends GitHubV3 {
 
         GitRequest issue = getIssue(issueMap, gitHubParsed, branch);
 
+        updateCollectorItemLastUpdated(repoUrl, branch);
         gitRequestRepository.save(issue);
 
         return result;

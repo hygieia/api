@@ -35,9 +35,22 @@ public class ApiSettings {
     @Value("${gitToolName:Github}")
     private String gitToolName;
 
+    @Value("${buildCollectorName:Hudson}")
+    private String buildCollectorName;
+
     private WebHookSettings webHook;
 
     private String capturePattern;
+
+    @Value("${contextFactory:com.sun.jndi.ldap.LdapCtxFactory}")
+    private String contextFactory;
+
+    @Value("${contextProtocol:ssl}")
+    private String contextProtocol;
+
+    @Value("${contextSecurityAuthentication:simple}")
+    private String contextSecurityAuthentication;
+
 
     private List<String> ignoreEndPoints = new ArrayList();
     private List<String> ignoreApiUsers = new ArrayList();
@@ -50,6 +63,11 @@ public class ApiSettings {
     private Map<String,String> functional;
     private Map<String,String> performance;
     private String unit;
+
+    @Value("${encryptRemoteCreatePayload:true}")
+    private boolean encryptRemoteCreatePayload;
+
+    private String hygieia_ui_url="";
 
     public Map<String, String> getFunctional() {
         return functional;
@@ -199,4 +217,43 @@ public class ApiSettings {
         this.dataSyncSettings = dataSyncSettings;
     }
 
+    public boolean isEncryptRemoteCreatePayload() { return encryptRemoteCreatePayload; }
+
+    public void setEncryptRemoteCreatePayload(boolean encryptRemoteCreatePayload) { this.encryptRemoteCreatePayload = encryptRemoteCreatePayload; }
+
+    public String getHygieia_ui_url() { return hygieia_ui_url; }
+
+    public void setHygieia_ui_url(String hygieia_ui_url) { this.hygieia_ui_url = hygieia_ui_url; }
+
+    public String getBuildCollectorName() {
+        return buildCollectorName;
+    }
+
+    public void setBuildCollectorName(String buildCollectorName) {
+        this.buildCollectorName = buildCollectorName;
+    }
+
+    public String getContextFactory() {
+        return contextFactory;
+    }
+
+    public void setContextFactory(String contextFactory) {
+        this.contextFactory = contextFactory;
+    }
+
+    public String getContextProtocol() {
+        return contextProtocol;
+    }
+
+    public void setContextProtocol(String contextProtocol) {
+        this.contextProtocol = contextProtocol;
+    }
+
+    public String getContextSecurityAuthentication() {
+        return contextSecurityAuthentication;
+    }
+
+    public void setContextSecurityAuthentication(String contextSecurityAuthentication) {
+        this.contextSecurityAuthentication = contextSecurityAuthentication;
+    }
 }

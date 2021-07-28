@@ -50,6 +50,7 @@ public class AutoDiscoveryRemoteServiceTest {
     private static List<AutoDiscoveredEntry> staticCodeEntries = null;
     private static List<AutoDiscoveredEntry> featureEntries = null;
     private static List<AutoDiscoveredEntry> performanceEntries = null; // Additional entry for CollectorType Test
+    private static List<AutoDiscoveredEntry> infraStructureScanEntries = null;
     @Autowired
     private AutoDiscoveryService autoSvc;
 
@@ -72,6 +73,7 @@ public class AutoDiscoveryRemoteServiceTest {
         staticCodeEntries = new ArrayList<>();
         featureEntries = new ArrayList<>();
         performanceEntries = new ArrayList<>();
+        infraStructureScanEntries = new ArrayList<>();
 
 
         adMeta0 = new AutoDiscoveryMetaData();
@@ -83,7 +85,8 @@ public class AutoDiscoveryRemoteServiceTest {
         adMeta0.setType("Product");
 
         ad0 = new AutoDiscoveryRemoteRequest(adMeta0, codeRepoEntries, buildEntries, securityScanEntries, deploymentEntries,
-                libraryScanEntries, functionalTestEntries, artifactEntries, staticCodeEntries, featureEntries,performanceEntries, "17458071acd72450923475bb");
+                libraryScanEntries, functionalTestEntries, artifactEntries, staticCodeEntries, featureEntries,performanceEntries,
+                infraStructureScanEntries, "17458071acd72450923475bb");
 
         AutoDiscoveredEntry codeRepoEntry = new AutoDiscoveredEntry();
         codeRepoEntry.setDescription("Hygieia GitHub");
@@ -102,7 +105,8 @@ public class AutoDiscoveryRemoteServiceTest {
         adMeta1.setType("Team");
 
         ad1 = new AutoDiscoveryRemoteRequest(adMeta1, codeRepoEntries, buildEntries, securityScanEntries, deploymentEntries,
-                libraryScanEntries, functionalTestEntries, artifactEntries, staticCodeEntries, featureEntries,performanceEntries, "5d67f7b5066a8b0fe6cbfb61");
+                libraryScanEntries, functionalTestEntries, artifactEntries, staticCodeEntries, featureEntries,performanceEntries,
+                infraStructureScanEntries, "5d67f7b5066a8b0fe6cbfb61");
 
         AutoDiscoveredEntry artifactEntry = new AutoDiscoveredEntry();
         artifactEntry.setDescription("Hygieia Artifactory");
@@ -122,7 +126,8 @@ public class AutoDiscoveryRemoteServiceTest {
         adMeta2.setType("Team");
 
         ad2 = new AutoDiscoveryRemoteRequest(adMeta2, codeRepoEntries, buildEntries, securityScanEntries, deploymentEntries,
-                libraryScanEntries, functionalTestEntries, artifactEntries, staticCodeEntries, featureEntries,performanceEntries, "5d67f7b5066a8b0fe6cbfb99");
+                libraryScanEntries, functionalTestEntries, artifactEntries, staticCodeEntries, featureEntries,performanceEntries,
+                infraStructureScanEntries, "5d67f7b5066a8b0fe6cbfb99");
 
         loadCollector(collectorRepository);
     }
@@ -138,6 +143,7 @@ public class AutoDiscoveryRemoteServiceTest {
         artifactEntries = null;
         staticCodeEntries = null;
         featureEntries = null;
+        infraStructureScanEntries = null;
         autoRepo.deleteAll();
     }
 

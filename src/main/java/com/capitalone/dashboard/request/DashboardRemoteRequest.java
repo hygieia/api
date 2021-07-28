@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DashboardRemoteRequest {
+public class DashboardRemoteRequest extends BaseRequest {
     @Valid
     private DashboardMetaData metaData;
 
@@ -52,6 +52,9 @@ public class DashboardRemoteRequest {
     @Valid
     private List<PerformanceTestEntry> performanceTestEntries = new ArrayList<>();
 
+    @Valid
+    private List<InfraStructureScanEntry> infraStructureScanEntries = new ArrayList<>();
+
     /**
      * Dashboard Metadata
      */
@@ -81,6 +84,8 @@ public class DashboardRemoteRequest {
         private String businessService;
 
         private String businessApplication;
+
+        private Map<String, String> properties = new HashMap<>();
 
         public String getTemplate() {
             return template;
@@ -153,6 +158,10 @@ public class DashboardRemoteRequest {
         public void setType(String type) {
             this.type = type;
         }
+
+        public Map<String, String> getProperties() { return properties; }
+
+        public void setProperties(Map<String, String> properties) { this.properties = properties; }
     }
 
     /**
@@ -169,6 +178,8 @@ public class DashboardRemoteRequest {
         boolean pushed = false;
 
         String niceName;
+
+        String altIdentifier;
 
         @NotEmpty
         Map<String, Object> options = new HashMap<>();
@@ -203,6 +214,14 @@ public class DashboardRemoteRequest {
 
         public void setNiceName(String niceName) { this.niceName = niceName; }
 
+        public String getAltIdentifier() {
+            return altIdentifier;
+        }
+
+        public void setAltIdentifier(String altIdentifier) {
+            this.altIdentifier = altIdentifier;
+        }
+
         public CollectorItem toCollectorItem(Collector collector) throws HygieiaException{
             if (options.keySet().containsAll(collector.getUniqueFields().keySet())) {
                 CollectorItem collectorItem = new CollectorItem();
@@ -210,6 +229,7 @@ public class DashboardRemoteRequest {
                 collectorItem.setPushed(isPushed());
                 collectorItem.setDescription(description);
                 collectorItem.setNiceName(niceName);
+                collectorItem.setAltIdentifier(altIdentifier);
                 for (String key : options.keySet()) {
                     if (collector.getAllFields().keySet().contains(key)) {
                         collectorItem.getOptions().put(key, options.get(key));
@@ -545,6 +565,34 @@ public class DashboardRemoteRequest {
 
     }
 
+    /**
+     * Entry to create InfraStructureScan widget
+     */
+    public static class InfraStructureScanEntry extends Entry {
+
+        @Override
+        public CollectorType getType() {
+            return CollectorType.InfrastructureScan;
+        }
+
+        @Override
+        public String getWidgetId() {
+            return "infrascan0";
+        }
+
+        @Override
+        public String getWidgetName() {
+            return "infrascan";
+        }
+
+        @Override
+        public Map<String, Object> toWidgetOptions() {
+            Map<String, Object> opts = new HashMap<>();
+            opts.put("id", getWidgetId());
+            return opts;
+        }
+    }
+
     // Getters and setters
 
     public DashboardMetaData getMetaData() {
@@ -635,6 +683,14 @@ public class DashboardRemoteRequest {
         this.performanceTestEntries = performanceTestEntries;
     }
 
+    public List<InfraStructureScanEntry> getInfraStructureScanEntries() {
+        return infraStructureScanEntries;
+    }
+
+    public void setInfraStructureScanEntries(List<InfraStructureScanEntry> infraStructureScanEntries) {
+        this.infraStructureScanEntries = infraStructureScanEntries;
+    }
+
 
     public List<Entry> getAllEntries() {
         List<Entry> all = new ArrayList<>();
@@ -648,6 +704,7 @@ public class DashboardRemoteRequest {
         all.addAll(featureEntries);
         all.addAll(artifactEntries);
         all.addAll(performanceTestEntries);
+        all.addAll(infraStructureScanEntries);
         return all;
     }
 }

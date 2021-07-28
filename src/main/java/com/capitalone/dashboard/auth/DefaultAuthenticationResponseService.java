@@ -65,7 +65,7 @@ public class DefaultAuthenticationResponseService implements AuthenticationRespo
             authenticationWithAuthorities = new UsernamePasswordAuthenticationToken(authentication.getPrincipal(), authentication.getCredentials(), authorities);
             authenticationWithAuthorities.setDetails(authentication.getDetails());
 
-            if(authType == AuthType.LDAP){
+            if(authType == AuthType.LDAP || authType == AuthType.SSO){
 				busCompOwnerService.assignOwnerToDashboards(firstName, middleName, lastName, authentication);
 			}
         }

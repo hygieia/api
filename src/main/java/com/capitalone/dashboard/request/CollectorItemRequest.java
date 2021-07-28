@@ -7,7 +7,7 @@ import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CollectorItemRequest {
+public class CollectorItemRequest extends BaseRequest {
     @NotNull
     private ObjectId collectorId;
 
@@ -64,6 +64,7 @@ public class CollectorItemRequest {
         CollectorItem item = new CollectorItem();
         item.setCollectorId(collectorId);
         item.setEnabled(true);
+        item.setDescription(description);
         item.getOptions().putAll(options);
         return item;
     }

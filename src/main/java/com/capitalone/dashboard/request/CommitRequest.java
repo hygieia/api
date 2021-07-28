@@ -6,7 +6,7 @@ import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CommitRequest {
+public class CommitRequest extends BaseRequest {
     @NotNull
     private ObjectId componentId;
     private Integer numberOfDays;

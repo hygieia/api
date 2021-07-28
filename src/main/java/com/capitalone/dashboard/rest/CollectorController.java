@@ -58,6 +58,11 @@ public class CollectorController {
         return collectorService.createCollector(request.toCollector());
     }
 
+    @RequestMapping(value = "/collector", method = GET, produces = APPLICATION_JSON_VALUE)
+    public Iterable<Collector> collectors() {
+        return collectorService.all();
+    }
+
 
     @RequestMapping(value = "/collector/type/{collectorType}",
             method = GET, produces = APPLICATION_JSON_VALUE)

@@ -3,14 +3,17 @@ package com.capitalone.dashboard.webhook.github;
 import com.capitalone.dashboard.client.RestClient;
 import com.capitalone.dashboard.client.RestOperationsSupplier;
 import com.capitalone.dashboard.misc.HygieiaException;
-import com.capitalone.dashboard.model.Collector;
 import com.capitalone.dashboard.model.CollectorItem;
+import com.capitalone.dashboard.model.CollectorType;
 import com.capitalone.dashboard.model.Comment;
 import com.capitalone.dashboard.model.Commit;
 import com.capitalone.dashboard.model.CommitStatus;
+import com.capitalone.dashboard.model.GitHubCollector;
 import com.capitalone.dashboard.model.GitRequest;
 import com.capitalone.dashboard.model.Review;
 import com.capitalone.dashboard.model.webhook.github.GitHubParsed;
+import com.capitalone.dashboard.model.webhook.github.GitHubRepo;
+import com.capitalone.dashboard.repository.BaseCollectorRepository;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.repository.CommitRepository;
 import com.capitalone.dashboard.repository.GitRequestRepository;
@@ -32,9 +35,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
@@ -49,6 +55,7 @@ public class GitHubPullRequestV3Test {
     @Mock private CollectorService collectorService;
     @Mock private GitRequestRepository gitRequestRepository;
     @Mock private CollectorItemRepository collectorItemRepository;
+    @Mock private BaseCollectorRepository<GitHubCollector> collectorRepository;
     @Mock private CommitRepository commitRepository;
     @Mock private ApiSettings apiSettings;
     @Mock private RestOperationsSupplier restOperationsSupplier;
@@ -60,7 +67,7 @@ public class GitHubPullRequestV3Test {
     @Before
     public void init() {
         restClient = new RestClient(restOperationsSupplier);
-        gitHubPullRequestV3 = new GitHubPullRequestV3 (collectorService, restClient, gitRequestRepository, commitRepository, collectorItemRepository, apiSettings);
+        gitHubPullRequestV3 = new GitHubPullRequestV3 (collectorService, restClient, gitRequestRepository, commitRepository, collectorItemRepository, apiSettings, collectorRepository);
         payLoadJsonObject = makePullRequestPayloadObject();
     }
 
@@ -157,15 +164,13 @@ public class GitHubPullRequestV3Test {
         Object repository = payLoadJsonObject.get("repository");
         Object pullRequest = restClient.getAsObject(repository,"pullRequest");
 
-        Collector collector = gitHubPullRequestV3.getCollector();
-        String collectorId = createGuid("0123456789abcdef");
-        collector.setId(new ObjectId(collectorId));
+        GitHubCollector collector = makeCollector();
 
-        CollectorItem collectorItem = gitHubPullRequestV3.buildCollectorItem(new ObjectId(collectorId), repoUrl, branch);
+        CollectorItem collectorItem = gitHubPullRequestV3.buildCollectorItem(collector.getId(), repoUrl, branch);
         String collectorItemId = createGuid("0123456789abcdee");
         collectorItem.setId(new ObjectId(collectorItemId));
 
-        when(collectorService.createCollector(anyObject())).thenReturn(collector);
+        when(collectorRepository.save(any(GitHubCollector.class))).thenReturn(collector);
         when(gitHubPullRequestV3.buildCollectorItem(anyObject(), anyString(), anyString())).thenReturn(collectorItem);
         when(collectorService.createCollectorItem(anyObject())).thenReturn(collectorItem);
 
@@ -359,16 +364,13 @@ public class GitHubPullRequestV3Test {
         newPullRequest.setScmUrl(repoUrl);
         newPullRequest.setScmBranch(branch);
 
-        Collector collector = gitHubPullRequestV3.getCollector();
-        String collectorId = createGuid("0123456789abcdef");
-        collector.setId(new ObjectId(collectorId));
-
-        CollectorItem collectorItem = gitHubPullRequestV3.buildCollectorItem(new ObjectId(collectorId), repoUrl, branch);
+        GitHubCollector collector = makeCollector();
+        CollectorItem collectorItem = gitHubPullRequestV3.buildCollectorItem(collector.getId(), repoUrl, branch);
         String collectorItemId = createGuid("0123456789abcdee");
         collectorItem.setId(new ObjectId(collectorItemId));
 
         when(commitRepository.findAllByScmRevisionNumberAndScmUrlIgnoreCaseAndScmBranchIgnoreCaseOrderByTimestampAsc(anyString(), anyString(), anyString())).thenReturn(null);
-        when(collectorService.createCollector(anyObject())).thenReturn(collector);
+        when(collectorRepository.save(any(GitHubCollector.class))).thenReturn(collector);
         when(gitHubPullRequestV3.buildCollectorItem(anyObject(), anyString(), anyString())).thenReturn(collectorItem);
         when(collectorService.createCollectorItem(anyObject())).thenReturn(collectorItem);
         try {
@@ -532,5 +534,29 @@ public class GitHubPullRequestV3Test {
             hexChars[j * 2 + 1] = hexArray[v & 0x0F];
         }
         return new String(hexChars);
+    }
+
+    private GitHubCollector makeCollector() {
+        GitHubCollector col = new GitHubCollector();
+        col.setId(new ObjectId(createGuid("0123456789abcdef")));
+        col.setName("GitHub");
+        col.setCollectorType(CollectorType.SCM);
+        col.setOnline(true);
+        col.setEnabled(true);
+
+        Map<String, Object> allOptions = new HashMap<>();
+        allOptions.put(GitHubRepo.REPO_URL, "");
+        allOptions.put(GitHubRepo.BRANCH, "");
+        allOptions.put(GitHubRepo.USER_ID, "");
+        allOptions.put(GitHubRepo.PASSWORD, "");
+        allOptions.put(GitHubRepo.PERSONAL_ACCESS_TOKEN, "");
+        allOptions.put(GitHubRepo.TYPE, "");
+        col.setAllFields(allOptions);
+
+        Map<String, Object> uniqueOptions = new HashMap<>();
+        uniqueOptions.put(GitHubRepo.REPO_URL, "");
+        uniqueOptions.put(GitHubRepo.BRANCH, "");
+        col.setUniqueFields(uniqueOptions);
+        return col;
     }
 }

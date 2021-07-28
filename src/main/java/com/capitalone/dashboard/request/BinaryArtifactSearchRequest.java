@@ -2,7 +2,7 @@ package com.capitalone.dashboard.request;
 
 import org.bson.types.ObjectId;
 
-public class BinaryArtifactSearchRequest {
+public class BinaryArtifactSearchRequest extends BaseRequest {
 
     private String artifactName;
 

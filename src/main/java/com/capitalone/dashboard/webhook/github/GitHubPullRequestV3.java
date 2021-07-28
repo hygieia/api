@@ -1,6 +1,8 @@
 package com.capitalone.dashboard.webhook.github;
 
+import com.capitalone.dashboard.model.GitHubCollector;
 import com.capitalone.dashboard.model.PullRequestEvent;
+import com.capitalone.dashboard.repository.BaseCollectorRepository;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.client.RestClient;
@@ -40,7 +42,6 @@ public class GitHubPullRequestV3 extends GitHubV3 {
     private static final Log LOG = LogFactory.getLog(GitHubPullRequestV3.class);
 
     private final GitRequestRepository gitRequestRepository;
-    private final CollectorItemRepository collectorItemRepository;
     private final CommitRepository commitRepository;
 
     public GitHubPullRequestV3(CollectorService collectorService,
@@ -48,16 +49,16 @@ public class GitHubPullRequestV3 extends GitHubV3 {
                                GitRequestRepository gitRequestRepository,
                                CommitRepository commitRepository,
                                CollectorItemRepository collectorItemRepository,
-                               ApiSettings apiSettings) {
-        super(collectorService, restClient, apiSettings);
+                               ApiSettings apiSettings,
+                               BaseCollectorRepository<GitHubCollector> collectorRepository) {
+        super(collectorService, restClient, apiSettings, collectorItemRepository, collectorRepository);
 
         this.gitRequestRepository = gitRequestRepository;
-        this.collectorItemRepository = collectorItemRepository;
         this.commitRepository = commitRepository;
     }
 
     @Override
-    public CollectorItemRepository getCollectorItemRepository() { return this.collectorItemRepository; }
+    public CollectorItemRepository getCollectorItemRepository() { return super.collectorItemRepository; }
 
     @Override
     public String process(JSONObject prJsonObject) throws MalformedURLException, HygieiaException, ParseException {
@@ -102,7 +103,7 @@ public class GitHubPullRequestV3 extends GitHubV3 {
         long end = System.currentTimeMillis();
         LOG.debug("Time to make collectorItemRepository call to fetch repository token = "+(end-start));
 
-        String token = isPrivate ? RestClient.decryptString(repoToken, apiSettings.getKey()) : gitHubWebHookToken;
+        String token = isPrivate ? repoToken : gitHubWebHookToken;
 
         if (StringUtils.isEmpty(token)) {
             throw new HygieiaException("Failed processing payload. Missing Github API token in Hygieia.", HygieiaException.INVALID_CONFIGURATION);
@@ -145,6 +146,7 @@ public class GitHubPullRequestV3 extends GitHubV3 {
 
         updateGitRequestWithGraphQLData(pull, repoUrl, branch, prData, token);
 
+        updateCollectorItemLastUpdated(repoUrl, branch);
         gitRequestRepository.save(pull);
 
         return "Pull Request Processed Successfully";
@@ -241,6 +243,9 @@ public class GitHubPullRequestV3 extends GitHubV3 {
 
         // Total number of commits
         pull.setNumberOfChanges(restClient.getInteger(pullRequestObject, "commits"));
+        pull.setCountFilesChanged(restClient.getLong(pullRequestObject, "changed_files"));
+        pull.setLineAdditions(restClient.getLong(pullRequestObject, "additions"));
+        pull.setLineDeletions(restClient.getLong(pullRequestObject, "deletions"));
 
         // Merge Details: From the closed PR
         long mergedTimestampMillis = getTimeStampMills(restClient.getString(pullRequestObject, "merged_at"));

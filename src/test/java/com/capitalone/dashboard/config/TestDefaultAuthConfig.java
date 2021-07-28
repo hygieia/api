@@ -10,6 +10,7 @@ import com.capitalone.dashboard.service.ApiTokenServiceImpl;
 import com.capitalone.dashboard.service.AuthenticationService;
 import com.capitalone.dashboard.service.AutoDiscoveryService;
 import com.capitalone.dashboard.service.BinaryArtifactService;
+import com.capitalone.dashboard.service.BuildCommonService;
 import com.capitalone.dashboard.service.BuildService;
 import com.capitalone.dashboard.service.BusCompOwnerService;
 import com.capitalone.dashboard.service.CloudInstanceService;
@@ -51,7 +52,10 @@ import com.capitalone.dashboard.service.TemplateService;
 import com.capitalone.dashboard.service.TestResultService;
 import com.capitalone.dashboard.service.UserInfoService;
 import com.capitalone.dashboard.service.UserInfoServiceImpl;
+import com.capitalone.dashboard.service.InfraStructureService;
+import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.util.PaginationHeaderUtility;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -61,6 +65,9 @@ import org.springframework.context.annotation.ComponentScan;
  @SpringBootApplication
  @ComponentScan(basePackages = {"com.capitalone.dashboard.auth"})
  public class TestDefaultAuthConfig {
+
+ 	@Mock
+	 private ApiSettings apiSettings;
 
  	@Bean
  	public DashboardRepository dashboardRepository() {
@@ -84,7 +91,7 @@ import org.springframework.context.annotation.ComponentScan;
 
  	@Bean
      public UserInfoService userInfoService() {
-         return new UserInfoServiceImpl(userInfoRepository(),authProperties());
+         return new UserInfoServiceImpl(userInfoRepository(),authProperties(), apiSettings);
      }
 
 	 @Bean
@@ -246,8 +253,8 @@ import org.springframework.context.annotation.ComponentScan;
 	 @Bean
 	 public DashboardRemoteService dashboardRemoteService() {return Mockito.mock(DashboardRemoteService.class);}
 
-@Bean
-    public TemplateService templateService() {
+	 @Bean
+     public TemplateService templateService() {
         return Mockito.mock(TemplateService.class);
     }
 
@@ -295,5 +302,12 @@ import org.springframework.context.annotation.ComponentScan;
 
 	 @Bean
 	 public AutoDiscoveryService autoDiscoveryService(){return Mockito.mock(AutoDiscoveryService.class);}
+
+	 @Bean
+	 public BuildCommonService buildCommonService() { return Mockito.mock(BuildCommonService.class); }
+
+	 @Bean
+	 public InfraStructureService infraStructureService() { return Mockito.mock(InfraStructureService.class); }
+
  }
 

@@ -7,7 +7,7 @@ import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BuildSearchRequest {
+public class BuildSearchRequest extends BaseRequest {
     @NotNull
     private ObjectId componentId;
     private Integer numberOfDays;

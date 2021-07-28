@@ -4,13 +4,14 @@ import org.bson.types.ObjectId;
 
 import javax.validation.constraints.NotNull;
 
-public class LibraryPolicyRequest {
+public class LibraryPolicyRequest extends BaseRequest {
     @NotNull
     private ObjectId componentId;
     private Integer max;
     private Integer numberOfDays;
     private Long dateBegins;
     private Long dateEnds;
+    private ObjectId collectorItemId;
 
     public ObjectId getComponentId() {
         return componentId;
@@ -55,4 +56,8 @@ public class LibraryPolicyRequest {
     public boolean validDateRange() {
         return dateBegins != null || dateEnds != null;
     }
+
+    public ObjectId getCollectorItemId() { return collectorItemId; }
+
+    public void setCollectorItemId(ObjectId collectorItemId) { this.collectorItemId = collectorItemId; }
 }

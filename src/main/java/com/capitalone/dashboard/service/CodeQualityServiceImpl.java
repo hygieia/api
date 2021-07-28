@@ -17,16 +17,21 @@ import com.capitalone.dashboard.request.CodeQualityCreateRequest;
 import com.capitalone.dashboard.request.CodeQualityRequest;
 import com.capitalone.dashboard.request.CollectorRequest;
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Splitter;
 import com.querydsl.core.BooleanBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.joda.time.LocalDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -47,6 +52,7 @@ public class CodeQualityServiceImpl implements CodeQualityService {
         this.collectorRepository = collectorRepository;
         this.collectorService = collectorService;
     }
+    private static final Logger LOGGER = LoggerFactory.getLogger(CodeQualityServiceImpl.class);
 
     @Override
     public DataResponse<Iterable<CodeQuality>> search(CodeQualityRequest request) {
@@ -66,6 +72,14 @@ public class CodeQualityServiceImpl implements CodeQualityService {
         }
 
         return searchType(request);
+    }
+
+    @Override
+    public DataResponse<Iterable<CodeQuality>> getCodeQualityForWidget(CodeQualityRequest request) {
+        ArrayList<CodeQuality> codeQualities = new ArrayList<CodeQuality>();
+        CodeQuality codeQuality = codeQualityRepository.findTop1ByCollectorItemIdOrderByTimestampDesc(request.getCollectorItemId());
+        codeQualities.add(codeQuality);
+        return new DataResponse<>(codeQualities, System.currentTimeMillis());
     }
 
     private DataResponse<Iterable<CodeQuality>> emptyResponse() {
@@ -100,7 +114,10 @@ public class CodeQualityServiceImpl implements CodeQualityService {
         }
         String instanceUrl = (String)item.getOptions().get("instanceUrl");
         String projectId = (String) item.getOptions().get("projectId");
-        String reportUrl = getReportURL(instanceUrl,"dashboard/index/",projectId);
+        String reportUrl = "";
+        if ( instanceUrl != null ) {
+            reportUrl = getReportURL(instanceUrl,"dashboard/index/",projectId);
+        }
         Collector collector = collectorRepository.findOne(item.getCollectorId());
         long lastExecuted = (collector == null) ? 0 : collector.getLastExecuted();
         return new DataResponse<>(result, lastExecuted,reportUrl);
@@ -196,7 +213,11 @@ public class CodeQualityServiceImpl implements CodeQualityService {
             quality = new CodeQuality();
         }
         quality.setCollectorItemId(collectorItem.getId());
-        quality.setBuildId(new ObjectId(request.getHygieiaId()));
+        try {
+            quality.setBuildId(new ObjectId(request.getHygieiaId()));
+        } catch(Exception e) {
+            LOGGER.info("Bad hygieia id passed in : bad_hygieiaid=" + request.getHygieiaId() + ", build_url=" +request.getBuildUrl());
+        }
         quality.setName(request.getProjectName());
         quality.setType(CodeQualityType.StaticAnalysis);
         quality.setUrl(request.getProjectUrl());

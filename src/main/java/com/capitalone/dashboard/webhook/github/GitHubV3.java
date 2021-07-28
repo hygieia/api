@@ -1,11 +1,13 @@
 package com.capitalone.dashboard.webhook.github;
 
+import com.capitalone.dashboard.model.GitHubCollector;
+import com.capitalone.dashboard.repository.BaseCollectorRepository;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
+import com.capitalone.dashboard.model.webhook.github.GitHubRepo;
 import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.client.RestClient;
 import com.capitalone.dashboard.model.webhook.github.GitHubParsed;
 import com.capitalone.dashboard.misc.HygieiaException;
-import com.capitalone.dashboard.model.Collector;
 import com.capitalone.dashboard.model.CollectorItem;
 import com.capitalone.dashboard.model.CollectorType;
 import com.capitalone.dashboard.service.CollectorService;
@@ -40,41 +42,61 @@ public abstract class GitHubV3 {
     protected final CollectorService collectorService;
     protected final RestClient restClient;
     protected final ApiSettings apiSettings;
+    protected final CollectorItemRepository collectorItemRepository;
+    private final BaseCollectorRepository<GitHubCollector> collectorRepository;
 
     private Map<String, String> ldapMap;
     private Map<String, String> authorTypeMap;
 
     public GitHubV3(CollectorService collectorService,
                     RestClient restClient,
-                    ApiSettings apiSettings) {
+                    ApiSettings apiSettings,
+                    CollectorItemRepository collectorItemRepository,
+                    BaseCollectorRepository<GitHubCollector> collectorRepository
+    ) {
         this.collectorService = collectorService;
         this.restClient = restClient;
         this.apiSettings = apiSettings;
+        this.collectorItemRepository = collectorItemRepository;
+        this.collectorRepository = collectorRepository;
         ldapMap = new HashMap<>();
         authorTypeMap = new HashMap<>();
     }
 
-    protected Collector getCollector() {
-        Collector collector = new Collector();
-        collector.setCollectorType(CollectorType.SCM);
-        collector.setLastExecuted(System.currentTimeMillis());
-        collector.setOnline(true);
-        collector.setEnabled(true);
-        collector.setName("GitHub");
+    public GitHubCollector getCollector() {
+        GitHubCollector existingCollector = null;
+        /**
+         * ClassCastException maybe happen when first migrating from collector to Github collector, once we run the collector
+         * the data will get updated
+         */
+        try {
+            existingCollector = collectorRepository.findByName("GitHub");
+        } catch (ClassCastException ignore) {}
+
+        if (existingCollector != null ) {
+            return existingCollector;
+        }
+        GitHubCollector protoType = new GitHubCollector();
+        protoType.setName("GitHub");
+        protoType.setCollectorType(CollectorType.SCM);
+        protoType.setOnline(true);
+        protoType.setEnabled(true);
+
         Map<String, Object> allOptions = new HashMap<>();
-        allOptions.put(REPO_URL, "");
-        allOptions.put(BRANCH, "");
-        allOptions.put(USER_ID, "");
-        allOptions.put(PASSWORD, "");
-        allOptions.put(TOKEN, "");
-        collector.setAllFields(allOptions);
+        allOptions.put(GitHubRepo.REPO_URL, "");
+        allOptions.put(GitHubRepo.BRANCH, "");
+        allOptions.put(GitHubRepo.USER_ID, "");
+        allOptions.put(GitHubRepo.PASSWORD, "");
+        allOptions.put(GitHubRepo.PERSONAL_ACCESS_TOKEN, "");
+        allOptions.put(GitHubRepo.TYPE, "");
+        protoType.setAllFields(allOptions);
 
         Map<String, Object> uniqueOptions = new HashMap<>();
-        uniqueOptions.put(REPO_URL, "");
-        uniqueOptions.put(BRANCH, "");
-        collector.setUniqueFields(uniqueOptions);
+        uniqueOptions.put(GitHubRepo.REPO_URL, "");
+        uniqueOptions.put(GitHubRepo.BRANCH, "");
+        protoType.setUniqueFields(uniqueOptions);
 
-        return collector;
+        return collectorRepository.save(protoType);
     }
 
     public abstract String process(JSONObject jsonObject) throws MalformedURLException, HygieiaException, ParseException;
@@ -103,12 +125,16 @@ public abstract class GitHubV3 {
     }
 
     protected CollectorItem getCollectorItem(String repoUrl, String branch) throws HygieiaException {
-        Collector col = collectorService.createCollector(getCollector());
+        GitHubCollector col = getCollector();
 
         if (col == null)
             throw new HygieiaException("Failed creating collector.", HygieiaException.COLLECTOR_CREATE_ERROR);
 
-        CollectorItem item = buildCollectorItem(col.getId(), repoUrl, branch);
+        CollectorItem item = collectorItemRepository.findRepoByUrlAndBranch(col.getId(), repoUrl, branch);
+        if (item != null)
+            return item;
+
+        item = buildCollectorItem(col.getId(), repoUrl, branch);
         if (item == null)
             throw new HygieiaException("Failed creating collector item. Invalid repo url and/or branch", HygieiaException.COLLECTOR_ITEM_CREATE_ERROR);
 
@@ -120,8 +146,15 @@ public abstract class GitHubV3 {
         return colItem;
     }
 
+    // Update lastUpdated field in collector item
+    protected void updateCollectorItemLastUpdated(String repoUrl, String branch) throws HygieiaException {
+        CollectorItem item = getCollectorItem(repoUrl, branch);
+        item.setLastUpdated(System.currentTimeMillis());
+        collectorItemRepository.save(item);
+    }
+
     protected String getRepositoryToken(String scmUrl) {
-        Collector collector = collectorService.createCollector(getCollector());
+        GitHubCollector collector = getCollector();
 
         List<ObjectId> collectorIdList = new ArrayList<>();
         collectorIdList.add(collector.getId());
@@ -217,7 +250,7 @@ public abstract class GitHubV3 {
     }
 
     protected boolean isRegistered(String repoUrl, String branch) throws HygieiaException{
-        Collector col = collectorService.createCollector(getCollector());
+        GitHubCollector col = getCollector();
         if (col == null)
             throw new HygieiaException("Failed creating collector.", HygieiaException.COLLECTOR_CREATE_ERROR);
 

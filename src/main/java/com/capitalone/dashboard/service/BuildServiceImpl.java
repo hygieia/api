@@ -27,6 +27,7 @@ import com.google.common.collect.Sets;
 import com.querydsl.core.BooleanBuilder;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 @Service
@@ -58,6 +60,8 @@ public class BuildServiceImpl implements BuildService {
 
     @Autowired
     private ApiSettings settings;
+
+    private static final Logger LOGGER = Logger.getLogger(BuildService.class);
 
     @Autowired
     public BuildServiceImpl(BuildRepository buildRepository,
@@ -171,16 +175,60 @@ public class BuildServiceImpl implements BuildService {
         Build build = createBuild(request);
         try {
             org.apache.commons.beanutils.BeanUtils.copyProperties(response, build);
-        }
-        catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (IllegalAccessException | InvocationTargetException e) {
             throw new HygieiaException(e);
-        }
-        finally {
-            if(settings.isLookupDashboardForBuildDataCreate()) {
+        } finally {
+            if (settings.isLookupDashboardForBuildDataCreate()) {
                 populateDashboardId(response);
             }
         }
+        String clientReference = StringUtils.isNotEmpty(build.getClientReference()) ? build.getClientReference() : request.getClientReference();
+        response.setClientReference(clientReference);
+        // Will be refactored soon
+        CollectorItem buildCollectorItem = collectorItemRepository.findOne(build.getCollectorItemId());
+        if (buildCollectorItem != null) {
+            LOGGER.info("correlation_id=" + clientReference
+                    + ", build_url=" + build.getBuildUrl()
+                    + ", build_duration_millis=" + build.getDuration()
+                    + ", build_started_by=" + build.getStartedBy()
+                    + ", build_status=" + build.getBuildStatus()
+                    + ", hygieia_build_id=" + build.getId()
+                    + ", hygieia_build_view_link=" + settings.getHygieia_ui_url()+"/build/"+build.getId()
+                    + ", build_instance_url=" + buildCollectorItem.getOptions().get("instanceUrl")
+                    + ", build_job_name=" + buildCollectorItem.getOptions().get("jobName")
+                    + ", build_job_url=" + buildCollectorItem.getOptions().get("jobUrl"));
+
+            //log stage information only for failed builds
+            if (CollectionUtils.isNotEmpty(build.getStages()) && !(BuildStatus.Success.equals(build.getBuildStatus()))) {
+                for (BuildStage buildStage : build.getStages()) {
+                    if(Objects.isNull(buildStage)) continue;
+                    LOGGER.info("correlation_id=" + clientReference
+                            + ", build_url=" + build.getBuildUrl()
+                            + ", build_duration_millis=" + build.getDuration()
+                            + ", build_started_by=" + build.getStartedBy()
+                            + ", build_status=" + build.getBuildStatus()
+                            + ", hygieia_build_id=" + build.getId()
+                            + ", build_instance_url=" + buildCollectorItem.getOptions().get("instanceUrl")
+                            + ", build_stage_name=" + buildStage.getName()
+                            + ", build_stage_status=" + buildStage.getStatus()
+                            + ", build_stage_duration_millis=" + buildStage.getDurationMillis()
+                            + buildStageErrorLog(buildStage)
+                            + buildExecNodeLog(buildStage, buildCollectorItem)
+                    );
+                }
+            }
+        }
         return response;
+    }
+
+    private String buildStageErrorLog (BuildStage buildStage) {
+        if(Objects.isNull(buildStage) || Objects.isNull(buildStage.getError())) return "";
+        return " build_stage_error="+buildStage.getError().getType()+":"+buildStage.getError().getMessage();
+    }
+
+    private String buildExecNodeLog (BuildStage buildStage, CollectorItem collectorItem) {
+        if(Objects.isNull(buildStage) || StringUtils.isEmpty(buildStage.getExec_node_logUrl()) || Objects.isNull(collectorItem)) return "";
+        return " build_stage_log=" + (collectorItem.getOptions().get("instanceUrl") + buildStage.getExec_node_logUrl());
     }
 
     private void populateDashboardId(BuildDataCreateResponse response) {
@@ -246,6 +294,7 @@ public class BuildServiceImpl implements BuildService {
                 request.getNumber());
         if (build == null) {
             build = new Build();
+            build.setClientReference(request.getClientReference());
         }
         build.setNumber(request.getNumber());
         build.setBuildUrl(request.getBuildUrl());
@@ -314,10 +363,12 @@ public class BuildServiceImpl implements BuildService {
                 item.getOptions().put("branch", repoBranch.getBranch());
                 item.getOptions().put("url", repoBranch.getUrl());
                 item.setEnabled(true);
+                item.setPushed(true);
                 item.setLastUpdated(0);
                 collectorItemRepository.save(item);
             } else if (!item.isEnabled()) {
                 item.setEnabled(true);
+                item.setPushed(true);
                 item.setLastUpdated(0);
                 collectorItemRepository.save(item);
             }

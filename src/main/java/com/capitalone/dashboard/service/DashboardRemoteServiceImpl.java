@@ -10,8 +10,8 @@ import com.capitalone.dashboard.model.Component;
 import com.capitalone.dashboard.model.Dashboard;
 import com.capitalone.dashboard.model.DashboardType;
 import com.capitalone.dashboard.model.Owner;
-import com.capitalone.dashboard.model.Widget;
 import com.capitalone.dashboard.model.ScoreDisplayType;
+import com.capitalone.dashboard.model.Widget;
 import com.capitalone.dashboard.repository.CmdbRepository;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.repository.CollectorRepository;
@@ -20,12 +20,13 @@ import com.capitalone.dashboard.repository.CustomRepositoryQuery;
 import com.capitalone.dashboard.repository.DashboardRepository;
 import com.capitalone.dashboard.request.DashboardRemoteRequest;
 import com.capitalone.dashboard.request.WidgetRequest;
+import com.capitalone.dashboard.settings.ApiSettings;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.bson.types.ObjectId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,7 +40,7 @@ import java.util.Objects;
 
 @Service
 public class DashboardRemoteServiceImpl implements DashboardRemoteService {
-    private static final Log LOG = LogFactory.getLog(DashboardRemoteServiceImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DashboardRemoteServiceImpl.class);
     private final CollectorRepository collectorRepository;
     private final CustomRepositoryQuery customRepositoryQuery;
     private final DashboardRepository dashboardRepository;
@@ -49,13 +50,20 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
     private final CmdbRepository cmdbRepository;
     private final ComponentRepository componentRepository;
     private final CollectorItemRepository collectorItemRepository;
+    private final ApiSettings apiSettings;
+    private final EncryptionService encryptionService;
+
+    public static final String PASSWORD_OPTION = "password";
+    public static final String PERSONAL_ACCESS_TOKEN_OPTION = "personalAccessToken";
+
 
     @Autowired
     public DashboardRemoteServiceImpl(
             CollectorRepository collectorRepository,
             CustomRepositoryQuery customRepositoryQuery,
-            DashboardRepository dashboardRepository, DashboardService dashboardService, CollectorService collectorService, UserInfoService userInfoService, CmdbRepository cmdbRepository, ComponentRepository componentRepository,
-            CollectorItemRepository collectorItemRepository) {
+            DashboardRepository dashboardRepository, DashboardService dashboardService, CollectorService collectorService,
+            UserInfoService userInfoService, CmdbRepository cmdbRepository, ComponentRepository componentRepository,
+            CollectorItemRepository collectorItemRepository, ApiSettings apiSettings, EncryptionService encryptionService) {
         this.collectorRepository = collectorRepository;
         this.customRepositoryQuery = customRepositoryQuery;
         this.dashboardRepository = dashboardRepository;
@@ -65,6 +73,8 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
         this.cmdbRepository = cmdbRepository;
         this.componentRepository = componentRepository;
         this.collectorItemRepository = collectorItemRepository;
+        this.apiSettings = apiSettings;
+        this.encryptionService = encryptionService;
     }
 
     /**
@@ -105,12 +115,17 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
             if (userInfoService.isUserValid(owner.getUsername(), owner.getAuthType())) {
                 validOwners.add(owner);
             } else {
-                LOG.warn(METHOD_NAME + " Invalid owner passed in the request : " + owner.getUsername());
+                LOG.warn(" correlation_id=" + request.getClientReference() + " Invalid owner passed in the request dashboard_invalid_owner=" + owner.getUsername());
             }
         }
 
         if (validOwners.isEmpty()) {
             throw new HygieiaException("There are no valid owner/owners in the request", HygieiaException.INVALID_CONFIGURATION);
+        }
+
+        // if true password or personalAccessToken in SCM widgets needs to be encrypted
+        if(apiSettings.isEncryptRemoteCreatePayload()) {
+            encryptSCMWidgets(request);
         }
 
         List<Dashboard> dashboards = findExistingDashboardsFromRequest( request );
@@ -125,6 +140,7 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
             dashboard.setOwners(new ArrayList<Owner>(uniqueOwners));
             dashboard.setConfigurationItemBusAppName(request.getMetaData().getBusinessApplication());
             dashboard.setConfigurationItemBusServName(request.getMetaData().getBusinessService());
+            dashboard.setClientReference(request.getClientReference());
 //            if (!isUpdate) {
 //                throw new HygieiaException("Dashboard " + dashboard.getTitle() + " (id =" + dashboard.getId() + ") already exists", HygieiaException.DUPLICATE_DATA);
 //            }
@@ -179,9 +195,9 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
             dashboardService.deleteWidget(dashboard,CollectorType.CodeQuality);
         }
 
-        LOG.info("DashboardTitle=" + dashboard.getTitle() + ", ExistingTypes=" + existingTypes.size() +
-                " " + existingTypes + ", IncomingTypes=" + incomingTypes.size() + " " + incomingTypes
-                + ", deleteSet=" + deleteSet.size() + " " + deleteSet);
+        LOG.info("correlation_id="+ request.getClientReference() + ", dashboard_title=" + dashboard.getTitle() + ", existing_widget_types=" + existingTypes.size() +
+                " " + existingTypes + ", incoming_widget_types=" + incomingTypes.size() + " " + incomingTypes
+                + ", deleted_widgets_set=" + deleteSet.size() + " " + deleteSet);
 
         componentRepository.save(component);
         return (dashboard != null) ? dashboardService.get(dashboard.getId()) : null;
@@ -214,8 +230,8 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
                 }
             }
         }
-        LOG.warn(String.format("MultipleDashboards=%d, businessService=%s, businessApplication=%s, title=%s, selected=%s",
-                dashboards.size(), businessService, businessApplication, title, dashboard.getId()));
+        LOG.warn(String.format("correlation_id=%s, count_dashboards=%d, ba=%s, component=%s, dashboard_title=%s, selected_dashboard_id=%s",
+                request.getClientReference(), dashboards.size(), businessService, businessApplication, title, dashboard.getId()));
         return dashboard;
     }
 
@@ -269,7 +285,7 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
         List<Dashboard> existing = new ArrayList<>();
         if( !StringUtils.isEmpty( businessService ) && !StringUtils.isEmpty( businessApplication ) ){
            existing.addAll(dashboardRepository.findAllByConfigurationItemBusServNameContainingIgnoreCaseAndConfigurationItemBusAppNameContainingIgnoreCase( businessService, businessApplication ));
-        } else if (StringUtils.isNotEmpty(title)) {
+        } if (CollectionUtils.isEmpty(existing) && StringUtils.isNotEmpty(title)) {
            existing.addAll(dashboardRepository.findByTitle( request.getMetaData().getTitle() ));
         }
         return existing;
@@ -327,5 +343,23 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
         }
         List<String> activeWidgets = new ArrayList<>();
         return new Dashboard(true, metaData.getTemplate(), metaData.getTitle(), application, metaData.getOwners(), DashboardType.fromString(metaData.getType()), serviceName, appName,activeWidgets, false, ScoreDisplayType.HEADER);
+    }
+
+    private void encryptSCMWidgets (DashboardRemoteRequest request) {
+        if(request == null) return;
+        if(CollectionUtils.isEmpty(request.getCodeRepoEntries())) return;
+        List<DashboardRemoteRequest.CodeRepoEntry> scmEntries = request.getCodeRepoEntries();
+
+        for (DashboardRemoteRequest.CodeRepoEntry scmEntry : scmEntries) {
+
+            String password = (String) scmEntry.getOptions().get(PASSWORD_OPTION);
+            String accessToken = (String) scmEntry.getOptions().get(PERSONAL_ACCESS_TOKEN_OPTION);
+            if(StringUtils.isNotEmpty(password)) {
+                //encrypt the password
+                scmEntry.getOptions().put(PASSWORD_OPTION, encryptionService.encrypt(password));
+            } else if (StringUtils.isNotEmpty(accessToken)) {
+                scmEntry.getOptions().put(PERSONAL_ACCESS_TOKEN_OPTION, encryptionService.encrypt(accessToken));
+            }
+        }
     }
 }

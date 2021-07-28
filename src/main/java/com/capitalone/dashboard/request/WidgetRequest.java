@@ -6,7 +6,7 @@ import org.bson.types.ObjectId;
 import java.util.List;
 import java.util.Map;
 
-public class WidgetRequest {
+public class WidgetRequest extends BaseRequest {
     private String name;
     private ObjectId componentId;
     private List<ObjectId> collectorItemIds;

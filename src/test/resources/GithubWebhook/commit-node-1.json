@@ -1,0 +1,52 @@
+{
+  "data": {
+    "repository": {
+      "ref": {
+        "target": {
+          "history": {
+            "pageInfo": {
+              "endCursor": "fd3423424 1",
+              "hasNextPage": true
+            },
+            "edges": [
+              {
+                "cursor": "fd3423424 0",
+                "node": {
+                  "oid": "commit1ID",
+                  "changedFiles": 313,
+                  "deletions": 5833,
+                  "additions": 7636,
+                  "parents": {
+                    "nodes": [
+                      {
+                        "oid": "fd3423424"
+                      },
+                      {
+                        "oid": "fd3423424"
+                      }
+                    ]
+                  },
+                  "message": "GitHub WebHook Commit 1",
+                  "committer": {
+                    "user": null,
+                    "name": "GitHub",
+                    "date": "2021-01-07T12:43:33-05:00"
+                  },
+                  "author": {
+                    "name": "bot",
+                    "user": {
+                      "login": "bot"
+                    },
+                    "email": "git@github.com",
+                    "date": "2021-01-07T12:43:33-05:00"
+                  },
+                  "status": null
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

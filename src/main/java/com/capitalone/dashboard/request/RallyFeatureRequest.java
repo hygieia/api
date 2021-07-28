@@ -1,13 +1,12 @@
 package com.capitalone.dashboard.request;
 
+import com.capitalone.dashboard.model.RallyFeatureType;
+import org.bson.types.ObjectId;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import org.bson.types.ObjectId;
-
-import com.capitalone.dashboard.model.RallyFeatureType;
-
-public class RallyFeatureRequest {
+public class RallyFeatureRequest extends BaseRequest {
 	
 	 private ObjectId componentId;
 	 private String projectId;

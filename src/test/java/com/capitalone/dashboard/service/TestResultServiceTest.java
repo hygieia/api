@@ -1,6 +1,7 @@
 package com.capitalone.dashboard.service;
 
 import com.capitalone.dashboard.misc.HygieiaException;
+import com.capitalone.dashboard.model.Build;
 import com.capitalone.dashboard.model.Collector;
 import com.capitalone.dashboard.model.CollectorItem;
 import com.capitalone.dashboard.model.TestCapability;
@@ -13,6 +14,7 @@ import com.capitalone.dashboard.model.TestSuiteType;
 import com.capitalone.dashboard.model.DataResponse;
 import com.capitalone.dashboard.model.Component;
 import com.capitalone.dashboard.model.CollectorType;
+import com.capitalone.dashboard.repository.BuildRepository;
 import com.capitalone.dashboard.repository.CollectorRepository;
 import com.capitalone.dashboard.repository.ComponentRepository;
 import com.capitalone.dashboard.repository.TestResultRepository;
@@ -42,6 +44,7 @@ public class TestResultServiceTest {
     @Mock private CollectorRepository collectorRepository;
     @Mock private CollectorService collectorService;
     @Mock private ComponentRepository componentRepository;
+    @Mock private BuildRepository buildRepository;
     @Mock private ApiSettings apiSettings;
     @InjectMocks private TestResultServiceImpl testResultService;
 
@@ -223,6 +226,55 @@ public class TestResultServiceTest {
         return result;
     }
 
+    private TestResult makeJunitTestResult() {
+        TestResult result = new TestResult();
+        result.setId(ObjectId.get());
+        result.setCollectorItemId(ObjectId.get());
+        result.setDescription("description");
+        result.setDuration(1L);
+        result.setExecutionId("execution ID");
+        result.setStartTime(2L);
+        result.setEndTime(3L);
+        result.setUrl("http://foo.com");
+        result.setFailureCount(1);
+        result.setSuccessCount(2);
+        result.setSkippedCount(0);
+        result.setTotalCount(3);
+
+        TestCapability capability = new TestCapability();
+        capability.setDescription("description");
+        capability.setDuration(1l);
+        capability.setStartTime(2l);
+        capability.setEndTime(3l);
+        capability.setFailedTestSuiteCount(1);
+        capability.setSkippedTestSuiteCount(2);
+        capability.setSuccessTestSuiteCount(3);
+        capability.setTotalTestSuiteCount(6);
+
+        TestSuite suite = new TestSuite();
+        suite.setDescription("description");
+        suite.setDuration(1L);
+        suite.setStartTime(2L);
+        suite.setEndTime(3L);
+        suite.setType(TestSuiteType.Unit);
+        suite.setFailedTestCaseCount(0);
+        suite.setSuccessTestCaseCount(0);
+        suite.setSkippedTestCaseCount(0);
+        suite.setTotalTestCaseCount(1);
+
+        capability.getTestSuites().add(suite);
+        result.getTestCapabilities().add(capability);
+
+        TestCase testCase = new TestCase();
+        testCase.setId("id");
+        testCase.setDescription("description");
+        testCase.setStatus(TestCaseStatus.Failure);
+        testCase.setDuration(20L);
+
+        suite.getTestCases().add(testCase);
+
+        return result;
+    }
 
     private TestCreateRequest makePrefTestCreateRequest() {
         TestCreateRequest data = new TestCreateRequest();
@@ -235,7 +287,17 @@ public class TestResultServiceTest {
         return data;
     }
 
-
+    private TestCreateRequest makeJunitTestCreateRequest(String encodedTestResult) {
+        TestCreateRequest data = new TestCreateRequest();
+        data.setSourceFormat("junit");
+        data.setTestType("unit");
+        data.setSource("aSource");
+        data.setConfigurationItem("testConfigItem");
+        data.setTimeStamp("2020-01-14T02:26:22.635 +0000");
+        data.setClientReference("testClientReference");
+        data.setTestResult(encodedTestResult);
+        return data;
+    }
 
     @Test
     public void createWithGoodCucumberRequest() throws HygieiaException {
@@ -246,6 +308,7 @@ public class TestResultServiceTest {
         when(collectorRepository.findOne(collectorId)).thenReturn(new Collector());
         when(collectorService.createCollector(any(Collector.class))).thenReturn(new Collector());
         when(collectorService.createCollectorItem(any(CollectorItem.class))).thenReturn(new CollectorItem());
+        when(buildRepository.findByBuildUrl(any(String.class))).thenReturn(new Build());
         when(apiSettings.getFunctional()).thenReturn( new HashMap<String, String>() {{
             put("cucumber", "cucumber");
         }}
@@ -255,10 +318,65 @@ public class TestResultServiceTest {
 
         when(testResultRepository.save(any(TestResult.class))).thenReturn(testResult);
         String response = testResultService.createTest(request);
-        String expected = testResult.getId().toString() + "," + testResult.getCollectorItemId();
+        String expected = testResult.getId().toString() + ", " + testResult.getCollectorItemId() + ";";
         assertEquals(response, expected);
     }
 
+    @Test
+    public void createWithGoodJunitTestRequest() throws HygieiaException {
+        ObjectId collectorId = ObjectId.get();
 
+        TestCreateRequest request = makeJunitTestCreateRequest("PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48dGVzdHN1aXRlIGVycm9ycz0iMCIgZmFpbHVyZXM9IjAiIGhvc3RuYW1lPSJzb21lSG9zdCIgbmFtZT0ic2FtcGxlVGVzdCIgc2tpcHBlZD0iMCIgdGVzdHM9IjEiIHRpbWU9IjAuNTU1IiB0aW1lc3RhbXA9IjIwMjAtMTEtMDVUMTI6MjQ6MDIuMjkzNTQyIj48dGVzdGNhc2UgY2xhc3NuYW1lPSJ0ZXN0cy5zYW1wbGVUZXN0Q2FzZSIgbmFtZT0idGVzdF9kdW1teSIgdGltZT0iMC4wMDEiIC8+PC90ZXN0c3VpdGU+");
 
+        when(collectorRepository.findOne(collectorId)).thenReturn(new Collector());
+        when(collectorService.createCollector(any(Collector.class))).thenReturn(new Collector());
+        when(collectorService.createCollectorItem(any(CollectorItem.class))).thenReturn(new CollectorItem());
+        when(buildRepository.findByBuildUrl(any(String.class))).thenReturn(new Build());
+        when(apiSettings.getUnit()).thenReturn("junit");
+
+        TestResult testResult = makeJunitTestResult();
+
+        when(testResultRepository.save(any(TestResult.class))).thenReturn(testResult);
+        String response = testResultService.createTest(request);
+        String expected = testResult.getId().toString() + ", " + testResult.getCollectorItemId() + ";";
+        assertEquals(response, expected);
+    }
+
+    @Test
+    public void createWithGoodJunitTestRequestV2() throws HygieiaException {
+        ObjectId collectorId = ObjectId.get();
+
+        TestCreateRequest request = makeJunitTestCreateRequest("PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48dGVzdHN1aXRlcz48dGVzdHN1aXRlIGVycm9ycz0iMCIgZmFpbHVyZXM9IjAiIGhvc3RuYW1lPSJzb21lSG9zdCIgbmFtZT0ic2FtcGxlVGVzdCIgc2tpcHBlZD0iMCIgdGVzdHM9IjEiIHRpbWU9IjAuNTU1IiB0aW1lc3RhbXA9IjIwMjAtMTEtMDVUMTI6MjQ6MDIuMjkzNTQyIj48dGVzdGNhc2UgY2xhc3NuYW1lPSJ0ZXN0cy5zYW1wbGVUZXN0Q2FzZSIgbmFtZT0idGVzdF9kdW1teSIgdGltZT0iMC4wMDEiIC8+PC90ZXN0c3VpdGU+PC90ZXN0c3VpdGVzPg==");
+
+        when(collectorRepository.findOne(collectorId)).thenReturn(new Collector());
+        when(collectorService.createCollector(any(Collector.class))).thenReturn(new Collector());
+        when(collectorService.createCollectorItem(any(CollectorItem.class))).thenReturn(new CollectorItem());
+        when(apiSettings.getUnit()).thenReturn("junit");
+
+        TestResult testResult = makeJunitTestResult();
+
+        when(testResultRepository.save(any(TestResult.class))).thenReturn(testResult);
+        String response = testResultService.createTest(request);
+        String expected = testResult.getId().toString() + ", " + testResult.getCollectorItemId() + ";";
+        assertEquals(response, expected);
+    }
+
+    @Test
+    public void createWithGoodJunitTestRequestV2MultipleTestsuites() throws HygieiaException {
+        ObjectId collectorId = ObjectId.get();
+
+        TestCreateRequest request = makeJunitTestCreateRequest("PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48dGVzdHN1aXRlcz48dGVzdHN1aXRlIGVycm9ycz0iMCIgZmFpbHVyZXM9IjAiIGhvc3RuYW1lPSJzb21lSG9zdDEiIG5hbWU9InNhbXBsZVRlc3QxIiBza2lwcGVkPSIwIiB0ZXN0cz0iMSIgdGltZT0iMC41NTUiIHRpbWVzdGFtcD0iMjAyMC0xMS0wNVQxMjoyNDowMi4yOTM1NDIiPjx0ZXN0Y2FzZSBjbGFzc25hbWU9InRlc3RzLnNhbXBsZVRlc3RDYXNlIiBuYW1lPSJ0ZXN0X2R1bW15IiB0aW1lPSIwLjAwMSIgLz48L3Rlc3RzdWl0ZT48dGVzdHN1aXRlIGVycm9ycz0iMCIgZmFpbHVyZXM9IjAiIGhvc3RuYW1lPSJzb21lSG9zdDIiIG5hbWU9InNhbXBsZVRlc3QyIiBza2lwcGVkPSIwIiB0ZXN0cz0iMiIgdGltZT0iMC41NTUiIHRpbWVzdGFtcD0iMjAyMC0xMS0wNVQxMjoyNDowMi4yOTM1NDIiPjx0ZXN0Y2FzZSBjbGFzc25hbWU9InRlc3RzLnNhbXBsZVRlc3RDYXNlMSIgbmFtZT0idGVzdF9kdW1teTEiIHRpbWU9IjAuMDAxIiAvPjx0ZXN0Y2FzZSBjbGFzc25hbWU9InRlc3RzLnNhbXBsZVRlc3RDYXNlMiIgbmFtZT0idGVzdF9kdW1teTIiIHRpbWU9IjAuMDAxIiAvPjwvdGVzdHN1aXRlPjwvdGVzdHN1aXRlcz4=");
+
+        when(collectorRepository.findOne(collectorId)).thenReturn(new Collector());
+        when(collectorService.createCollector(any(Collector.class))).thenReturn(new Collector());
+        when(collectorService.createCollectorItem(any(CollectorItem.class))).thenReturn(new CollectorItem());
+        when(apiSettings.getUnit()).thenReturn("junit");
+
+        TestResult testResult1 = makeJunitTestResult();
+        TestResult testResult2 = makeJunitTestResult();
+        when(testResultRepository.save(any(TestResult.class))).thenReturn(testResult1).thenReturn(testResult2);
+        String response = testResultService.createTest(request);
+        String expected = testResult1.getId().toString() + ", " + testResult1.getCollectorItemId() + ";" + testResult2.getId().toString() + ", " + testResult2.getCollectorItemId() + ";";
+        assertEquals(response, expected);
+    }
 }

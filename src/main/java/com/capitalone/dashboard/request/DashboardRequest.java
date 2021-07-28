@@ -1,9 +1,5 @@
 package com.capitalone.dashboard.request;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-
 import com.capitalone.dashboard.auth.AuthenticationUtil;
 import com.capitalone.dashboard.model.Application;
 import com.capitalone.dashboard.model.Component;
@@ -11,12 +7,14 @@ import com.capitalone.dashboard.model.Dashboard;
 import com.capitalone.dashboard.model.DashboardType;
 import com.capitalone.dashboard.model.Owner;
 import com.capitalone.dashboard.model.ScoreDisplayType;
-
 import com.google.common.collect.Lists;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.List;
 
-public class DashboardRequest {
+public class DashboardRequest extends BaseRequest {
     @NotNull
     @Size(min=1, message="Please select a template")
     private String template;

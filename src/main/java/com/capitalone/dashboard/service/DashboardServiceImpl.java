@@ -80,6 +80,7 @@ public class DashboardServiceImpl implements DashboardService {
     public static final String CHATOPS = "chatops";
     public static final String TEST = "test";
     public static final String CODEANALYSIS = "codeanalysis";
+    public static final String INFRA_SCAN = "infrascan";
 
     @Autowired
     private ApiSettings settings;
@@ -759,6 +760,7 @@ public class DashboardServiceImpl implements DashboardService {
         if(widgetName.equalsIgnoreCase(CLOUD)) return CollectorType.Cloud;
         if(widgetName.equalsIgnoreCase(CHATOPS)) return CollectorType.ChatOps;
         if(widgetName.equalsIgnoreCase(TEST)) return CollectorType.Test;
+        if(widgetName.equalsIgnoreCase(INFRA_SCAN)) return CollectorType.InfrastructureScan;
         return null;
     }
 
@@ -783,6 +785,8 @@ public class DashboardServiceImpl implements DashboardService {
             case LibraryPolicy:
             case Test:
                 return CODEANALYSIS;
+            case InfrastructureScan:
+                return INFRA_SCAN;
             default:
                 return null;
         }
