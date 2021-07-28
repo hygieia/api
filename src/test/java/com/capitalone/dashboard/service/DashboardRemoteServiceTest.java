@@ -367,8 +367,9 @@ public class DashboardRemoteServiceTest {
         Map<String, Widget> existingWidgets = new HashMap();
         existingWidgets.put("repo", widget);
         DashboardRemoteServiceImpl dashboardRemoteServiceImpl = new DashboardRemoteServiceImpl(
-                null,null, dashboardRepository, dashboardService,
-                null,null,null,null,null);
+                null,null, dashboardRepository, dashboardService, null,
+                null,null,null,null, null, null);
+
         dashboardRemoteServiceImpl.addOrUpdateWidgets(dashboard, widgetRequest,  existingWidgets);
         List<Widget> uWidgets = dashboardService.getByTitle("TestSSA").get(0).getWidgets();
         assertEquals(1, uWidgets.size());
