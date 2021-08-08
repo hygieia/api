@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Properties;
 
 import com.capitalone.dashboard.auth.AuthProperties;
+import com.capitalone.dashboard.settings.ApiSettings;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,12 +39,16 @@ public class UserInfoServiceImpl implements UserInfoService {
 	@Autowired
 	private AuthProperties authProperties;
 
+	private final ApiSettings apiSettings;
+
+
 	private InitialDirContext initialDirContext;
 	
 	@Autowired
-	public UserInfoServiceImpl(UserInfoRepository userInfoRepository, AuthProperties authProperties) {
+	public UserInfoServiceImpl(UserInfoRepository userInfoRepository, AuthProperties authProperties, ApiSettings apiSettings) {
 		this.userInfoRepository = userInfoRepository;
 		this.authProperties = authProperties;
+		this.apiSettings = apiSettings;
 	}
 	
 	@Override
@@ -199,9 +204,9 @@ public class UserInfoServiceImpl implements UserInfoService {
 
 	private Properties setProperties() {
 		Properties props = new Properties();
-		props.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-		props.put("java.naming.security.protocol", "ssl");
-		props.put(Context.SECURITY_AUTHENTICATION, "simple");
+		props.put(Context.INITIAL_CONTEXT_FACTORY, apiSettings.getContextFactory());
+		props.put("java.naming.security.protocol", apiSettings.getContextProtocol());
+		props.put(Context.SECURITY_AUTHENTICATION, apiSettings.getContextSecurityAuthentication());
 
 		try {
 			if (!StringUtils.isBlank(authProperties.getAdUrl())) {

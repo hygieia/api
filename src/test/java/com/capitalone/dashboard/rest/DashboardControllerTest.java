@@ -115,12 +115,12 @@ public class DashboardControllerTest {
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(new DashboardRequest())))
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.fieldErrors.template", hasItems("may not be null")))
+            .andExpect(jsonPath("$.fieldErrors.template", hasItems("must not be null")))
 //            TODO:  These are no longer necessary in all cases.  Potentially add new class-level validator.
 //            .andExpect(jsonPath("$.fieldErrors.componentName", hasItems("may not be null")))
 //            .andExpect(jsonPath("$.fieldErrors.applicationName", hasItems("may not be null")))
-            .andExpect(jsonPath("$.fieldErrors.type", hasItems("may not be null")))
-            .andExpect(jsonPath("$.fieldErrors.dashboardRequestTitle", hasItems("may not be null")));
+            .andExpect(jsonPath("$.fieldErrors.type", hasItems("must not be null")))
+            .andExpect(jsonPath("$.fieldErrors.dashboardRequestTitle", hasItems("must not be null")));
     }
     
     @Test
@@ -308,7 +308,7 @@ public class DashboardControllerTest {
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.fieldErrors.title", hasItems("may not be null")))
+                .andExpect(jsonPath("$.fieldErrors.title", hasItems("must not be null")))
                 ;
     }
     
