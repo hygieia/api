@@ -12,6 +12,7 @@ import com.capitalone.dashboard.model.webhook.github.GitHubRepo;
 import com.capitalone.dashboard.repository.BaseCollectorRepository;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.repository.GitRequestRepository;
+import com.capitalone.dashboard.repository.UserEntitlementsRepository;
 import com.capitalone.dashboard.service.CollectorService;
 import com.capitalone.dashboard.settings.ApiSettings;
 import org.apache.commons.logging.Log;
@@ -43,6 +44,7 @@ public class GitHubIssueV3Test {
     @Mock private GitRequestRepository gitRequestRepository;
     @Mock private CollectorItemRepository collectorItemRepository;
     @Mock private BaseCollectorRepository<GitHubCollector> collectorRepository;
+    @Mock private UserEntitlementsRepository userEntitlementsRepository;
     @Mock private ApiSettings apiSettings;
     @Mock private RestOperationsSupplier restOperationsSupplier;
 
@@ -51,7 +53,7 @@ public class GitHubIssueV3Test {
     @Before
     public void init() {
         RestClient restClient = new RestClient(restOperationsSupplier);
-        gitHubIssueV3 = new GitHubIssueV3 (collectorService, restClient, gitRequestRepository, collectorItemRepository, apiSettings, collectorRepository);
+        gitHubIssueV3 = new GitHubIssueV3 (collectorService, restClient, gitRequestRepository, collectorItemRepository, userEntitlementsRepository,  apiSettings, collectorRepository);
     }
 
     @Test
