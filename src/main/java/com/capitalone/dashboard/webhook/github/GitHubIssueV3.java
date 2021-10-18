@@ -3,6 +3,7 @@ package com.capitalone.dashboard.webhook.github;
 import com.capitalone.dashboard.model.GitHubCollector;
 import com.capitalone.dashboard.repository.BaseCollectorRepository;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
+import com.capitalone.dashboard.repository.UserEntitlementsRepository;
 import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.client.RestClient;
 import com.capitalone.dashboard.model.webhook.github.GitHubParsed;
@@ -20,14 +21,17 @@ import java.util.Map;
 public class GitHubIssueV3 extends GitHubV3 {
     private final  GitRequestRepository gitRequestRepository;
 
+
     public GitHubIssueV3(CollectorService collectorService,
                          RestClient restClient,
                          GitRequestRepository gitRequestRepository,
                          CollectorItemRepository collectorItemRepository,
+                         UserEntitlementsRepository userEntitlementsRepository,
                          ApiSettings apiSettings,
                          BaseCollectorRepository<GitHubCollector> collectorRepository) {
-        super(collectorService, restClient, apiSettings, collectorItemRepository, collectorRepository);
+        super(collectorService, restClient, apiSettings, collectorItemRepository, userEntitlementsRepository, collectorRepository);
         this.gitRequestRepository =  gitRequestRepository;
+
     }
 
     @Override

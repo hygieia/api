@@ -4,6 +4,7 @@ import com.capitalone.dashboard.model.GitHubCollector;
 import com.capitalone.dashboard.model.PullRequestEvent;
 import com.capitalone.dashboard.repository.BaseCollectorRepository;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
+import com.capitalone.dashboard.repository.UserEntitlementsRepository;
 import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.client.RestClient;
 import com.capitalone.dashboard.model.webhook.github.GitHubParsed;
@@ -49,9 +50,10 @@ public class GitHubPullRequestV3 extends GitHubV3 {
                                GitRequestRepository gitRequestRepository,
                                CommitRepository commitRepository,
                                CollectorItemRepository collectorItemRepository,
+                               UserEntitlementsRepository userEntitlementsRepository,
                                ApiSettings apiSettings,
                                BaseCollectorRepository<GitHubCollector> collectorRepository) {
-        super(collectorService, restClient, apiSettings, collectorItemRepository, collectorRepository);
+        super(collectorService, restClient, apiSettings, collectorItemRepository, userEntitlementsRepository, collectorRepository);
 
         this.gitRequestRepository = gitRequestRepository;
         this.commitRepository = commitRepository;
@@ -429,7 +431,7 @@ public class GitHubPullRequestV3 extends GitHubV3 {
             if (!StringUtils.isEmpty(authorType)) {
                 newCommit.setScmAuthorType(authorType);
             }
-            String authorLDAPDN = getLDAPDN(repoUrl, newCommit.getScmAuthorLogin(), token);
+            String authorLDAPDN = getLDAPDN(repoUrl, StringUtils.isEmpty(scmAuthorName) ? newCommit.getScmAuthorLogin() : scmAuthorName, token);
             if (!StringUtils.isEmpty(authorLDAPDN)) {
                 newCommit.setScmAuthorLDAPDN(authorLDAPDN);
             }
