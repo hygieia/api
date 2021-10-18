@@ -422,6 +422,9 @@ public class GitHubPullRequestV3 extends GitHubV3 {
             JSONObject authorUserJSON = (JSONObject) author.get("user");
             newCommit.setScmAuthor(restClient.getString(author, "name"));
             newCommit.setScmAuthorLogin((authorUserJSON == null) ? "unknown" : restClient.getString(authorUserJSON, "login"));
+            String scmAuthorName = authorUserJSON == null ? null : restClient.getString(authorUserJSON, "name");
+            newCommit.setScmAuthorName(scmAuthorName);
+
             String authorType = getAuthorType(repoUrl, newCommit.getScmAuthorLogin(), token);
             if (!StringUtils.isEmpty(authorType)) {
                 newCommit.setScmAuthorType(authorType);

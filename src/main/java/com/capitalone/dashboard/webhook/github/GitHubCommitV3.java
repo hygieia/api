@@ -174,6 +174,9 @@ public class GitHubCommitV3 extends GitHubV3 {
             String authorLogin = (userObject == null) ? "unknown" : restClient.getString(userObject, "login");
             commit.setScmAuthorLogin(authorLogin);
 
+            String scmAuthorName = userObject == null ? null : restClient.getString(userObject, "name");
+            commit.setScmAuthorName(scmAuthorName);
+
             if (senderObj != null && authorLogin.equalsIgnoreCase(restClient.getString(senderObj, "login"))) {
                 String authorType = restClient.getString(senderObj, "type");
                 if (!StringUtils.isEmpty(authorType)) {
