@@ -11,9 +11,9 @@ public class GraphQLQuery {
             "                    name" +
             "                    date" +
             "                    user {\n" +
-            "                    login\n" +
-            "                    name\n" +
-            "                  }\n" +
+            "                        login\n" +
+            "                        name\n" +
+            "                    }\n" +
             "                }" +
             "                committer {" +
             "                    name" +
