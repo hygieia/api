@@ -431,7 +431,7 @@ public class GitHubPullRequestV3 extends GitHubV3 {
             if (!StringUtils.isEmpty(authorType)) {
                 newCommit.setScmAuthorType(authorType);
             }
-            String authorLDAPDN = getLDAPDN(repoUrl, StringUtils.isEmpty(scmAuthorName) ? newCommit.getScmAuthorLogin() : scmAuthorName, token);
+            String authorLDAPDN = getLDAPDN(repoUrl, newCommit.getScmAuthorLogin(), token);
             if (!StringUtils.isEmpty(authorLDAPDN)) {
                 newCommit.setScmAuthorLDAPDN(authorLDAPDN);
             }

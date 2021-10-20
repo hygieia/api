@@ -190,16 +190,6 @@ public abstract class GitHubV3 {
         String formattedUser = user.replace("_", "-");
         int retryCount = 0;
         ResponseEntity<String> response;
-
-        if(apiSettings.isOptimizeUserCallsToGithub()) {
-            UserEntitlements entitlements = userEntitlementsRepository.findTopByAuthTypeAndEntitlementTypeAndUsername(AuthType.LDAP,
-                    ENTITLEMENT_TYPE, StringUtils.lowerCase(user));
-            String ldapDN = (entitlements == null) ?  "" : entitlements.getEntitlements();
-            ldapMap.put(user, ldapDN);
-            authorTypeMap.put(user, "User");
-            return;
-        }
-
         while(true) {
             try {
                 long start = System.currentTimeMillis();
@@ -239,7 +229,9 @@ public abstract class GitHubV3 {
         if (ldapMap == null) { ldapMap = new HashMap<>(); }
 
         if(apiSettings.isOptimizeUserCallsToGithub()) {
-            return ldapMap.get(user);
+            UserEntitlements entitlements = userEntitlementsRepository.findTopByAuthTypeAndEntitlementTypeAndUsername(AuthType.LDAP,
+                    ENTITLEMENT_TYPE, StringUtils.lowerCase(user));
+            return (entitlements == null) ?  "" : entitlements.getEntitlements();
         }
 
         //This is weird. Github does replace the _ in commit author with - in the user api!!!
