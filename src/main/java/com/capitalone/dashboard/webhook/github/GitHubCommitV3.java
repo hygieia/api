@@ -188,11 +188,13 @@ public class GitHubCommitV3 extends GitHubV3 {
                 String authorLDAPDN = restClient.getString(senderObj, "ldap_dn");
                 if (!StringUtils.isEmpty(authorLDAPDN)) {
                     commit.setScmAuthorLDAPDN(authorLDAPDN);
+                } else {
+                    commit.setScmAuthorLDAPDN(getLDAPDN(repoUrl, authorLogin, gitHubWebHookToken));
                 }
             } else {
                 long start = System.currentTimeMillis();
 
-                String authorType = getAuthorType(repoUrl, authorLogin, gitHubWebHookToken);
+                String authorType = apiSettings.isOptimizeUserCallsToGithub() ? "User" : getAuthorType(repoUrl, authorLogin, gitHubWebHookToken);
                 if (!StringUtils.isEmpty(authorType)) {
                     commit.setScmAuthorType(authorType);
                 }
@@ -206,7 +208,7 @@ public class GitHubCommitV3 extends GitHubV3 {
             }
             // if ldap dn is null set it from ldapMap
             if(StringUtils.isEmpty(commit.getScmAuthorLDAPDN())){
-                commit.setScmAuthorLDAPDN(getLDAPDN(repoUrl, StringUtils.isEmpty(scmAuthorName) ? authorLogin : scmAuthorName, gitHubWebHookToken));
+                commit.setScmAuthorLDAPDN(getLDAPDN(repoUrl,  authorLogin, gitHubWebHookToken));
             }
             // Set the Committer details. This in the case of a merge commit is the user who merges the PR.
             // In the case of a regular commit, it is usually set to a default "name": "GitHub Enterprise", and login is null
