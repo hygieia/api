@@ -194,7 +194,7 @@ public class GitHubCommitV3 extends GitHubV3 {
             } else {
                 long start = System.currentTimeMillis();
 
-                String authorType = apiSettings.isOptimizeUserCallsToGithub() ? "User" : getAuthorType(repoUrl, authorLogin, gitHubWebHookToken);
+                String authorType = getAuthorType(repoUrl, authorLogin, gitHubWebHookToken);
                 if (!StringUtils.isEmpty(authorType)) {
                     commit.setScmAuthorType(authorType);
                 }
