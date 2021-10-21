@@ -230,7 +230,7 @@ public abstract class GitHubV3 {
 
         if(apiSettings.isOptimizeUserCallsToGithub()) {
             UserEntitlements entitlements = userEntitlementsRepository.findTopByAuthTypeAndEntitlementTypeAndUsername(AuthType.LDAP,
-                    ENTITLEMENT_TYPE, StringUtils.lowerCase(user));
+                    ENTITLEMENT_TYPE, user);
             return (entitlements == null) ?  "" : entitlements.getEntitlements();
         }
 
