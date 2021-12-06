@@ -22,4 +22,6 @@ public interface CommitService {
     String createFromGitHubv3(JSONObject request) throws ParseException, HygieiaException;
 
     List<Commit> getCommitsBySha (String scmRevisionNumber);
+
+    DataResponse<Iterable<Commit>> getCommitsForWidget(CommitRequest request);
 }

@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import javax.xml.crypto.Data;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -82,6 +83,8 @@ public class GitRequestServiceImpl implements GitRequestService {
         }
         return new DataResponse<>(gitRequestRepository.findAll(builder.getValue()), collector.getLastExecuted());
     }
+
+
     @Override
     public String createFromGitHubv3(JSONObject request) throws ParseException, HygieiaException {
         GitRequestServiceImpl.GitHubv3 gitHubv3 = new GitRequestServiceImpl.GitHubv3(request.toJSONString());
@@ -107,6 +110,17 @@ public class GitRequestServiceImpl implements GitRequestService {
         }
         return col.getId() + ":" + colItem.getId() + ":" + count + " new gitRequest(s) inserted.";
 
+    }
+
+    @Override
+    public DataResponse<Iterable<GitRequest>> getGitRequestForWidget(GitRequestRequest request, String type) {
+        // Get collector Item, use this to get collectorId and last run
+        // Get results by collector itemid and requestType
+        // return data response
+        System.out.println(type);
+        System.out.println(request.getCollectorItemId());
+        Iterable<GitRequest> results = gitRequestRepository.findByCollectorItemIdAndRequestType(request.getCollectorItemId(), type);
+        return new DataResponse<>(results, new Date().getTime()) ;
     }
 
 
