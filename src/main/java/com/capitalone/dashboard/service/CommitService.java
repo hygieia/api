@@ -23,5 +23,11 @@ public interface CommitService {
 
     List<Commit> getCommitsBySha (String scmRevisionNumber);
 
+    /**
+     * Finds all of the Commits for a specific collectorItem
+     *
+     * @param request componentId collectorItemId
+     * @return commits matching criteria
+     */
     DataResponse<Iterable<Commit>> getCommitsForWidget(CommitRequest request);
 }
