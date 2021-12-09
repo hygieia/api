@@ -3,9 +3,7 @@ package com.capitalone.dashboard.service;
 import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.GitRequest;
 import com.capitalone.dashboard.model.DataResponse;
-import com.capitalone.dashboard.model.LibraryPolicyResult;
 import com.capitalone.dashboard.request.GitRequestRequest;
-import com.capitalone.dashboard.request.LibraryPolicyRequest;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
