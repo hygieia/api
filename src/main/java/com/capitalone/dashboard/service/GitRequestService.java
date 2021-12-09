@@ -30,6 +30,6 @@ public interface GitRequestService {
      * @param request collectorItemId componentId
      * @return data response of matching GitRequest
      */
-    DataResponse<Iterable<GitRequest>> getGitRequestForWidget(GitRequestRequest request, String type);
+    DataResponse<Iterable<GitRequest>> getGitRequestsForWidget(GitRequestRequest request, String type);
 
 }

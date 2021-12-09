@@ -60,7 +60,7 @@ public class WidgetController {
     // New route for "gitRequest" search that takes both component and collector Item ids
     @RequestMapping(value="/ui-widget/gitrequests/type/{type}", method = GET, produces = APPLICATION_JSON_VALUE)
     public DataResponse<Iterable<GitRequest>> widgetGitRequest(@Valid GitRequestRequest request, @PathVariable String type){
-        return gitRequestService.getGitRequestForWidget(request, type);
+        return gitRequestService.getGitRequestsForWidget(request, type);
     }
 
     // New route for "commits" that take both component and collector Item ids

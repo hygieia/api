@@ -113,7 +113,7 @@ public class GitRequestServiceImpl implements GitRequestService {
     }
 
     @Override
-    public DataResponse<Iterable<GitRequest>> getGitRequestForWidget(GitRequestRequest request, String type) {
+    public DataResponse<Iterable<GitRequest>> getGitRequestsForWidget(GitRequestRequest request, String type) {
         Iterable<GitRequest> results = gitRequestRepository.findByCollectorItemIdAndRequestType(request.getCollectorItemId(), type);
         return new DataResponse<>(results, new Date().getTime()) ;
     }
