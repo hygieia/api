@@ -114,11 +114,6 @@ public class GitRequestServiceImpl implements GitRequestService {
 
     @Override
     public DataResponse<Iterable<GitRequest>> getGitRequestForWidget(GitRequestRequest request, String type) {
-        // Get collector Item, use this to get collectorId and last run
-        // Get results by collector itemid and requestType
-        // return data response
-        System.out.println(type);
-        System.out.println(request.getCollectorItemId());
         Iterable<GitRequest> results = gitRequestRepository.findByCollectorItemIdAndRequestType(request.getCollectorItemId(), type);
         return new DataResponse<>(results, new Date().getTime()) ;
     }

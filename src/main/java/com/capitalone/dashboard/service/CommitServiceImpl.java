@@ -125,11 +125,12 @@ public class CommitServiceImpl implements CommitService {
 
     @Override
     public DataResponse<Iterable<Commit>> getCommitsForWidget(CommitRequest request) {
-        long endTimeTarget = new LocalDate().minusDays(request.getNumberOfDays()).toDate().getTime();
+        int numberOfDays = request.getNumberOfDays() == null ? 14 : request.getNumberOfDays();
+        System.out.println(numberOfDays);
+        long endTimeTarget = new LocalDate().minusDays(numberOfDays).toDate().getTime();
         long now = new Date().getTime();
         List<Commit> commits = commitRepository.findByCollectorItemIdAndScmCommitTimestampIsBetween(request.getCollectorItemId(), endTimeTarget, now);
         return new DataResponse<>(commits, new Date().getTime());
-
     }
 
     private boolean isNewCommit(CollectorItem repo, Commit commit) {
