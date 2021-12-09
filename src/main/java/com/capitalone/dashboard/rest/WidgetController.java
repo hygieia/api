@@ -1,8 +1,20 @@
 package com.capitalone.dashboard.rest;
 
 
-import com.capitalone.dashboard.model.*;
-import com.capitalone.dashboard.request.*;
+import com.capitalone.dashboard.model.CodeQuality;
+import com.capitalone.dashboard.model.CodeQualityType;
+import com.capitalone.dashboard.model.DataResponse;
+import com.capitalone.dashboard.model.LibraryPolicyResult;
+import com.capitalone.dashboard.model.InfrastructureScan;
+import com.capitalone.dashboard.model.Commit;
+import com.capitalone.dashboard.model.GitRequest;
+
+import com.capitalone.dashboard.request.InfraStructureRequest;
+import com.capitalone.dashboard.request.CodeQualityRequest;
+import com.capitalone.dashboard.request.LibraryPolicyRequest;
+import com.capitalone.dashboard.request.GitRequestRequest;
+import com.capitalone.dashboard.request.CommitRequest;
+
 import com.capitalone.dashboard.service.CodeQualityService;
 import com.capitalone.dashboard.service.GitRequestService;
 import com.capitalone.dashboard.service.LibraryPolicyService;
@@ -10,7 +22,6 @@ import com.capitalone.dashboard.service.InfraStructureService;
 import com.capitalone.dashboard.service.CommitService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
-import com.capitalone.dashboard.model.Commit;
 
 
 
