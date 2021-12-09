@@ -126,6 +126,8 @@ public class CommitServiceImpl implements CommitService {
     @Override
     public DataResponse<Iterable<Commit>> getCommitsForWidget(CommitRequest request) {
         int numberOfDays = request.getNumberOfDays() == null ? 14 : request.getNumberOfDays();
+        // Set max numberOfDays to 30 days
+        numberOfDays = numberOfDays >= 31 ? 30 : numberOfDays;
         long endTimeTarget = new LocalDate().minusDays(numberOfDays).toDate().getTime();
         long now = new Date().getTime();
         List<Commit> commits = commitRepository.findByCollectorItemIdAndScmCommitTimestampIsBetween(request.getCollectorItemId(), endTimeTarget, now);
