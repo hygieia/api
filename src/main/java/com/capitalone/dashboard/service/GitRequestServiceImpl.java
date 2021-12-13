@@ -82,6 +82,8 @@ public class GitRequestServiceImpl implements GitRequestService {
         }
         return new DataResponse<>(gitRequestRepository.findAll(builder.getValue()), collector.getLastExecuted());
     }
+
+
     @Override
     public String createFromGitHubv3(JSONObject request) throws ParseException, HygieiaException {
         GitRequestServiceImpl.GitHubv3 gitHubv3 = new GitRequestServiceImpl.GitHubv3(request.toJSONString());
@@ -107,6 +109,12 @@ public class GitRequestServiceImpl implements GitRequestService {
         }
         return col.getId() + ":" + colItem.getId() + ":" + count + " new gitRequest(s) inserted.";
 
+    }
+
+    @Override
+    public DataResponse<Iterable<GitRequest>> getGitRequestsForWidget(GitRequestRequest request, String type) {
+        Iterable<GitRequest> results = gitRequestRepository.findByCollectorItemIdAndRequestType(request.getCollectorItemId(), type);
+        return new DataResponse<>(results, new Date().getTime()) ;
     }
 
 
