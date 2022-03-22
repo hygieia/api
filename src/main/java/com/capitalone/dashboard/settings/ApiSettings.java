@@ -67,6 +67,9 @@ public class ApiSettings {
     @Value("${encryptRemoteCreatePayload:true}")
     private boolean encryptRemoteCreatePayload;
 
+    @Value("${optimizeUserCallsToGithub:true}")
+    private boolean optimizeUserCallsToGithub;
+
     private String hygieia_ui_url="";
 
     public Map<String, String> getFunctional() {
@@ -255,5 +258,13 @@ public class ApiSettings {
 
     public void setContextSecurityAuthentication(String contextSecurityAuthentication) {
         this.contextSecurityAuthentication = contextSecurityAuthentication;
+    }
+
+    public boolean isOptimizeUserCallsToGithub() {
+        return optimizeUserCallsToGithub;
+    }
+
+    public void setOptimizeUserCallsToGithub(boolean optimizeUserCallsToGithub) {
+        this.optimizeUserCallsToGithub = optimizeUserCallsToGithub;
     }
 }

@@ -15,6 +15,7 @@ import com.capitalone.dashboard.repository.BaseCollectorRepository;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.repository.CommitRepository;
 import com.capitalone.dashboard.repository.GitRequestRepository;
+import com.capitalone.dashboard.repository.UserEntitlementsRepository;
 import com.capitalone.dashboard.service.CollectorService;
 import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.webhook.settings.GitHubWebHookSettings;
@@ -61,6 +62,7 @@ public class GitHubCommitV3Test {
     @Mock private CommitRepository commitRepository;
     @Mock private GitRequestRepository gitRequestRepository;
     @Mock private CollectorItemRepository collectorItemRepository;
+    @Mock private UserEntitlementsRepository userEntitlementsRepository;
     @Mock private BaseCollectorRepository<GitHubCollector> collectorRepository;
     @Mock private ApiSettings apiSettings;
     @Mock private RestOperationsSupplier restOperationsSupplier;
@@ -72,7 +74,7 @@ public class GitHubCommitV3Test {
     public void init() {
         RestClient restClientTemp = new RestClient(restOperationsSupplier);
         restClient = Mockito.spy(restClientTemp);
-        gitHubCommitV3 = new GitHubCommitV3 (collectorService, restClient, commitRepository, gitRequestRepository, collectorItemRepository, apiSettings, collectorRepository);
+        gitHubCommitV3 = new GitHubCommitV3 (collectorService, restClient, commitRepository, gitRequestRepository, collectorItemRepository, userEntitlementsRepository, apiSettings, collectorRepository);
     }
 
     @Test

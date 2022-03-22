@@ -17,6 +17,11 @@ public class CommitRequest extends BaseRequest {
     private List<String> revisionNumbers = new ArrayList<>();
     private List<String> authors = new ArrayList<>();
     private String messageContains;
+    private ObjectId collectorItemId;
+
+    public ObjectId getCollectorItemId() { return collectorItemId; }
+
+    public void setCollectorItemId(ObjectId collectorItemId) { this.collectorItemId = collectorItemId; }
 
     public ObjectId getComponentId() {
         return componentId;
