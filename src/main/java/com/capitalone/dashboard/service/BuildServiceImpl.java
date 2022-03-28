@@ -173,16 +173,22 @@ public class BuildServiceImpl implements BuildService {
     public BuildDataCreateResponse createV3(BuildDataCreateRequest request) throws HygieiaException {
         BuildDataCreateResponse response = new BuildDataCreateResponse();
         Build build = createBuild(request);
-        try {
-            org.apache.commons.beanutils.BeanUtils.copyProperties(response, build);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new HygieiaException(e);
-        } finally {
-            if (settings.isLookupDashboardForBuildDataCreate()) {
+        String clientReference = StringUtils.isNotEmpty(build.getClientReference()) ? build.getClientReference() : request.getClientReference();
+        if(settings.isLookupDashboardForBuildDataCreate()) {
+            try {
+                org.apache.commons.beanutils.BeanUtils.copyProperties(response, build);
                 populateDashboardId(response);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                LOGGER.error("correlation_id=" + clientReference
+                        + ", build_url=" + build.getBuildUrl()
+                        + ", build_duration_millis=" + build.getDuration()
+                        + ", build_started_by=" + build.getStartedBy()
+                        + ", build_status=" + build.getBuildStatus()
+                        + ", hygieia_build_id=" + build.getId()
+                        + ", hygieia_build_view_link=" + settings.getHygieia_ui_url()+"/build/"+build.getId());
             }
         }
-        String clientReference = StringUtils.isNotEmpty(build.getClientReference()) ? build.getClientReference() : request.getClientReference();
+
         response.setClientReference(clientReference);
         // Will be refactored soon
         CollectorItem buildCollectorItem = collectorItemRepository.findOne(build.getCollectorItemId());
