@@ -179,13 +179,8 @@ public class BuildServiceImpl implements BuildService {
                 org.apache.commons.beanutils.BeanUtils.copyProperties(response, build);
                 populateDashboardId(response);
             } catch (IllegalAccessException | InvocationTargetException e) {
-                LOGGER.error("correlation_id=" + clientReference
-                        + ", build_url=" + build.getBuildUrl()
-                        + ", build_duration_millis=" + build.getDuration()
-                        + ", build_started_by=" + build.getStartedBy()
-                        + ", build_status=" + build.getBuildStatus()
-                        + ", hygieia_build_id=" + build.getId()
-                        + ", hygieia_build_view_link=" + settings.getHygieia_ui_url()+"/build/"+build.getId());
+                LOGGER.error(String.format("correlation_id=%s, build_url=%s, build_duration_millis=%d, build_started_by=%s, build_status=%s, hygieia_build_id=%s, hygieia_build_view_link=%s, hygieia_build_error=%s"
+                        , clientReference, build.getBuildUrl(), build.getDuration(), build.getStartedBy(), build.getBuildStatus(), build.getId(), settings.getHygieia_ui_url()+"/build/"+build.getId(), e.getMessage()));
             }
         }
 
