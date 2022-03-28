@@ -4,6 +4,7 @@ import com.capitalone.dashboard.misc.HygieiaException;
 import com.capitalone.dashboard.model.GitHubCollector;
 import com.capitalone.dashboard.repository.BaseCollectorRepository;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
+import com.capitalone.dashboard.repository.UserEntitlementsRepository;
 import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.client.RestClient;
 import com.capitalone.dashboard.repository.CommitRepository;
@@ -28,6 +29,7 @@ public class GitHubHookServiceImpl implements GitHubHookService {
     private final GitRequestRepository gitRequestRepository;
     private final CollectorItemRepository collectorItemRepository;
     private final BaseCollectorRepository<GitHubCollector> collectorRepository;
+    private final UserEntitlementsRepository userEntitlementsRepository;
     private final CollectorService collectorService;
     protected final ApiSettings apiSettings;
     protected final RestClient restClient;
@@ -37,6 +39,7 @@ public class GitHubHookServiceImpl implements GitHubHookService {
                                  GitRequestRepository gitRequestRepository,
                                  CollectorService collectorService,
                                  CollectorItemRepository collectorItemRepository,
+                                 UserEntitlementsRepository userEntitlementsRepository,
                                  ApiSettings apiSettings,
                                  RestClient restClient,
                                  BaseCollectorRepository<GitHubCollector> collectorRepository) {
@@ -44,6 +47,7 @@ public class GitHubHookServiceImpl implements GitHubHookService {
         this.gitRequestRepository = gitRequestRepository;
         this.collectorItemRepository = collectorItemRepository;
         this.collectorRepository = collectorRepository;
+        this.userEntitlementsRepository = userEntitlementsRepository;
         this.collectorService = collectorService;
         this.apiSettings = apiSettings;
         this.restClient = restClient;
@@ -67,15 +71,15 @@ public class GitHubHookServiceImpl implements GitHubHookService {
 
         switch (payloadType) {
             case Push:
-                gitHubv3 = new GitHubCommitV3(collectorService, restClient, commitRepository, gitRequestRepository, collectorItemRepository, apiSettings, collectorRepository);
+                gitHubv3 = new GitHubCommitV3(collectorService, restClient, commitRepository, gitRequestRepository, collectorItemRepository, userEntitlementsRepository, apiSettings, collectorRepository);
                 break;
 
             case PullRequest:
-                gitHubv3 = new GitHubPullRequestV3(collectorService, restClient, gitRequestRepository, commitRepository, collectorItemRepository, apiSettings, collectorRepository);
+                gitHubv3 = new GitHubPullRequestV3(collectorService, restClient, gitRequestRepository, commitRepository, collectorItemRepository, userEntitlementsRepository,  apiSettings, collectorRepository);
                 break;
 
             case Issues:
-                gitHubv3 = new GitHubIssueV3(collectorService, restClient, gitRequestRepository, collectorItemRepository, apiSettings, collectorRepository);
+                gitHubv3 = new GitHubIssueV3(collectorService, restClient, gitRequestRepository, collectorItemRepository, userEntitlementsRepository , apiSettings, collectorRepository);
                 break;
 
             default:

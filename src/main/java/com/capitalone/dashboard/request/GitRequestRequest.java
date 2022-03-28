@@ -8,6 +8,8 @@ public class GitRequestRequest extends BaseRequest {
     @NotNull
     private ObjectId componentId;
     private Integer numberOfDays;
+    private ObjectId collectorItemId;
+
 
     public ObjectId getComponentId() {
         return componentId;
@@ -25,4 +27,7 @@ public class GitRequestRequest extends BaseRequest {
         this.numberOfDays = numberOfDays;
     }
 
+    public ObjectId getCollectorItemId() { return collectorItemId; }
+
+    public void setCollectorItemId(ObjectId collectorItemId) { this.collectorItemId = collectorItemId;  }
 }

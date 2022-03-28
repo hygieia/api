@@ -6,8 +6,9 @@ import com.capitalone.dashboard.repository.InfrastructureScanRepository;
 import com.capitalone.dashboard.request.InfraStructureRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 @Service
 public class InfraStructureServiceImpl implements InfraStructureService {
@@ -21,7 +22,18 @@ public class InfraStructureServiceImpl implements InfraStructureService {
 
     @Override
     public DataResponse<Iterable<InfrastructureScan>> getInfraScanForWidget(InfraStructureRequest request) {
-        InfrastructureScan infrastructureScan = infrastructureScanRepository.findTopByCollectorItemIdOrderByTimestampDesc(request.getCollectorItemId());
-        return new DataResponse<>(Collections.singletonList(infrastructureScan), System.currentTimeMillis());
+        List<InfrastructureScan> tempInfraScanList = infrastructureScanRepository.findByCollectorItemIdOrderByTimestampDesc(request.getCollectorItemId());
+        List<InfrastructureScan> infrastructureScanList = new ArrayList<InfrastructureScan>();
+
+        ArrayList<String> instanceIdArray = new ArrayList<String>();
+        tempInfraScanList.forEach(scan -> {
+            String instanceId = scan.getInstanceId();
+            if(!instanceIdArray.contains(instanceId)){
+                instanceIdArray.add(instanceId);
+                infrastructureScanList.add(scan);
+            }
+        });
+
+        return new DataResponse<>(infrastructureScanList, System.currentTimeMillis());
     }
 }

@@ -10,15 +10,17 @@ public class GraphQLQuery {
             "                author {" +
             "                    name" +
             "                    date" +
-            "                    user {" +
-            "                        login" +
-            "                    }" +
+            "                    user {\n" +
+            "                        login\n" +
+            "                        name\n" +
+            "                    }\n" +
             "                }" +
             "                committer {" +
             "                    name" +
             "                    date" +
             "                    user {" +
             "                        login" +
+            "                        name" +
             "                    }" +
             "                }" +
             "                parents(first: 10) {" +
@@ -66,6 +68,7 @@ public class GraphQLQuery {
             "                                   name" +
             "                                   user {" +
             "                                       login" +
+            "                                       name" +
             "                                   }" +
             "                                   email" +
             "                                   date" +
@@ -123,6 +126,7 @@ public class GraphQLQuery {
                     "              date" +
                     "              user {" +
                     "                login" +
+                    "                name" +
                     "              }" +
                     "            }" +
                     "          }" +

@@ -1,9 +1,12 @@
 package com.capitalone.dashboard.webhook.github;
 
+import com.capitalone.dashboard.model.AuthType;
 import com.capitalone.dashboard.model.GitHubCollector;
+import com.capitalone.dashboard.model.UserEntitlements;
 import com.capitalone.dashboard.repository.BaseCollectorRepository;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.model.webhook.github.GitHubRepo;
+import com.capitalone.dashboard.repository.UserEntitlementsRepository;
 import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.client.RestClient;
 import com.capitalone.dashboard.model.webhook.github.GitHubParsed;
@@ -44,14 +47,19 @@ public abstract class GitHubV3 {
     protected final ApiSettings apiSettings;
     protected final CollectorItemRepository collectorItemRepository;
     private final BaseCollectorRepository<GitHubCollector> collectorRepository;
+    private UserEntitlementsRepository userEntitlementsRepository;
+    private static final String ENTITLEMENT_TYPE = "distinguishedName";
+    private Map<String, String> authorTypeMap;
+
 
     private Map<String, String> ldapMap;
-    private Map<String, String> authorTypeMap;
+
 
     public GitHubV3(CollectorService collectorService,
                     RestClient restClient,
                     ApiSettings apiSettings,
                     CollectorItemRepository collectorItemRepository,
+                    UserEntitlementsRepository userEntitlementsRepository,
                     BaseCollectorRepository<GitHubCollector> collectorRepository
     ) {
         this.collectorService = collectorService;
@@ -61,6 +69,7 @@ public abstract class GitHubV3 {
         this.collectorRepository = collectorRepository;
         ldapMap = new HashMap<>();
         authorTypeMap = new HashMap<>();
+        this.userEntitlementsRepository = userEntitlementsRepository;
     }
 
     public GitHubCollector getCollector() {
@@ -218,6 +227,13 @@ public abstract class GitHubV3 {
     protected String getLDAPDN(String repoUrl, String user, String token) {
         if (StringUtils.isEmpty(user) || "unknown".equalsIgnoreCase(user)) return null;
         if (ldapMap == null) { ldapMap = new HashMap<>(); }
+
+        if(apiSettings.isOptimizeUserCallsToGithub()) {
+            UserEntitlements entitlements = userEntitlementsRepository.findTopByAuthTypeAndEntitlementTypeAndUsername(AuthType.LDAP,
+                    ENTITLEMENT_TYPE, user);
+            return (entitlements == null) ?  "" : entitlements.getEntitlements();
+        }
+
         //This is weird. Github does replace the _ in commit author with - in the user api!!!
         String formattedUser = user.replace("_", "-");
         if(ldapMap.containsKey(formattedUser)) {
