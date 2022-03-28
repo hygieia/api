@@ -128,7 +128,6 @@ public class BuildServiceImpl implements BuildService {
 
         return new DataResponse<>(result, collector.getLastExecuted());
     }
-
     protected Build createBuild(BuildDataCreateRequest request) throws HygieiaException {
         /**
          * Step 1: create Collector if not there
@@ -174,16 +173,11 @@ public class BuildServiceImpl implements BuildService {
         BuildDataCreateResponse response = new BuildDataCreateResponse();
         Build build = createBuild(request);
         String clientReference = StringUtils.isNotEmpty(build.getClientReference()) ? build.getClientReference() : request.getClientReference();
+        if(build == null) throw new HygieiaException("Unable to create build for request.", HygieiaException.ERROR_INSERTING_DATA);
+        populateBuildDateResponse(response, build);
         if(settings.isLookupDashboardForBuildDataCreate()) {
-            try {
-                org.apache.commons.beanutils.BeanUtils.copyProperties(response, build);
-                populateDashboardId(response);
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                LOGGER.error(String.format("correlation_id=%s, build_url=%s, build_duration_millis=%d, build_started_by=%s, build_status=%s, hygieia_build_id=%s, hygieia_build_view_link=%s, hygieia_build_error=%s"
-                        , clientReference, build.getBuildUrl(), build.getDuration(), build.getStartedBy(), build.getBuildStatus(), build.getId(), settings.getHygieia_ui_url()+"/build/"+build.getId(), e.getMessage()));
-            }
+            populateDashboardId(response);
         }
-
         response.setClientReference(clientReference);
         // Will be refactored soon
         CollectorItem buildCollectorItem = collectorItemRepository.findOne(build.getCollectorItemId());
@@ -220,6 +214,19 @@ public class BuildServiceImpl implements BuildService {
             }
         }
         return response;
+    }
+
+    private void populateBuildDateResponse(BuildDataCreateResponse response, Build build) {
+        if (response == null || build == null) return;
+        response.setCollectorItemId(build.getCollectorItemId());
+        response.setTimestamp(build.getTimestamp());
+        response.setNumber(build.getNumber());
+        response.setBuildUrl(build.getBuildUrl());
+        response.setStartTime(build.getStartTime());
+        response.setEndTime(build.getEndTime());
+        response.setDuration(build.getDuration());
+        response.setBuildStatus(build.getBuildStatus());
+        response.setStartedBy(build.getStartedBy());
     }
 
     private String buildStageErrorLog (BuildStage buildStage) {
