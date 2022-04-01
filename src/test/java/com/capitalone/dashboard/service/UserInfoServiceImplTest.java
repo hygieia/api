@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import com.capitalone.dashboard.auth.AuthProperties;
+import com.capitalone.dashboard.settings.ApiSettings;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -56,6 +57,8 @@ public class UserInfoServiceImplTest {
 
     @InjectMocks
     private UserInfoServiceImpl service;
+
+    @Mock private ApiSettings apiSettings;
 
     @Before
     public void setup(){
@@ -233,7 +236,7 @@ public class UserInfoServiceImplTest {
 
         // setup authProperties
         setup();
-        service = new UserInfoServiceImpl(userInfoRepository,authProperties);
+        service = new UserInfoServiceImpl(userInfoRepository,authProperties, apiSettings);
 
         context = Mockito.mock(InitialDirContext.class);
         service.setInitialContext(context);

@@ -20,6 +20,15 @@ public interface GitRequestService {
     DataResponse<Iterable<GitRequest>> search(GitRequestRequest request,
                                               String type, String state);
 
+
     String createFromGitHubv3(JSONObject request) throws ParseException, HygieiaException;
+
+    /**
+     * Finds all GitRequest info for a specific collectorItemId
+     * @param request collectorItemId componentId
+     * @param type pull or issue
+     * @return data response of matching GitRequests
+     */
+    DataResponse<Iterable<GitRequest>> getGitRequestsForWidget(GitRequestRequest request, String type);
 
 }

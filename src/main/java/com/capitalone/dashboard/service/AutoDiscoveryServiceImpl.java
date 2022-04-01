@@ -80,7 +80,7 @@ public class AutoDiscoveryServiceImpl implements AutoDiscoveryService {
         removeDuplicatesNull(request);
         return new AutoDiscovery(request.getMetaData(), request.getCodeRepoEntries(), request.getBuildEntries(), request.getSecurityScanEntries(),
                 request.getDeploymentEntries(), request.getLibraryScanEntries(), request.getFunctionalTestEntries(), request.getArtifactEntries(),
-                request.getStaticCodeEntries(), request.getFeatureEntries(),request.getPerformanceTestEntries());
+                request.getStaticCodeEntries(), request.getFeatureEntries(),request.getPerformanceTestEntries(), request.getInfraStructureScanEntries());
     }
 
 
@@ -100,6 +100,7 @@ public class AutoDiscoveryServiceImpl implements AutoDiscoveryService {
         updateEntryStatus(request.getArtifactEntries(), autoDiscovery.getArtifactEntries());
         updateEntryStatus(request.getStaticCodeEntries(), autoDiscovery.getStaticCodeEntries());
         updateEntryStatus(request.getFeatureEntries(), autoDiscovery.getFeatureEntries());
+        updateEntryStatus(request.getInfraStructureScanEntries(), autoDiscovery.getInfraStructureScanEntries());
         removeDuplicatesNull(autoDiscovery);
         removeEntriesByFeatureFlag(autoDiscovery, featureFlag);
     }
@@ -114,6 +115,7 @@ public class AutoDiscoveryServiceImpl implements AutoDiscoveryService {
         if(!HygieiaUtils.allowAutoDiscover(featureFlag, CollectorType.Artifact)) autoDiscovery.setArtifactEntries(new ArrayList<>());
         if(!HygieiaUtils.allowAutoDiscover(featureFlag, CollectorType.CodeQuality)) autoDiscovery.setStaticCodeEntries(new ArrayList<>());
         if(!HygieiaUtils.allowAutoDiscover(featureFlag, CollectorType.AgileTool)) autoDiscovery.setFeatureEntries(new ArrayList<>());
+        if(!HygieiaUtils.allowAutoDiscover(featureFlag, CollectorType.InfrastructureScan)) autoDiscovery.setInfraStructureScanEntries(new ArrayList<>());
     }
 
     private void cleanAutoDiscoveryRequestByFeatureFlag(@NotNull AutoDiscoveryRemoteRequest request, FeatureFlag featureFlag){
@@ -126,6 +128,7 @@ public class AutoDiscoveryServiceImpl implements AutoDiscoveryService {
         if(!HygieiaUtils.allowAutoDiscover(featureFlag, CollectorType.Artifact)) request.setArtifactEntries(new ArrayList<>());
         if(!HygieiaUtils.allowAutoDiscover(featureFlag, CollectorType.CodeQuality)) request.setStaticCodeEntries(new ArrayList<>());
         if(!HygieiaUtils.allowAutoDiscover(featureFlag, CollectorType.AgileTool)) request.setFeatureEntries(new ArrayList<>());
+        if(!HygieiaUtils.allowAutoDiscover(featureFlag, CollectorType.InfrastructureScan)) request.setInfraStructureScanEntries(new ArrayList<>());
     }
 
     /**
@@ -172,6 +175,7 @@ public class AutoDiscoveryServiceImpl implements AutoDiscoveryService {
         autoDiscovery.setArtifactEntries(filterDuplicatesNull(autoDiscovery.getArtifactEntries()));
         autoDiscovery.setStaticCodeEntries(filterDuplicatesNull(autoDiscovery.getStaticCodeEntries()));
         autoDiscovery.setFeatureEntries(filterDuplicatesNull(autoDiscovery.getFeatureEntries()));
+        autoDiscovery.setInfraStructureScanEntries(filterDuplicatesNull(autoDiscovery.getInfraStructureScanEntries()));
     }
 
     /**
@@ -189,6 +193,7 @@ public class AutoDiscoveryServiceImpl implements AutoDiscoveryService {
         request.setArtifactEntries(filterDuplicatesNull(request.getArtifactEntries()));
         request.setStaticCodeEntries(filterDuplicatesNull(request.getStaticCodeEntries()));
         request.setFeatureEntries(filterDuplicatesNull(request.getFeatureEntries()));
+        request.setInfraStructureScanEntries(filterDuplicatesNull(request.getInfraStructureScanEntries()));
     }
 
     /**

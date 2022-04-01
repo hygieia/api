@@ -1,8 +1,10 @@
 package com.capitalone.dashboard.webhook.github;
 
 import com.capitalone.dashboard.model.GitHubCollector;
+import com.capitalone.dashboard.model.UserEntitlements;
 import com.capitalone.dashboard.repository.BaseCollectorRepository;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
+import com.capitalone.dashboard.repository.UserEntitlementsRepository;
 import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.client.RestClient;
 import com.capitalone.dashboard.model.webhook.github.GitHubParsed;
@@ -47,9 +49,10 @@ public class GitHubCommitV3 extends GitHubV3 {
                           CommitRepository commitRepository,
                           GitRequestRepository gitRequestRepository,
                           CollectorItemRepository collectorItemRepository,
+                          UserEntitlementsRepository userEntitlementsRepository,
                           ApiSettings apiSettings,
                           BaseCollectorRepository<GitHubCollector> collectorRepository) {
-        super(collectorService, restClient, apiSettings, collectorItemRepository, collectorRepository);
+        super(collectorService, restClient, apiSettings, collectorItemRepository, userEntitlementsRepository, collectorRepository);
 
         this.commitRepository = commitRepository;
         this.gitRequestRepository = gitRequestRepository;
@@ -174,6 +177,9 @@ public class GitHubCommitV3 extends GitHubV3 {
             String authorLogin = (userObject == null) ? "unknown" : restClient.getString(userObject, "login");
             commit.setScmAuthorLogin(authorLogin);
 
+            String scmAuthorName = userObject == null ? null : restClient.getString(userObject, "name");
+            commit.setScmAuthorName(scmAuthorName);
+
             if (senderObj != null && authorLogin.equalsIgnoreCase(restClient.getString(senderObj, "login"))) {
                 String authorType = restClient.getString(senderObj, "type");
                 if (!StringUtils.isEmpty(authorType)) {
@@ -182,6 +188,8 @@ public class GitHubCommitV3 extends GitHubV3 {
                 String authorLDAPDN = restClient.getString(senderObj, "ldap_dn");
                 if (!StringUtils.isEmpty(authorLDAPDN)) {
                     commit.setScmAuthorLDAPDN(authorLDAPDN);
+                } else {
+                    commit.setScmAuthorLDAPDN(getLDAPDN(repoUrl, authorLogin, gitHubWebHookToken));
                 }
             } else {
                 long start = System.currentTimeMillis();
@@ -198,7 +206,10 @@ public class GitHubCommitV3 extends GitHubV3 {
                 long end = System.currentTimeMillis();
                 LOG.debug("Time to fetch LDAPDN = "+(end-start));
             }
-
+            // if ldap dn is null set it from ldapMap
+            if(StringUtils.isEmpty(commit.getScmAuthorLDAPDN())){
+                commit.setScmAuthorLDAPDN(getLDAPDN(repoUrl,  authorLogin, gitHubWebHookToken));
+            }
             // Set the Committer details. This in the case of a merge commit is the user who merges the PR.
             // In the case of a regular commit, it is usually set to a default "name": "GitHub Enterprise", and login is null
             Object committerObject = restClient.getAsObject(node, "committer");

@@ -123,6 +123,19 @@ public class CommitServiceImpl implements CommitService {
         return commitRepository.findByScmRevisionNumber(scmRevisionNumber);
     }
 
+    @Override
+    public DataResponse<Iterable<Commit>> getCommitsForWidget(CommitRequest request) {
+        int numberOfDays = request.getNumberOfDays() == null ? 14 : request.getNumberOfDays();
+        // Set max numberOfDays to 30 days
+        numberOfDays = numberOfDays > 30 ? 30 : numberOfDays;
+        long endTimeTarget = new LocalDate().minusDays(numberOfDays).toDate().getTime();
+        long now = new Date().getTime();
+        System.out.println(endTimeTarget);
+        System.out.println(now);
+        List<Commit> commits = commitRepository.findByCollectorItemIdAndScmCommitTimestampIsBetween(request.getCollectorItemId(), endTimeTarget, now);
+        return new DataResponse<>(commits, new Date().getTime());
+    }
+
     private boolean isNewCommit(CollectorItem repo, Commit commit) {
         return commitRepository.findByCollectorItemIdAndScmRevisionNumber(
                 repo.getId(), commit.getScmRevisionNumber()) == null;

@@ -42,6 +42,16 @@ public class ApiSettings {
 
     private String capturePattern;
 
+    @Value("${contextFactory:com.sun.jndi.ldap.LdapCtxFactory}")
+    private String contextFactory;
+
+    @Value("${contextProtocol:ssl}")
+    private String contextProtocol;
+
+    @Value("${contextSecurityAuthentication:simple}")
+    private String contextSecurityAuthentication;
+
+
     private List<String> ignoreEndPoints = new ArrayList();
     private List<String> ignoreApiUsers = new ArrayList();
     private List<String> ignoreBodyEndPoints = new ArrayList();
@@ -56,6 +66,9 @@ public class ApiSettings {
 
     @Value("${encryptRemoteCreatePayload:true}")
     private boolean encryptRemoteCreatePayload;
+
+    @Value("${optimizeUserCallsToGithub:true}")
+    private boolean optimizeUserCallsToGithub;
 
     private String hygieia_ui_url="";
 
@@ -221,5 +234,37 @@ public class ApiSettings {
 
     public void setBuildCollectorName(String buildCollectorName) {
         this.buildCollectorName = buildCollectorName;
+    }
+
+    public String getContextFactory() {
+        return contextFactory;
+    }
+
+    public void setContextFactory(String contextFactory) {
+        this.contextFactory = contextFactory;
+    }
+
+    public String getContextProtocol() {
+        return contextProtocol;
+    }
+
+    public void setContextProtocol(String contextProtocol) {
+        this.contextProtocol = contextProtocol;
+    }
+
+    public String getContextSecurityAuthentication() {
+        return contextSecurityAuthentication;
+    }
+
+    public void setContextSecurityAuthentication(String contextSecurityAuthentication) {
+        this.contextSecurityAuthentication = contextSecurityAuthentication;
+    }
+
+    public boolean isOptimizeUserCallsToGithub() {
+        return optimizeUserCallsToGithub;
+    }
+
+    public void setOptimizeUserCallsToGithub(boolean optimizeUserCallsToGithub) {
+        this.optimizeUserCallsToGithub = optimizeUserCallsToGithub;
     }
 }

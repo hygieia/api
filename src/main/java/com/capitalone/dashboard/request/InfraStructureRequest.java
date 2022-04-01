@@ -1,18 +1,17 @@
 package com.capitalone.dashboard.request;
-
-import com.capitalone.dashboard.model.CodeQualityType;
+import com.capitalone.dashboard.model.CollectorType;
 import org.bson.types.ObjectId;
 
 import javax.validation.constraints.NotNull;
 
-public class CodeQualityRequest extends BaseRequest {
+public class InfraStructureRequest extends BaseRequest {
     @NotNull
     private ObjectId componentId;
     private Integer max;
     private Integer numberOfDays;
     private Long dateBegins;
     private Long dateEnds;
-    private CodeQualityType type;
+    private CollectorType type;
     private ObjectId collectorItemId;
 
     public ObjectId getComponentId() {
@@ -55,19 +54,19 @@ public class CodeQualityRequest extends BaseRequest {
         this.dateEnds = dateEnds;
     }
 
-    public CodeQualityType getType() {
+    public CollectorType getType() {
         return type;
     }
 
-    public void setType(CodeQualityType type) {
+    public void setType(CollectorType type) {
         this.type = type;
     }
 
-    public ObjectId getCollectorItemId() { return collectorItemId; }
+    public ObjectId getCollectorItemId() {
+        return collectorItemId;
+    }
 
-    public void setCollectorItemId(ObjectId collectorItemId) { this.collectorItemId = collectorItemId; }
-
-    public boolean validDateRange() {
-        return dateBegins != null || dateEnds != null;
+    public void setCollectorItemId(ObjectId collectorItemId) {
+        this.collectorItemId = collectorItemId;
     }
 }

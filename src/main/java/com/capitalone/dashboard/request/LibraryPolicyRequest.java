@@ -11,6 +11,7 @@ public class LibraryPolicyRequest extends BaseRequest {
     private Integer numberOfDays;
     private Long dateBegins;
     private Long dateEnds;
+    private ObjectId collectorItemId;
 
     public ObjectId getComponentId() {
         return componentId;
@@ -55,4 +56,8 @@ public class LibraryPolicyRequest extends BaseRequest {
     public boolean validDateRange() {
         return dateBegins != null || dateEnds != null;
     }
+
+    public ObjectId getCollectorItemId() { return collectorItemId; }
+
+    public void setCollectorItemId(ObjectId collectorItemId) { this.collectorItemId = collectorItemId; }
 }

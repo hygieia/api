@@ -64,6 +64,7 @@ public class CollectorItemRequest extends BaseRequest {
         CollectorItem item = new CollectorItem();
         item.setCollectorId(collectorId);
         item.setEnabled(true);
+        item.setDescription(description);
         item.getOptions().putAll(options);
         return item;
     }

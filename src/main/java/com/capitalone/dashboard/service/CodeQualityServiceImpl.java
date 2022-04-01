@@ -75,36 +75,11 @@ public class CodeQualityServiceImpl implements CodeQualityService {
     }
 
     @Override
-    public Iterable<CodeQuality> getAllSecurityScansForUIWidget(CodeQualityRequest request) {
-
-        Component component = componentRepository.findOne(request.getComponentId());
-
-        Iterable<CollectorItem> collectorItems = component.getCollectorItems(request.getType().collectorType());
-
+    public DataResponse<Iterable<CodeQuality>> getCodeQualityForWidget(CodeQualityRequest request) {
         ArrayList<CodeQuality> codeQualities = new ArrayList<CodeQuality>();
-
-        collectorItems.forEach(item -> {
-            CodeQuality tempCQ = codeQualityRepository.findTop1ByCollectorItemIdOrderByTimestampDesc(item.getId());
-
-            if(tempCQ == null){
-                return;
-            }
-
-            String name = (String) item.getOptions().get("projectName");
-            String reportUrl = (String) item.getOptions().get("reportUrl");
-
-            // If name is null, use the first part of the description
-            if( StringUtils.isEmpty(name) ) {
-                List<String> splitDescription = Splitter.on(":").splitToList(item.getDescription());
-                name = splitDescription.get(0);
-            }
-
-            tempCQ.setName(name);
-            tempCQ.setUrl(reportUrl);
-            codeQualities.add(tempCQ);
-        });
-
-        return codeQualities;
+        CodeQuality codeQuality = codeQualityRepository.findTop1ByCollectorItemIdOrderByTimestampDesc(request.getCollectorItemId());
+        codeQualities.add(codeQuality);
+        return new DataResponse<>(codeQualities, System.currentTimeMillis());
     }
 
     private DataResponse<Iterable<CodeQuality>> emptyResponse() {
