@@ -30,6 +30,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -839,7 +840,11 @@ public class DashboardServiceImpl implements DashboardService {
         String compName = dashboard.getConfigurationItemBusAppName();
 
         if(appName != null && !appName.isEmpty() && compName != null && !compName.isEmpty()){
-            Dashboard existingDashboard = dashboardRepository.findByConfigurationItemBusServNameIgnoreCaseAndConfigurationItemBusAppNameIgnoreCase(appName, compName);
+            Iterable<Dashboard> dashboards = dashboardRepository.findAllByConfigurationItemBusServNameAndConfigurationItemBusAppName(appName, compName);
+            Dashboard existingDashboard = null;
+            if (!IterableUtils.isEmpty(dashboards)) {
+                existingDashboard = dashboards.iterator().next();
+            }
             if(existingDashboard != null && !existingDashboard.getId().equals(dashboard.getId())){
                 throw new HygieiaException("Existing Dashboard: " + existingDashboard.getTitle(), HygieiaException.DUPLICATE_DATA);
             }
