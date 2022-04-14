@@ -23,6 +23,7 @@ import com.capitalone.dashboard.request.WidgetRequest;
 import com.capitalone.dashboard.settings.ApiSettings;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
@@ -283,7 +284,7 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
         String title = request.getMetaData().getTitle();
         List<Dashboard> existing = new ArrayList<>();
         if( !StringUtils.isEmpty( businessService ) && !StringUtils.isEmpty( businessApplication ) ){
-           existing.addAll(dashboardRepository.findAllByConfigurationItemBusServNameContainingIgnoreCaseAndConfigurationItemBusAppNameContainingIgnoreCase( businessService, businessApplication ));
+            existing.addAll(IterableUtils.toList(dashboardRepository.findAllByConfigurationItemBusServNameAndConfigurationItemBusAppName(businessService, businessApplication)));
         } if (CollectionUtils.isEmpty(existing) && StringUtils.isNotEmpty(title)) {
            existing.addAll(dashboardRepository.findByTitle( request.getMetaData().getTitle() ));
         }
