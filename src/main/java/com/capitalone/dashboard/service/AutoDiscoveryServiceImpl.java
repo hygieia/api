@@ -44,6 +44,7 @@ public class AutoDiscoveryServiceImpl implements AutoDiscoveryService {
     @Override
     public AutoDiscovery save(AutoDiscoveryRemoteRequest request) throws HygieiaException {
         String autoDiscoveryId = request.getAutoDiscoveryId();
+        request.getMetaData().getProperties();
         if (autoDiscoveryId==null || !ObjectId.isValid(autoDiscoveryId)) {
             throw new HygieiaException("Invalid Auto Discovery Object ID: [" + autoDiscoveryId + "] received.", HygieiaException.BAD_DATA);
         }
