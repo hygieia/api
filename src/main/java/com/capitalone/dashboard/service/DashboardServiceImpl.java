@@ -1004,5 +1004,4 @@ public class DashboardServiceImpl implements DashboardService {
         this.scoreDashboardService.editScoreForDashboard(savedDashboard);
         return savedDashboard;
     }
-
 }
