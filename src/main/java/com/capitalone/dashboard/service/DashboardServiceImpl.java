@@ -1004,4 +1004,44 @@ public class DashboardServiceImpl implements DashboardService {
         this.scoreDashboardService.editScoreForDashboard(savedDashboard);
         return savedDashboard;
     }
+
+    @Override
+    public String removeWidgetDuplicates(String title, boolean dryRun) {
+
+        List<Dashboard> dashboards;
+        if (StringUtils.isEmpty(title)){
+            dashboards = (List<Dashboard>) all();
+        }
+        else{
+            dashboards = dashboardRepository.findByTitle(title);
+            if (CollectionUtils.isEmpty(dashboards)){return "No dashboards with that title";}
+        }
+
+        for (Dashboard dashboard : dashboards) {
+            List<Widget> temp = new ArrayList<Widget>(); // temp list for non dups widgets
+            List<Widget> dashWidgets = dashboard.getWidgets();
+
+            // loop through existing widgets, if the widget is not in the temp list add it
+            for (Widget widget : dashWidgets) {
+                if (temp.stream().noneMatch(w -> w.getName().equals(widget.getName()))) {
+                    temp.add(widget);
+                }
+            }
+
+            if(!dryRun){
+                dashboard.setWidgets(temp);
+                dashboardRepository.save(dashboard);
+            }
+
+            // Logs number of original widgets along with contents of new widget array
+            LOG.info("Removing duplicates from dashboard " + dashboard.getTitle() + ": " + dashWidgets.size() +
+                    " widgets simplified to " + temp.stream().map(Widget::getName).collect(Collectors.toList()));
+        }
+
+        if(StringUtils.isEmpty(title)){
+            return "All Dashboard widgets cleaned";
+        }else {
+            return "Cleaned widgets for dashboard " + title;
+        }
+    }
 }

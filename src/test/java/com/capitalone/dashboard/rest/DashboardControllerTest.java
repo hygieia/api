@@ -436,7 +436,6 @@ public class DashboardControllerTest {
           .andExpect(status().isOk());
     }
 
-    
     private DashboardRequestTitle makeDashboardRequestTitle(String title) {
         DashboardRequestTitle request = new DashboardRequestTitle();
         request.setTitle(title);
