@@ -1018,30 +1018,34 @@ public class DashboardServiceImpl implements DashboardService {
         }
 
         for (Dashboard dashboard : dashboards) {
-            List<Widget> temp = new ArrayList<Widget>(); // temp list for non dups widgets
+            List<Widget> nonDuplicates = new ArrayList<Widget>();
             List<Widget> dashWidgets = dashboard.getWidgets();
 
-            // loop through existing widgets, if the widget is not in the temp list add it
+            // loop through existing widgets, if the widget is not in the nonDuplicates list add it
             for (Widget widget : dashWidgets) {
-                if (temp.stream().noneMatch(w -> w.getName().equals(widget.getName()))) {
-                    temp.add(widget);
+                if (nonDuplicates.stream().noneMatch(w -> w.getName().equalsIgnoreCase(widget.getName()))
+                && StringUtils.isNotEmpty(widget.getName())) {
+                    nonDuplicates.add(widget);
                 }
             }
 
             if(!dryRun){
-                dashboard.setWidgets(temp);
+                dashboard.setWidgets(nonDuplicates);
                 dashboardRepository.save(dashboard);
             }
 
             // Logs number of original widgets along with contents of new widget array
             LOG.info("Removing duplicates from dashboard " + dashboard.getTitle() + ": " + dashWidgets.size() +
-                    " widgets simplified to " + temp.stream().map(Widget::getName).collect(Collectors.toList()));
+                    " widgets simplified to " + nonDuplicates.stream().map(Widget::getName).collect(Collectors.toList()));
         }
 
         if(StringUtils.isEmpty(title)){
-            return "All Dashboard widgets cleaned";
-        }else {
-            return "Cleaned widgets for dashboard " + title;
+            if(dryRun){return "DRY_RUN: All Dashboard widgets cleaned";}
+            else {return "All Dashboard widgets cleaned";}
+        }
+        else {
+            if(dryRun){return "DRY_RUN: Cleaned widgets for dashboard " + title;}
+            else{return "Cleaned widgets for dashboard " + title;}
         }
     }
 }
