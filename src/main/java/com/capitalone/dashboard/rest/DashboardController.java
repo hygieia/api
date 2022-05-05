@@ -481,4 +481,11 @@ public class DashboardController {
                 .headers(paginationHeaderUtility.buildPaginationHeaders(pageDashboardItems))
                 .body(pageDashboardItems.getContent());
     }
+
+    @RequestMapping(value = "/dashboard/removeWidgetDuplicates", method = DELETE)
+    public ResponseEntity<String> removeWidgetDuplicates(@RequestParam(value="title", required = false)String title,
+    @RequestParam(value="dryRun", required = true) boolean dryRun){
+        String message = dashboardService.removeWidgetDuplicates(title, dryRun);
+        return ResponseEntity.ok().body(message);
+    }
 }
