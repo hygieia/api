@@ -1030,6 +1030,7 @@ public class DashboardServiceImpl implements DashboardService {
 
             if(!dryRun){
                 dashboard.setWidgets(nonDuplicates);
+                dashboard.setUpdatedAt(System.currentTimeMillis());
                 dashboardRepository.save(dashboard);
             }
 
@@ -1039,12 +1040,18 @@ public class DashboardServiceImpl implements DashboardService {
         }
 
         if(StringUtils.isEmpty(title)){
-            if(dryRun){return "DRY_RUN: All Dashboard widgets cleaned";}
-            else {return "All Dashboard widgets cleaned";}
+            if(dryRun){
+                return "DRY_RUN: All Dashboard widgets cleaned";
+            } else{
+                return "All Dashboard widgets cleaned";
+            }
         }
         else {
-            if(dryRun){return "DRY_RUN: Cleaned widgets for dashboard " + title;}
-            else{return "Cleaned widgets for dashboard " + title;}
+            if(dryRun){
+                return "DRY_RUN: Cleaned widgets for dashboard " + title;
+            } else{
+                return "Cleaned widgets for dashboard " + title;
+            }
         }
     }
 }
