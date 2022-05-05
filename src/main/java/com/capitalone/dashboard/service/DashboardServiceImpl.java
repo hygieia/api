@@ -1023,8 +1023,7 @@ public class DashboardServiceImpl implements DashboardService {
 
             // loop through existing widgets, if the widget is not in the nonDuplicates list add it
             for (Widget widget : dashWidgets) {
-                if (nonDuplicates.stream().noneMatch(w -> w.getName().equalsIgnoreCase(widget.getName()))
-                && StringUtils.isNotEmpty(widget.getName())) {
+                if (nonDuplicates.stream().noneMatch(w -> w.getName().equalsIgnoreCase(widget.getName()))) {
                     nonDuplicates.add(widget);
                 }
             }
