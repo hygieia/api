@@ -1010,7 +1010,7 @@ public class DashboardServiceImpl implements DashboardService {
     public String removeWidgetDuplicatesHelper(String title, boolean dryRun){
         // page results and clean until there are no more pages
         if(StringUtils.isEmpty(title)){
-            Pageable pageable = new PageRequest(0, 500);
+            Pageable pageable = new PageRequest(0, 1000);
             Page<Dashboard> page = findDashboardsByPage("", pageable);
 
             while(page.hasNext()){
