@@ -244,7 +244,9 @@ public interface DashboardService {
 
     Iterable<Dashboard> allTemplate(String template);
 
-    String removeWidgetDuplicates(String title, boolean dryRun);
+    void removeWidgetDuplicates(List<Dashboard> dashboards, boolean dryRun);
+
+    String removeWidgetDuplicatesHelper(String title, boolean dryRun);
 }
 
 

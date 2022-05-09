@@ -956,7 +956,7 @@ public class DashboardServiceTest {
         assertThat(dashboard.getWidgets().size(), is(4));
 
         when(dashboardRepository.findByTitle(dashboard.getTitle())).thenReturn(Collections.singletonList(dashboard));
-        dashboardService.removeWidgetDuplicates(dashboard.getTitle(), false);
+        dashboardService.removeWidgetDuplicatesHelper(dashboard.getTitle(), false);
         assertThat(dashboard.getWidgets().size(), is(2));
     }
 

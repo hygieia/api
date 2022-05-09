@@ -37,6 +37,7 @@ import org.apache.commons.logging.LogFactory;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -1006,16 +1007,44 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    public String removeWidgetDuplicates(String title, boolean dryRun) {
+    public String removeWidgetDuplicatesHelper(String title, boolean dryRun){
+        // page results and clean until there are no more pages
+        if(StringUtils.isEmpty(title)){
+            Pageable pageable = new PageRequest(0, 500);
+            Page<Dashboard> page = findDashboardsByPage("", pageable);
 
-        List<Dashboard> dashboards;
-        if (StringUtils.isEmpty(title)){
-            dashboards = (List<Dashboard>) all();
+            while(page.hasNext()){
+                pageable = pageable.next();
+                removeWidgetDuplicates(page.getContent(), dryRun);
+                page = findDashboardsByPage("", pageable);
+            }
         }
         else{
-            dashboards = dashboardRepository.findByTitle(title);
+            List<Dashboard> dashboards = dashboardRepository.findByTitle(title);
             if (CollectionUtils.isEmpty(dashboards)){return "No dashboards with that title";}
+            removeWidgetDuplicates(dashboards, dryRun);
         }
+
+        // messages upon success
+        if(StringUtils.isEmpty(title)){
+            if(dryRun){
+                return "DRY_RUN: All Dashboard widgets cleaned";
+            } else{
+                return "All Dashboard widgets cleaned";
+            }
+        }
+        else {
+            if(dryRun){
+                return "DRY_RUN: Cleaned widgets for dashboard " + title;
+            } else{
+                return "Cleaned widgets for dashboard " + title;
+            }
+        }
+
+    }
+
+    @Override
+    public void removeWidgetDuplicates(List<Dashboard> dashboards, boolean dryRun) {
 
         for (Dashboard dashboard : dashboards) {
             List<Widget> nonDuplicates = new ArrayList<Widget>();
@@ -1039,19 +1068,6 @@ public class DashboardServiceImpl implements DashboardService {
                     " widgets simplified to " + nonDuplicates.stream().map(Widget::getName).collect(Collectors.toList()));
         }
 
-        if(StringUtils.isEmpty(title)){
-            if(dryRun){
-                return "DRY_RUN: All Dashboard widgets cleaned";
-            } else{
-                return "All Dashboard widgets cleaned";
-            }
-        }
-        else {
-            if(dryRun){
-                return "DRY_RUN: Cleaned widgets for dashboard " + title;
-            } else{
-                return "Cleaned widgets for dashboard " + title;
-            }
-        }
+
     }
 }
