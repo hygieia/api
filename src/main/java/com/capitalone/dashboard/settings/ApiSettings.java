@@ -70,6 +70,9 @@ public class ApiSettings {
     @Value("${optimizeUserCallsToGithub:true}")
     private boolean optimizeUserCallsToGithub;
 
+    @Value("${batchSize:500}")
+    private int batchSize;
+
     private String hygieia_ui_url="";
 
     public Map<String, String> getFunctional() {
@@ -266,5 +269,13 @@ public class ApiSettings {
 
     public void setOptimizeUserCallsToGithub(boolean optimizeUserCallsToGithub) {
         this.optimizeUserCallsToGithub = optimizeUserCallsToGithub;
+    }
+
+    public int getBatchSize() {
+        return batchSize;
+    }
+
+    public void setBatchSize(int batchSize) {
+        this.batchSize = batchSize;
     }
 }
