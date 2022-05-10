@@ -1011,7 +1011,6 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public String removeWidgetDuplicatesHelper(String title, boolean dryRun){
-        System.out.println("Pages of size: " + String.valueOf(pageSize));
         // get page and clean until there are no more pages
         if(StringUtils.isEmpty(title)){
             Pageable pageable = new PageRequest(0, pageSize);
