@@ -36,7 +36,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -82,8 +81,6 @@ public class DashboardServiceImpl implements DashboardService {
     public static final String TEST = "test";
     public static final String CODEANALYSIS = "codeanalysis";
     public static final String INFRA_SCAN = "infrascan";
-    @Value("${pageSize:500}")
-    private int pageSize;
 
     @Autowired
     private ApiSettings settings;
@@ -1011,9 +1008,10 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public String removeWidgetDuplicatesHelper(String title, boolean dryRun){
+        System.out.println(settings.getBatchSize());
         // get page and clean until there are no more pages
         if(StringUtils.isEmpty(title)){
-            Pageable pageable = new PageRequest(0, pageSize);
+            Pageable pageable = new PageRequest(0, settings.getBatchSize());
             Page<Dashboard> page = findDashboardsByPage("", pageable);
 
             while(page.hasNext()){
