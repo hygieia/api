@@ -1013,9 +1013,9 @@ public class DashboardServiceImpl implements DashboardService {
             Pageable pageable = new PageRequest(0, settings.getBatchSize());
             Page<Dashboard> page = findDashboardsByPage("", pageable);
 
-            while(page.hasNext()){
-                pageable = pageable.next();
+            while(page.hasContent()){
                 removeWidgetDuplicates(page.getContent(), dryRun);
+                pageable = pageable.next();
                 page = findDashboardsByPage("", pageable);
             }
         }
