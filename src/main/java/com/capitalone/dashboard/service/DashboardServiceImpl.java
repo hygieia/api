@@ -1018,30 +1018,28 @@ public class DashboardServiceImpl implements DashboardService {
                 pageable = pageable.next();
                 page = findDashboardsByPage("", pageable);
             }
+
+            if(dryRun){
+                LOG.info("DRY_RUN: All Dashboard widgets cleaned");
+                return "DRY_RUN: All Dashboard widgets cleaned";
+            } else{
+                LOG.info("All Dashboard widgets cleaned");
+                return "All Dashboard widgets cleaned";
+            }
         }
         else{
             List<Dashboard> dashboards = dashboardRepository.findByTitle(title);
             if (CollectionUtils.isEmpty(dashboards)){return "No dashboards with that title";}
             removeWidgetDuplicates(dashboards, dryRun);
-        }
 
-        // messages upon success
-        if(StringUtils.isEmpty(title)){
-            if(dryRun){
-                return "DRY_RUN: All Dashboard widgets cleaned";
-            } else{
-                return "All Dashboard widgets cleaned";
-            }
-        }
-        else {
             if(dryRun){
                 return "DRY_RUN: Cleaned widgets for dashboard " + title;
             } else{
                 return "Cleaned widgets for dashboard " + title;
             }
         }
-
     }
+
 
     @Override
     public void removeWidgetDuplicates(List<Dashboard> dashboards, boolean dryRun) {
