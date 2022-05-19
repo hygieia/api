@@ -486,7 +486,7 @@ public class DashboardController {
     @Admin
     @RequestMapping(value = "/dashboard/removeWidgetDuplicates", method = DELETE)
     public ResponseEntity<String> removeWidgetDuplicates(@RequestParam(value="title", required = false)String title,
-    @RequestParam(value="dryRun", required = true) boolean dryRun){
+    @RequestParam(value="dryRun", required = true, defaultValue = "true") boolean dryRun){
         String message = dashboardService.removeWidgetDuplicatesHelper(title, dryRun);
         return ResponseEntity.ok().body(message);
     }
