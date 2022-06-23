@@ -393,7 +393,7 @@ public class GitHubCommitV3 extends GitHubV3 {
     protected CommitType getCommitType(int parentSize, String commitMessage,
                                        GitHubWebHookSettings gitHubWebHookSettings,
                                        List<Pattern> commitExclusionPatterns) {
-        if (parentSize > 1) return CommitType.Merge;
+        if (parentSize >= 1) return CommitType.Merge;
         if (CollectionUtils.isEmpty(gitHubWebHookSettings.getNotBuiltCommits())) return CommitType.New;
 
         if (!CollectionUtils.isEmpty(commitExclusionPatterns)) {
