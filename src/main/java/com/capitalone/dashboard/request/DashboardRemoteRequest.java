@@ -6,6 +6,7 @@ import com.capitalone.dashboard.model.Collector;
 import com.capitalone.dashboard.model.CollectorItem;
 import com.capitalone.dashboard.model.CollectorType;
 import com.capitalone.dashboard.model.Owner;
+import com.capitalone.dashboard.model.WhiteSourceComponent;
 import com.capitalone.dashboard.util.GitHubParsedUrl;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
 
 public class DashboardRemoteRequest extends BaseRequest {
     @Valid
@@ -235,6 +237,18 @@ public class DashboardRemoteRequest extends BaseRequest {
                         collectorItem.getOptions().put(key, options.get(key));
                     } else {
                         throw new HygieiaException(toolName + " collector does not support field: " + key, HygieiaException.COLLECTOR_ITEM_CREATE_ERROR);
+                    }
+                }
+                // set options with defaults
+                if (collector.getName().equals("WhiteSource") && !options.keySet().contains("localConfig")){
+                    collectorItem.getOptions().put("localConfig", false);
+                }
+                else if(collector.getName().equals("Checkmarx")){
+                    if(!options.keySet().contains("fileExclusions") || options.get("fileExclusions").equals("")){
+                        collectorItem.getOptions().put("fileExclusions", " ");
+                    }
+                    if(!options.keySet().contains("folderExclusions") || options.get("folderExclusions").equals("")){
+                        collectorItem.getOptions().put("folderExclusions", " ");
                     }
                 }
                 return collectorItem;
