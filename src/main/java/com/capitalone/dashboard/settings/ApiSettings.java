@@ -64,6 +64,10 @@ public class ApiSettings {
     private Map<String,String> performance;
     private String unit;
 
+    private String libraryPolicyCollectorName;
+
+    private String SecurityScanCollectorName;
+
     @Value("${encryptRemoteCreatePayload:true}")
     private boolean encryptRemoteCreatePayload;
 
@@ -74,6 +78,22 @@ public class ApiSettings {
     private int batchSize;
 
     private String hygieia_ui_url="";
+
+    public String getSecurityScanCollectorName() {
+        return SecurityScanCollectorName;
+    }
+
+    public void setSecurityScanCollectorName(String securityScanCollectorName) {
+        SecurityScanCollectorName = securityScanCollectorName;
+    }
+
+    public String getLibraryPolicyCollectorName() {
+        return libraryPolicyCollectorName;
+    }
+
+    public void setLibraryPolicyCollectorName(String libraryPolicyCollectorName) {
+        this.libraryPolicyCollectorName = libraryPolicyCollectorName;
+    }
 
     public Map<String, String> getFunctional() {
         return functional;

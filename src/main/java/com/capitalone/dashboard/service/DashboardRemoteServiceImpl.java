@@ -290,8 +290,26 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
 
     private CollectorItem entryToCollectorItem(DashboardRemoteRequest.Entry entry, Collector collector) throws HygieiaException {
         CollectorItem item = entry.toCollectorItem(collector);
+        checkDefaults(collector, item);
         item.setCollectorId(collector.getId());
         return collectorService.createCollectorItemSelectOptions(item, collector, collector.getAllFields(), item.getOptions());
+    }
+
+    // will check if certain entry options were passed in the request
+    private void checkDefaults(Collector collector, CollectorItem item){
+        if (collector.getName().equals(apiSettings.getLibraryPolicyCollectorName())){
+            if(!item.getOptions().containsKey("localConfig") || !(item.getOptions().get("localConfig") instanceof Boolean)){
+                item.getOptions().put("localConfig", false);
+            }
+        }
+        else if(collector.getName().equals(apiSettings.getSecurityScanCollectorName())){
+            if(!item.getOptions().containsKey("fileExclusions")){
+                item.getOptions().put("fileExclusions", "");
+            }
+            if(!item.getOptions().containsKey("folderExclusions")){
+                item.getOptions().put("folderExclusions", "");
+            }
+        }
     }
 
     /**
