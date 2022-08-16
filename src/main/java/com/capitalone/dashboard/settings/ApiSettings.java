@@ -66,7 +66,7 @@ public class ApiSettings {
 
     private String libraryPolicyCollectorName;
 
-    private String SecurityScanCollectorName;
+    private String securityScanCollectorName;
 
     @Value("${encryptRemoteCreatePayload:true}")
     private boolean encryptRemoteCreatePayload;
@@ -80,11 +80,11 @@ public class ApiSettings {
     private String hygieia_ui_url="";
 
     public String getSecurityScanCollectorName() {
-        return SecurityScanCollectorName;
+        return securityScanCollectorName;
     }
 
     public void setSecurityScanCollectorName(String securityScanCollectorName) {
-        SecurityScanCollectorName = securityScanCollectorName;
+        this.securityScanCollectorName = securityScanCollectorName;
     }
 
     public String getLibraryPolicyCollectorName() {
