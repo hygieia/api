@@ -100,7 +100,7 @@ public class LoggingFilter implements Filter {
             try {
 
                 requestLog.setClient(httpServletRequest.getRemoteAddr());
-                String x_forwarded_for = bufferedRequest.getHeader(X_FORWARDED_FOR)
+                String x_forwarded_for = bufferedRequest.getHeader(X_FORWARDED_FOR);
                 requestLog.setXForwardedFor(x_forwarded_for);
                 requestLog.setEndpoint(httpServletRequest.getRequestURI());
                 requestLog.setMethod(httpServletRequest.getMethod());
