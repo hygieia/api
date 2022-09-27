@@ -10,6 +10,7 @@ import com.capitalone.dashboard.request.CollectorRequest;
 import com.capitalone.dashboard.service.CollectorService;
 import com.capitalone.dashboard.util.PaginationHeaderUtility;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
@@ -168,5 +170,18 @@ public class CollectorController {
     public ResponseEntity<Void> deletePropertiesCase(@PathVariable String id) {
         collectorService.deletePropertiesInCollectorById(id);
         return ResponseEntity.<Void>noContent().build();
+    }
+
+    @RequestMapping(path="/collector/deleteDisconnectedItems/{collectorName}", method = RequestMethod.DELETE)
+    public ResponseEntity<String> deleteDisconnectedItems(@PathVariable String collectorName) {
+        if (Objects.isNull(collectorName) || StringUtils.isEmpty(collectorName)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Collector name is required parameter");
+        }
+        Integer deletedItems = collectorService.deleteDisconnectedItems(collectorName);
+        if (deletedItems.equals(-1)){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Collector with that name does not exist");
+        }else {
+            return ResponseEntity.status(HttpStatus.OK).body(String.format("Successfully removed %d items that were no longer connected to any dashboard", deletedItems));
+        }
     }
 }
