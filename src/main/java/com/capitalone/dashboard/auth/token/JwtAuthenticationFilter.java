@@ -73,6 +73,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             + ", request_method=" + request.getMethod()
                             + ", response_code=" + (response == null ? 0 : response.getStatus())
                             + ", client_ip=" + request.getRemoteAddr()
+                            + ", x-forwarded-for=" + request.getHeader("x-forwarded-for")
                             + (StringUtils.equalsIgnoreCase(request.getMethod(), "GET") ? ", request_params=" + parameters : StringUtils.EMPTY));
                 }
             }
@@ -110,6 +111,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         + ", request_method=" + request.getMethod()
                         + ", status=" + (response == null ? 0 : response.getStatus())
                         + ", client_ip=" + request.getRemoteAddr()
+                        + ", x-forwarded-for=" + request.getHeader("x-forwarded-for")
                         + (StringUtils.equalsIgnoreCase(request.getMethod(), "GET") ? ", request_params=" + parameters : StringUtils.EMPTY));
             }
         }
