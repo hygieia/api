@@ -79,9 +79,12 @@ public class ApiSettings {
 
     private String hygieia_ui_url="";
 
+    private long collectorItemGracePeriod;
+
     public String getSecurityScanCollectorName() {
         return securityScanCollectorName;
     }
+
 
     public void setSecurityScanCollectorName(String securityScanCollectorName) {
         this.securityScanCollectorName = securityScanCollectorName;
@@ -297,5 +300,13 @@ public class ApiSettings {
 
     public void setBatchSize(int batchSize) {
         this.batchSize = batchSize;
+    }
+
+    public long getCollectorItemGracePeriod() {
+        return collectorItemGracePeriod;
+    }
+
+    public void setCollectorItemGracePeriod(long collectorItemGracePeriod) {
+        this.collectorItemGracePeriod = collectorItemGracePeriod;
     }
 }
