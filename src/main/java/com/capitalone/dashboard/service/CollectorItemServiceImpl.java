@@ -55,11 +55,9 @@ public class CollectorItemServiceImpl implements CollectorItemService {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error :: No such collector type " + collectorTypeString);
         }
 
-        // prevent cleaning the wrong collector
-        if(!isCleanableCollector(collectorType)){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Warning :: collectorItems of type " + collectorTypeString + " are not cleanable");
-        }
+        // prevent cleaning the wrong collector (returns content only if there is an error)
+        ResponseEntity<String> isCleanable = isCleanableCollector(collectorType, collectorName);
+        if(Objects.nonNull(isCleanable)){return isCleanable;}
 
         Optional<Collector> collector = collectorRepository.findByCollectorTypeAndName(collectorType, collectorName).stream().findFirst();
         if (!collector.isPresent()) {
@@ -78,7 +76,7 @@ public class CollectorItemServiceImpl implements CollectorItemService {
                         ,collectorItems.indexOf(collectorItem)+1, collectorItems.size());
 
                 logDeletedCollectorItem(collectorType, collectorItem, loggingPrefix);
-                collectorItemRepository.delete(collectorItem.getId());
+//                collectorItemRepository.delete(collectorItem.getId());
                 count++;
             }
         }
@@ -93,9 +91,16 @@ public class CollectorItemServiceImpl implements CollectorItemService {
      * Bottom three methods are helper functions for the deleteDisconnectedItems()
      * ******************************************************************************
      */
-    private Boolean isCleanableCollector(CollectorType collectorType){
-        return (collectorType == LibraryPolicy || collectorType == StaticSecurityScan ||
-                collectorType == SCM);
+    private ResponseEntity<String> isCleanableCollector(CollectorType collectorType, String collectorName){
+        if (!(collectorType == LibraryPolicy || collectorType == StaticSecurityScan || collectorType == SCM)){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Warning :: collectorItems of type " + collectorType.toString() + " are not cleanable");
+        }
+        if (!(collectorName.equals(apiSettings.getLibraryPolicyCollectorName()) || collectorName.equals(apiSettings.getSecurityScanCollectorName())
+        || collectorName.equals(apiSettings.getDataSyncSettings().getScm()))){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error :: Could not find collector: " + collectorName);
+        }
+        return null;
     }
 
 
@@ -108,7 +113,7 @@ public class CollectorItemServiceImpl implements CollectorItemService {
             case StaticSecurityScan:
                 return componentRepository.findByStaticSecurityScanCollectorItems(collectorItemId).stream().findFirst().isPresent();
             default:
-                return true;
+                return false;
         }
     }
 
