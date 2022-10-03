@@ -79,6 +79,7 @@ public class ApiSettings {
 
     private String hygieia_ui_url="";
 
+    @Value("${collectorItemGracePeriod:60}")
     private long collectorItemGracePeriod;
 
     public String getSecurityScanCollectorName() {

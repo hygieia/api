@@ -175,23 +175,4 @@ public class CollectorController {
         return ResponseEntity.<Void>noContent().build();
     }
 
-    @RequestMapping(path="/collector/deleteDisconnectedItems", method = RequestMethod.DELETE)
-    public ResponseEntity<String> deleteDisconnectedItems(@RequestParam(value = "collectorType", required = true, defaultValue = "") String collectorType, @RequestParam(value = "collectorName", required = true, defaultValue = "") String collectorName) {
-        if (Objects.isNull(collectorName) || StringUtils.isEmpty(collectorName) || Objects.isNull(collectorType) || StringUtils.isEmpty(collectorType)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Collector type and name are required parameters");
-        }
-        try {
-            CollectorType type = CollectorType.fromString(collectorType);
-            long endDate = System.currentTimeMillis() - (apiSettings.getCollectorItemGracePeriod()*86400000l);
-            Integer deletedItems = collectorService.deleteDisconnectedItems(type, collectorName, endDate);
-            if (deletedItems.equals(-1)){
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Collector with that name does not exist");
-            }else {
-                return ResponseEntity.status(HttpStatus.OK).body(String.format("Successfully removed %d items that were no longer connected to any dashboard", deletedItems));
-            }
-        }
-        catch (IllegalArgumentException e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(collectorType + " is not a CollectorType");
-        }
-    }
 }
