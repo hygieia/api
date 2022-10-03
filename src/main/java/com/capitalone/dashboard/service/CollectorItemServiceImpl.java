@@ -92,12 +92,12 @@ public class CollectorItemServiceImpl implements CollectorItemService {
      * ******************************************************************************
      */
     private ResponseEntity<String> isCleanableCollector(CollectorType collectorType, String collectorName){
-        if (!(collectorType == LibraryPolicy || collectorType == StaticSecurityScan || collectorType == SCM)){
+        if (!(collectorType.equals(LibraryPolicy) || collectorType.equals(StaticSecurityScan) || collectorType.equals(SCM))){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Warning :: collectorItems of type " + collectorType.toString() + " are not cleanable");
         }
-        if (!(collectorName.equals(apiSettings.getLibraryPolicyCollectorName()) || collectorName.equals(apiSettings.getSecurityScanCollectorName())
-        || collectorName.equals(apiSettings.getDataSyncSettings().getScm()))){
+        if (!(collectorName.equalsIgnoreCase(apiSettings.getLibraryPolicyCollectorName()) || collectorName.equalsIgnoreCase(apiSettings.getSecurityScanCollectorName())
+        || collectorName.equalsIgnoreCase(apiSettings.getDataSyncSettings().getScm()))){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error :: Could not find collector: " + collectorName);
         }
         return null;
@@ -112,8 +112,9 @@ public class CollectorItemServiceImpl implements CollectorItemService {
                 return componentRepository.findBySCMCollectorItemId(collectorItemId).stream().findFirst().isPresent();
             case StaticSecurityScan:
                 return componentRepository.findByStaticSecurityScanCollectorItems(collectorItemId).stream().findFirst().isPresent();
+            // don't expect this case to be hit, but will skip deletion of item
             default:
-                return false;
+                return true;
         }
     }
 
