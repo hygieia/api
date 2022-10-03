@@ -40,7 +40,7 @@ public class CollectorItemServiceImpl implements CollectorItemService {
         this.apiSettings = apiSettings;
     }
 
-    public ResponseEntity<String> deleteDisconnectedItems(String collectorTypeString, String collectorName) {
+    public ResponseEntity<String> cleanup(String collectorTypeString, String collectorName) {
 
         // to time duration, get max age of items, count of items deleted (vars respectively)
         long startTime = System.currentTimeMillis();
@@ -68,7 +68,7 @@ public class CollectorItemServiceImpl implements CollectorItemService {
 
         // get collectorItems that have not been updated since the endDate given
         List<CollectorItem> collectorItems = collectorItemRepository.findByCollectorIdAndLastUpdatedBefore(collector.get().getId(), endDate);
-        LOG.info(String.format("deleteDisconnectedItems :: found %d collectorItems to verify", collectorItems.size()));
+        LOG.info(String.format("deleteDisconnectedItems :: Found %d collectorItems to verify", collectorItems.size()));
 
         // iterate through enabled items and check if they are connected to a dashboard
         for (CollectorItem collectorItem : collectorItems) {

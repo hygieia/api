@@ -8,5 +8,5 @@ public interface CollectorItemService {
      *  Removing CollectorItems that are not connected
      *  to a Dashboard
      * */
-    ResponseEntity<String> deleteDisconnectedItems(String collectorType, String collectorName);
+    ResponseEntity<String> cleanup(String collectorType, String collectorName);
 }
