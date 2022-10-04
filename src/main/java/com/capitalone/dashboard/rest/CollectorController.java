@@ -8,10 +8,8 @@ import com.capitalone.dashboard.model.CollectorType;
 import com.capitalone.dashboard.request.CollectorItemRequest;
 import com.capitalone.dashboard.request.CollectorRequest;
 import com.capitalone.dashboard.service.CollectorService;
-import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.util.PaginationHeaderUtility;
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -31,7 +29,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
