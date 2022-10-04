@@ -43,13 +43,11 @@ public class CollectorController {
 
     private CollectorService collectorService;
     private PaginationHeaderUtility paginationHeaderUtility;
-    private ApiSettings apiSettings;
 
     @Autowired
-    public CollectorController(CollectorService collectorService, PaginationHeaderUtility paginationHeaderUtility, ApiSettings apiSettings) {
+    public CollectorController(CollectorService collectorService, PaginationHeaderUtility paginationHeaderUtility) {
         this.collectorService = collectorService;
         this.paginationHeaderUtility = paginationHeaderUtility;
-        this.apiSettings = apiSettings;
     }
 
     @InitBinder

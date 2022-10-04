@@ -3,11 +3,11 @@ package com.capitalone.dashboard.service;
 import com.capitalone.dashboard.model.Collector;
 import com.capitalone.dashboard.model.CollectorItem;
 import com.capitalone.dashboard.model.CollectorType;
-import com.capitalone.dashboard.model.Component;
 import com.capitalone.dashboard.settings.ApiSettings;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -32,6 +32,7 @@ public class CollectorItemServiceImpl implements CollectorItemService {
     private final Logger LOG = LoggerFactory.getLogger(CollectorServiceImpl.class);
     private final Long DAY_IN_MILLIS = 86400000l;
 
+    @Autowired
     public CollectorItemServiceImpl(ComponentRepository componentRepository, CollectorRepository collectorRepository,
                                     CollectorItemRepository collectorItemRepository, ApiSettings apiSettings){
         this.componentRepository = componentRepository;

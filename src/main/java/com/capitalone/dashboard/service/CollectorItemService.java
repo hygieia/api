@@ -1,6 +1,5 @@
 package com.capitalone.dashboard.service;
 
-import com.capitalone.dashboard.model.CollectorType;
 import org.springframework.http.ResponseEntity;
 
 public interface CollectorItemService {
