@@ -67,22 +67,22 @@ public class CollectorItemServiceImpl implements CollectorItemService {
 
         // get collectorItems that have not been updated since the endDate given
         List<CollectorItem> collectorItems = collectorItemRepository.findByCollectorIdAndLastUpdatedBefore(collector.get().getId(), endDate);
-        LOG.info(String.format("deleteDisconnectedItems :: Found %d collectorItems to verify", collectorItems.size()));
+        LOG.info(String.format("cleanup :: Found %d collectorItems to verify", collectorItems.size()));
 
         // iterate through enabled items and check if they are connected to a dashboard
         for (CollectorItem collectorItem : collectorItems) {
             if (!hasComponent(collectorType, collectorItem.getId())) {
 
-                String loggingPrefix = String.format("findOldCollectorItems :: Removing (#%d of %d):: could not find a dashboard for the collectorItem with the following options:"
+                String loggingPrefix = String.format("cleanup :: Removing (#%d of %d):: could not find a dashboard for the collectorItem with the following options:"
                         ,collectorItems.indexOf(collectorItem)+1, collectorItems.size());
 
                 logDeletedCollectorItem(collectorType, collectorItem, loggingPrefix);
-//                collectorItemRepository.delete(collectorItem.getId());
+                collectorItemRepository.delete(collectorItem.getId());
                 count++;
             }
         }
 
-        LOG.info(String.format("deleteDisconnectedItems :: Finished (duration=%s) :: collectorType=%s :: Found %d items with no corresponding dashboard.", System.currentTimeMillis() - startTime, collectorType.toString(), count));
+        LOG.info(String.format("cleanup :: Finished (duration=%s) :: collectorType=%s :: Found %d items with no corresponding dashboard.", System.currentTimeMillis() - startTime, collectorType.toString(), count));
         return ResponseEntity.status(HttpStatus.OK).body(String.format("Successfully removed %d  %s type collectorItems out of %d", count, collectorType.toString(), collectorItems.size()));
     }
 
