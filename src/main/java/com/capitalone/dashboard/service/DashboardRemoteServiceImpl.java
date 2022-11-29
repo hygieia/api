@@ -23,6 +23,7 @@ import com.capitalone.dashboard.request.WidgetRequest;
 import com.capitalone.dashboard.settings.ApiSettings;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
@@ -169,16 +170,12 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
 
             component = dashboardService.associateCollectorToComponent(dashboard.getApplication().getComponents().get(0).getId(), widgetRequest.getCollectorItemIds(),component,true);
             Widget newWidget = widgetRequest.widget();
-            if (isUpdate) {
-                Widget oldWidget = existingWidgets.get(newWidget.getName());
-                if (oldWidget == null) {
-                    dashboardService.addWidget(dashboard, newWidget);
-                } else {
-                    Widget widget = widgetRequest.updateWidget(dashboardService.getWidget(dashboard, oldWidget.getId()));
-                    dashboardService.updateWidget(dashboard, widget);
-                }
-            } else {
+            Widget oldWidget = existingWidgets.get(newWidget.getName());
+            if (oldWidget == null) {
                 dashboardService.addWidget(dashboard, newWidget);
+            } else {
+                Widget widget = widgetRequest.updateWidget(dashboardService.getWidget(dashboard, oldWidget.getId()));
+                dashboardService.updateWidget(dashboard, widget);
             }
         }
 
@@ -283,7 +280,7 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
         String title = request.getMetaData().getTitle();
         List<Dashboard> existing = new ArrayList<>();
         if( !StringUtils.isEmpty( businessService ) && !StringUtils.isEmpty( businessApplication ) ){
-           existing.addAll(dashboardRepository.findAllByConfigurationItemBusServNameContainingIgnoreCaseAndConfigurationItemBusAppNameContainingIgnoreCase( businessService, businessApplication ));
+            existing.addAll(IterableUtils.toList(dashboardRepository.findAllByConfigurationItemBusServNameAndConfigurationItemBusAppName(businessService, businessApplication)));
         } if (CollectionUtils.isEmpty(existing) && StringUtils.isNotEmpty(title)) {
            existing.addAll(dashboardRepository.findByTitle( request.getMetaData().getTitle() ));
         }
@@ -293,8 +290,26 @@ public class DashboardRemoteServiceImpl implements DashboardRemoteService {
 
     private CollectorItem entryToCollectorItem(DashboardRemoteRequest.Entry entry, Collector collector) throws HygieiaException {
         CollectorItem item = entry.toCollectorItem(collector);
+        checkDefaults(collector, item);
         item.setCollectorId(collector.getId());
         return collectorService.createCollectorItemSelectOptions(item, collector, collector.getAllFields(), item.getOptions());
+    }
+
+    // will check if certain entry options were passed in the request
+    private void checkDefaults(Collector collector, CollectorItem item){
+        if (collector.getName().equals(apiSettings.getLibraryPolicyCollectorName())){
+            if(!item.getOptions().containsKey("localConfig") || !(item.getOptions().get("localConfig") instanceof Boolean)){
+                item.getOptions().put("localConfig", false);
+            }
+        }
+        else if(collector.getName().equals(apiSettings.getSecurityScanCollectorName())){
+            if(!item.getOptions().containsKey("fileExclusions")){
+                item.getOptions().put("fileExclusions", "");
+            }
+            if(!item.getOptions().containsKey("folderExclusions")){
+                item.getOptions().put("folderExclusions", "");
+            }
+        }
     }
 
     /**

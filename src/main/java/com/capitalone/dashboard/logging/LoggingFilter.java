@@ -61,6 +61,8 @@ public class LoggingFilter implements Filter {
 
     private static final String API_USER_KEY = "apiUser";
 
+    private static final String X_FORWARDED_FOR = "x-forwarded-for";
+
     private static final String UNKNOWN_USER = "unknown";
 
 
@@ -98,6 +100,8 @@ public class LoggingFilter implements Filter {
             try {
 
                 requestLog.setClient(httpServletRequest.getRemoteAddr());
+                String x_forwarded_for = bufferedRequest.getHeader(X_FORWARDED_FOR);
+                requestLog.setXForwardedFor(x_forwarded_for);
                 requestLog.setEndpoint(httpServletRequest.getRequestURI());
                 requestLog.setMethod(httpServletRequest.getMethod());
                 requestLog.setParameter(requestMap.toString());

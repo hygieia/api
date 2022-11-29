@@ -11,6 +11,7 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import com.capitalone.dashboard.auth.access.Admin;
 import com.capitalone.dashboard.util.PaginationHeaderUtility;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
@@ -480,5 +481,13 @@ public class DashboardController {
                 .ok()
                 .headers(paginationHeaderUtility.buildPaginationHeaders(pageDashboardItems))
                 .body(pageDashboardItems.getContent());
+    }
+
+    @Admin
+    @RequestMapping(value = "/dashboard/removeWidgetDuplicates", method = DELETE)
+    public ResponseEntity<String> removeWidgetDuplicates(@RequestParam(value="title", required = false)String title,
+    @RequestParam(value="dryRun", required = true, defaultValue = "true") boolean dryRun){
+        String message = dashboardService.removeWidgetDuplicatesHelper(title, dryRun);
+        return ResponseEntity.ok().body(message);
     }
 }

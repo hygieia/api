@@ -253,17 +253,17 @@ public class GitHubCommitV3Test {
         notBuiltCommits.add("test2");
         notBuiltCommits.stream().map(regExStr -> Pattern.compile(regExStr, Pattern.CASE_INSENSITIVE)).forEach(commitExclusionPatterns::add);
 
-        CommitType commitType = gitHubCommitV3.getCommitType(2, "commit message", new GitHubWebHookSettings(), commitExclusionPatterns);
+        CommitType commitType = gitHubCommitV3.getCommitType(1, "commit message", new GitHubWebHookSettings(), commitExclusionPatterns);
         Assert.assertEquals(CommitType.Merge, commitType);
 
-        commitType = gitHubCommitV3.getCommitType(1, "commit message", new GitHubWebHookSettings(), commitExclusionPatterns);
+        commitType = gitHubCommitV3.getCommitType(0, "commit message", new GitHubWebHookSettings(), commitExclusionPatterns);
         Assert.assertEquals(CommitType.New, commitType);
 
         GitHubWebHookSettings gitHubWebHookSettings = new GitHubWebHookSettings();
         List<String> notBuiltCommitsList = new ArrayList<>();
         notBuiltCommitsList.add("some value");
         gitHubWebHookSettings.setNotBuiltCommits(notBuiltCommitsList);
-        commitType = gitHubCommitV3.getCommitType(1, "test1", gitHubWebHookSettings, commitExclusionPatterns);
+        commitType = gitHubCommitV3.getCommitType(0, "test1", gitHubWebHookSettings, commitExclusionPatterns);
         Assert.assertEquals(CommitType.NotBuilt, commitType);
     }
 

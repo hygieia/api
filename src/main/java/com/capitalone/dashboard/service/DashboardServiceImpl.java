@@ -30,12 +30,14 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -839,7 +841,11 @@ public class DashboardServiceImpl implements DashboardService {
         String compName = dashboard.getConfigurationItemBusAppName();
 
         if(appName != null && !appName.isEmpty() && compName != null && !compName.isEmpty()){
-            Dashboard existingDashboard = dashboardRepository.findByConfigurationItemBusServNameIgnoreCaseAndConfigurationItemBusAppNameIgnoreCase(appName, compName);
+            Iterable<Dashboard> dashboards = dashboardRepository.findAllByConfigurationItemBusServNameAndConfigurationItemBusAppName(appName, compName);
+            Dashboard existingDashboard = null;
+            if (!IterableUtils.isEmpty(dashboards)) {
+                existingDashboard = dashboards.iterator().next();
+            }
             if(existingDashboard != null && !existingDashboard.getId().equals(dashboard.getId())){
                 throw new HygieiaException("Existing Dashboard: " + existingDashboard.getTitle(), HygieiaException.DUPLICATE_DATA);
             }
@@ -1000,4 +1006,66 @@ public class DashboardServiceImpl implements DashboardService {
         return savedDashboard;
     }
 
+    @Override
+    public String removeWidgetDuplicatesHelper(String title, boolean dryRun){
+        // get page and clean until there are no more pages
+        if(StringUtils.isEmpty(title)){
+            Pageable pageable = new PageRequest(0, settings.getBatchSize());
+            Page<Dashboard> page = findDashboardsByPage("", pageable);
+
+            while(page.hasContent()){
+                removeWidgetDuplicates(page.getContent(), dryRun);
+                pageable = pageable.next();
+                page = findDashboardsByPage("", pageable);
+            }
+
+            if(dryRun){
+                LOG.info("DRY_RUN: All Dashboard widgets cleaned");
+                return "DRY_RUN: All Dashboard widgets cleaned";
+            } else{
+                LOG.info("All Dashboard widgets cleaned");
+                return "All Dashboard widgets cleaned";
+            }
+        }
+        else{
+            List<Dashboard> dashboards = dashboardRepository.findByTitle(title);
+            if (CollectionUtils.isEmpty(dashboards)){return "No dashboards with that title";}
+            removeWidgetDuplicates(dashboards, dryRun);
+
+            if(dryRun){
+                return "DRY_RUN: Cleaned widgets for dashboard " + title;
+            } else{
+                return "Cleaned widgets for dashboard " + title;
+            }
+        }
+    }
+
+
+    @Override
+    public void removeWidgetDuplicates(List<Dashboard> dashboards, boolean dryRun) {
+
+        for (Dashboard dashboard : dashboards) {
+            List<Widget> nonDuplicates = new ArrayList<Widget>();
+            List<Widget> dashWidgets = dashboard.getWidgets();
+
+            // loop through existing widgets, if the widget is not in the nonDuplicates list add it
+            for (Widget widget : dashWidgets) {
+                if (nonDuplicates.stream().noneMatch(w -> w.getName().equalsIgnoreCase(widget.getName()))) {
+                    nonDuplicates.add(widget);
+                }
+            }
+
+            if(!dryRun){
+                dashboard.setWidgets(nonDuplicates);
+                dashboard.setUpdatedAt(System.currentTimeMillis());
+                dashboardRepository.save(dashboard);
+            }
+
+            // Logs number of original widgets along with contents of new widget array
+            LOG.info("Removing duplicates from dashboard " + dashboard.getTitle() + ": " + dashWidgets.size() +
+                    " widgets simplified to " + nonDuplicates.stream().map(Widget::getName).collect(Collectors.toList()));
+        }
+
+
+    }
 }

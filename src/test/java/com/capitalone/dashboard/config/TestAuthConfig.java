@@ -55,6 +55,7 @@ import com.capitalone.dashboard.service.TestResultService;
 import com.capitalone.dashboard.service.UserInfoService;
 import com.capitalone.dashboard.service.UserInfoServiceImpl;
 import com.capitalone.dashboard.service.InfraStructureService;
+import com.capitalone.dashboard.service.CollectorItemService;
 import com.capitalone.dashboard.settings.ApiSettings;
 import com.capitalone.dashboard.util.PaginationHeaderUtility;
 import org.mockito.Mock;
@@ -133,6 +134,9 @@ public class TestAuthConfig {
     public CollectorService collectorService() {
         return Mockito.mock(CollectorService.class);
     }
+
+    @Bean
+    public CollectorItemService collectorItemService() {return Mockito.mock(CollectorItemService.class);}
 
     @Bean
     public ServiceService serviceService() {

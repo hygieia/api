@@ -64,13 +64,40 @@ public class ApiSettings {
     private Map<String,String> performance;
     private String unit;
 
+    private String libraryPolicyCollectorName;
+
+    private String securityScanCollectorName;
+
     @Value("${encryptRemoteCreatePayload:true}")
     private boolean encryptRemoteCreatePayload;
 
     @Value("${optimizeUserCallsToGithub:true}")
     private boolean optimizeUserCallsToGithub;
 
+    @Value("${batchSize:500}")
+    private int batchSize;
+
     private String hygieia_ui_url="";
+
+    @Value("${collectorItemGracePeriod:60}")
+    private long collectorItemGracePeriod;
+
+    public String getSecurityScanCollectorName() {
+        return securityScanCollectorName;
+    }
+
+
+    public void setSecurityScanCollectorName(String securityScanCollectorName) {
+        this.securityScanCollectorName = securityScanCollectorName;
+    }
+
+    public String getLibraryPolicyCollectorName() {
+        return libraryPolicyCollectorName;
+    }
+
+    public void setLibraryPolicyCollectorName(String libraryPolicyCollectorName) {
+        this.libraryPolicyCollectorName = libraryPolicyCollectorName;
+    }
 
     public Map<String, String> getFunctional() {
         return functional;
@@ -266,5 +293,21 @@ public class ApiSettings {
 
     public void setOptimizeUserCallsToGithub(boolean optimizeUserCallsToGithub) {
         this.optimizeUserCallsToGithub = optimizeUserCallsToGithub;
+    }
+
+    public int getBatchSize() {
+        return batchSize;
+    }
+
+    public void setBatchSize(int batchSize) {
+        this.batchSize = batchSize;
+    }
+
+    public long getCollectorItemGracePeriod() {
+        return collectorItemGracePeriod;
+    }
+
+    public void setCollectorItemGracePeriod(long collectorItemGracePeriod) {
+        this.collectorItemGracePeriod = collectorItemGracePeriod;
     }
 }

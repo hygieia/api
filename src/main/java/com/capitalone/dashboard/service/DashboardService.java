@@ -243,6 +243,10 @@ public interface DashboardService {
     Dashboard updateScoreSettings(ObjectId dashboardId, boolean scoreEnabled, ScoreDisplayType scoreDisplay);
 
     Iterable<Dashboard> allTemplate(String template);
+
+    void removeWidgetDuplicates(List<Dashboard> dashboards, boolean dryRun);
+
+    String removeWidgetDuplicatesHelper(String title, boolean dryRun);
 }
 
 

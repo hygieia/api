@@ -941,6 +941,25 @@ public class DashboardServiceTest {
         Assert.assertTrue(result);
     }
 
+    @Test
+    public void removeWidgetDuplicates(){
+        Dashboard dashboard = makeTeamDashboard("template", "title", "appName", "Test",configItemBusServName,configItemBusAppName, "comp1");
+        Widget widget = new Widget();
+        Widget widget2 = new Widget();
+
+        widget.setName("build");
+        dashboard.getWidgets().add(widget);
+        dashboard.getWidgets().add(widget);
+        widget2.setName("repo");
+        dashboard.getWidgets().add(widget2);
+        dashboard.getWidgets().add(widget2);
+        assertThat(dashboard.getWidgets().size(), is(4));
+
+        when(dashboardRepository.findByTitle(dashboard.getTitle())).thenReturn(Collections.singletonList(dashboard));
+        dashboardService.removeWidgetDuplicatesHelper(dashboard.getTitle(), false);
+        assertThat(dashboard.getWidgets().size(), is(2));
+    }
+
     private Dashboard makeTeamDashboard(String template, String title, String appName, String owner,String configItemBusServName,String configItemBusAppName, String... compNames) {
         Application app = new Application(appName);
         for (String compName : compNames) {

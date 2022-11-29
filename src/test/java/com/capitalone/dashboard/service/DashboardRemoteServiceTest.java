@@ -8,6 +8,7 @@ import com.capitalone.dashboard.model.Component;
 import com.capitalone.dashboard.model.CollectorType;
 import com.capitalone.dashboard.model.Owner;
 import com.capitalone.dashboard.model.AuthType;
+import com.capitalone.dashboard.model.Widget;
 import com.capitalone.dashboard.repository.CollectorItemRepository;
 import com.capitalone.dashboard.repository.DashboardRepository;
 import com.capitalone.dashboard.repository.UserInfoRepository;
@@ -301,6 +302,36 @@ public class DashboardRemoteServiceTest {
         assertEquals(1, component.getCollectorItems().get(CollectorType.Build).size());
         assertEquals(2, dashboard.get(0).getOwners().size());
     }
+
+    @Test
+    public void remoteCreateWithoutDuplicateWidgets() throws IOException, HygieiaException {
+
+        for(int i = 0; i < 2; i++){
+            // Creating codeRepoEntry to add to the request
+            List<DashboardRemoteRequest.CodeRepoEntry> entries = new ArrayList<>();
+            DashboardRemoteRequest.CodeRepoEntry entry = new DashboardRemoteRequest.CodeRepoEntry();
+            entry.setToolName("GitHub");
+            Map options = new HashMap();
+            if (i==0) {
+                options.put("url", "http://git.test.com/capone/better.git");
+                options.put("branch", "master");
+            }else{
+                options.put("url", "http://git.test.com/captwo/best.git");
+                options.put("branch", "main");
+            }
+            entry.setOptions(options);
+            entries.add(entry);
+
+            // create remote request with repo and call remote create
+            DashboardRemoteRequest request = getRemoteRequest("./dashboardRemoteRequests/Remote-Request-Base.json");
+            request.getMetaData().setTitle("dupWidgetTest");
+            request.setCodeRepoEntries(entries);
+            Dashboard dash = dashboardRemoteService.remoteCreate(request, false);
+            assertEquals(1, dash.getWidgets().size());
+            assertEquals("repo", dash.getWidgets().get(0).getName());
+        }
+    }
+
     @Test
     public void remoteUpdateNonExisting() throws IOException {
         DashboardRemoteRequest request = getRemoteRequest("./dashboardRemoteRequests/Remote-Request-Base.json");

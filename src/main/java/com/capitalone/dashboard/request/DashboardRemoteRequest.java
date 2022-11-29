@@ -6,6 +6,7 @@ import com.capitalone.dashboard.model.Collector;
 import com.capitalone.dashboard.model.CollectorItem;
 import com.capitalone.dashboard.model.CollectorType;
 import com.capitalone.dashboard.model.Owner;
+import com.capitalone.dashboard.model.WhiteSourceComponent;
 import com.capitalone.dashboard.util.GitHubParsedUrl;
 import org.hibernate.validator.constraints.NotEmpty;
 
