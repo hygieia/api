@@ -23,9 +23,10 @@ import hygieia.transformer.CucumberJsonToTestCapabilityTransformer;
 import hygieia.transformer.JunitXmlToTestCapabilityTransformer;
 import hygieia.transformer.JunitXmlToTestCapabilityTransformerV2;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 import org.joda.time.format.DateTimeFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -45,6 +46,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Optional;
 
 @Service
 public class TestResultServiceImpl implements TestResultService {
@@ -58,7 +60,7 @@ public class TestResultServiceImpl implements TestResultService {
     private final CmdbService cmdbService;
     private final ApiSettings apiSettings;
 
-    private static final Logger LOGGER = Logger.getLogger(ApiTokenServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ApiTokenServiceImpl.class);
 
     @Autowired
     public TestResultServiceImpl(TestResultRepository testResultRepository,
@@ -81,18 +83,19 @@ public class TestResultServiceImpl implements TestResultService {
 
     @Override
     public DataResponse<Iterable<TestResult>> search(com.capitalone.dashboard.request.TestResultRequest request) {
-        Component component = componentRepository.findOne(request.getComponentId());
+        Optional<Component> componentOptional = componentRepository.findById(request.getComponentId());
 
-        if ((component == null) || !component.getCollectorItems().containsKey(CollectorType.Test)) {
+        if ((componentOptional.isEmpty()) || !componentOptional.get().getCollectorItems().containsKey(CollectorType.Test)) {
             return new DataResponse<>(null, 0L);
         }
+        Component component = componentOptional.get();
         List<TestResult> result = new ArrayList<>();
         validateAllCollectorItems(request, component, result);
         //One collector per Type. get(0) is hardcoded.
         if (!CollectionUtils.isEmpty(component.getCollectorItems().get(CollectorType.Test)) && (component.getCollectorItems().get(CollectorType.Test).get(0) != null)) {
-            Collector collector = collectorRepository.findOne(component.getCollectorItems().get(CollectorType.Test).get(0).getCollectorId());
-            if (collector != null) {
-                return new DataResponse<>(pruneToDepth(result, request.getDepth()), collector.getLastExecuted());
+            Optional<Collector> collectorOptional = collectorRepository.findById(component.getCollectorItems().get(CollectorType.Test).get(0).getCollectorId());
+            if (collectorOptional.isPresent()) {
+                return new DataResponse<>(pruneToDepth(result, request.getDepth()), collectorOptional.get().getLastExecuted());
             }
         }
 
@@ -119,7 +122,7 @@ public class TestResultServiceImpl implements TestResultService {
         if (request.getMax() == null) {
             result.addAll(Lists.newArrayList(testResultRepository.findAll(builder.getValue(), testResult.timestamp.desc())));
         } else {
-            PageRequest pageRequest = new PageRequest(0, request.getMax(), Sort.Direction.DESC, "timestamp");
+            PageRequest pageRequest =  PageRequest.of(0, request.getMax(), Sort.Direction.DESC, "timestamp");
             result.addAll(Lists.newArrayList(testResultRepository.findAll(builder.getValue(), pageRequest).getContent()));
         }
     }
@@ -709,7 +712,7 @@ public class TestResultServiceImpl implements TestResultService {
         }
         else if (StringUtils.isNotBlank(targetAppName) ){
             List<Cmdb> cmdb = cmdbService.configurationItemsByTypeWithFilter("", targetAppName,
-                   new PageRequest(0, 1)).getContent();
+                    PageRequest.of(0, 1)).getContent();
            if(cmdb.size() > 0){
                return cmdb.get(0).getConfigurationItem();
            }

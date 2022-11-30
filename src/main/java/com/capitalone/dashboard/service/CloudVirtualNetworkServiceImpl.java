@@ -39,7 +39,7 @@ public class CloudVirtualNetworkServiceImpl implements CloudVirtualNetworkServic
     }
 
     private CollectorItem getCollectorItem(ObjectId componentId) {
-        Component component = componentRepository.findOne(componentId);
+        Component component = componentRepository.findById(componentId).orElseGet(() -> new Component());
         if (CollectionUtils.isEmpty(component.getCollectorItems())) return null;
         return component.getCollectorItems().get(CollectorType.Cloud).get(0);
     }

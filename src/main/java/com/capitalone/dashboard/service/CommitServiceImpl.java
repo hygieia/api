@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class CommitServiceImpl implements CommitService {
@@ -55,10 +56,10 @@ public class CommitServiceImpl implements CommitService {
         BooleanBuilder builder = new BooleanBuilder();
 
         CollectorItem item = null;
-        Component component = componentRepository.findOne(request.getComponentId());
+        Optional<Component> component = componentRepository.findById(request.getComponentId());
 
-        if ( (component == null)
-                || ((item = component.getLastUpdatedCollectorItemForType(CollectorType.SCM)) == null) ) {
+        if ( (component.isEmpty())
+                || ((item = component.get().getLastUpdatedCollectorItemForType(CollectorType.SCM)) == null) ) {
             Iterable<Commit> results = new ArrayList<>();
             return new DataResponse<>(results, new Date().getTime());
         }
@@ -88,8 +89,9 @@ public class CommitServiceImpl implements CommitService {
             builder.and(commit.scmCommitLog.contains(request.getMessageContains()));
         }
 
-        Collector collector = collectorRepository.findOne(item.getCollectorId());
-        return new DataResponse<>(commitRepository.findAll(builder.getValue()), collector.getLastExecuted());
+        Optional<Collector> collector = collectorRepository.findById(item.getCollectorId());
+        long lastUpdated = collector.isPresent() ? collector.get().getLastExecuted() : 0;
+        return new DataResponse<>(commitRepository.findAll(builder.getValue()), lastUpdated);
     }
 
     @Override

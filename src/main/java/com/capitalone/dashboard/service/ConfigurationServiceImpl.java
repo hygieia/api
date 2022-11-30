@@ -32,7 +32,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 		for (Configuration config : configList) {
 			config.decryptOrEncrptInfo();
 		}
-		return (List<Configuration>) configurationRepository.save(configList);
+		return (List<Configuration>) configurationRepository.saveAll(configList);
 	}
 
 	@Override

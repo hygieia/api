@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service("pipeline")
 public class PipelineServiceImpl implements PipelineService {
@@ -80,15 +81,16 @@ public class PipelineServiceImpl implements PipelineService {
         /**
          * get the collector item and dashboard
          */
-        CollectorItem dashboardCollectorItem = collectorItemRepository.findOne(pipeline.getCollectorItemId());
+        CollectorItem dashboardCollectorItem = collectorItemRepository.findById(pipeline.getCollectorItemId()).orElseGet(() -> new CollectorItem());
         if(dashboardCollectorItem.getOptions().get("dashboardId") == null) {
             throw new HygieiaException(" Collector Item: " + dashboardCollectorItem.getId() + " is not associated to a dashboard. ", HygieiaException.BAD_DATA);
         }
         String dashboardId = (String) dashboardCollectorItem.getOptions().get("dashboardId");
-        Dashboard dashboard = dashboardRepository.findOne(new ObjectId(dashboardId));
-        if(dashboard == null) {
+        Optional<Dashboard> dashboardOptional = dashboardRepository.findById(new ObjectId(dashboardId));
+        if(dashboardOptional.isEmpty()) {
             throw new HygieiaException(" Dashboard " + dashboardId + " is not found for collectorItem: " + dashboardCollectorItem.getId() + " ", HygieiaException.BAD_DATA);
         }
+        Dashboard dashboard = dashboardOptional.get();
         PipelineResponse pipelineResponse = new PipelineResponse();
         pipelineResponse.setCollectorItemId(dashboardCollectorItem.getId());
         pipelineResponse.setProdStage(PipelineUtils.getProdStage(dashboard));

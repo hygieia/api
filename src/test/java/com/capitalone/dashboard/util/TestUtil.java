@@ -54,7 +54,7 @@ public class TestUtil {
         String json = IOUtils.toString(Resources.getResource("./collectors/coll.json"));
         List<Collector> collector = gson.fromJson(json, new TypeToken<List<Collector>>() {
         }.getType());
-        collectorRepository.save(collector);
+        collectorRepository.saveAll(collector);
     }
     public static void loadComponent(ComponentRepository componentRepository) throws IOException {
         Gson gson = GsonUtil.getGson();
@@ -66,6 +66,6 @@ public class TestUtil {
         Gson gson = GsonUtil.getGson();
         String json = IOUtils.toString(Resources.getResource("./collector_items/items.json"));
         List<CollectorItem> collectorItem = gson.fromJson(json, new TypeToken<List<CollectorItem>>(){}.getType());
-        collectorItemRepository.save(collectorItem);
+        collectorItemRepository.saveAll(collectorItem);
     }
 }

@@ -117,7 +117,7 @@ public class GitHubCommitV3 extends GitHubV3 {
         List<Commit> commitList = getCommits(commitsObjectList, repoUrl, branch, gitHubWebHookToken, senderObj);
 
         updateCollectorItemLastUpdated(repoUrl, branch);
-        commitRepository.save(commitList);
+        commitRepository.saveAll(commitList);
 
         return result;
     }
@@ -272,9 +272,16 @@ public class GitHubCommitV3 extends GitHubV3 {
     }
 
     protected void setCommitPullNumber (Commit commit) {
-        GitRequest pr = gitRequestRepository.findByScmRevisionNumberOrScmMergeEventRevisionNumber(commit.getScmRevisionNumber());
+        List<GitRequest> prs = gitRequestRepository.findAllByScmRevisionNumberOrScmMergeEventRevisionNumberOrderByTimestampDesc(commit.getScmRevisionNumber());
+        GitRequest pr = null;
+        if (CollectionUtils.isNotEmpty(prs)) {
+            pr = prs.get(0);
+        }
         if (pr == null) {
-            pr = gitRequestRepository.findByCommitScmRevisionNumber(commit.getScmRevisionNumber());
+            prs = gitRequestRepository.findAllByCommitScmRevisionNumberOrderByTimestampDesc(commit.getScmRevisionNumber());
+            if (CollectionUtils.isNotEmpty(prs)) {
+                pr = prs.get(0);
+            }
         }
         if (pr != null) {
             commit.setPullNumber(pr.getNumber());

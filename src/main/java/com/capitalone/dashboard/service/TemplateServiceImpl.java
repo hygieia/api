@@ -40,13 +40,13 @@ public class TemplateServiceImpl implements TemplateService {
 
     @Override
     public void delete(ObjectId id) {
-        templateRepository.delete(id);
+        templateRepository.deleteById(id);
     }
 
 
     @Override
     public Template get(ObjectId id) {
-        Template template = templateRepository.findOne(id);
+        Template template = templateRepository.findById(id).orElse(null);
         return template;
     }
 

@@ -73,7 +73,7 @@ public class BinaryArtifactServiceImpl implements BinaryArtifactService {
     }
     
     private Build getBuildById(ObjectId buildId){
-    	return buildRepository.findOne(buildId);
+    	return buildRepository.findById(buildId).orElse(null);
     }
 
     @Override
@@ -126,7 +126,7 @@ public class BinaryArtifactServiceImpl implements BinaryArtifactService {
 				ba.setBuildNumber(build.getNumber());
 			}
 			
-			JobCollectorItem ci = jobRepository.findOne(build.getCollectorItemId());
+			JobCollectorItem ci = jobRepository.findById(build.getCollectorItemId()).orElse(null);
 			if (ci != null) {
 				if (ba.getInstanceUrl() == null) {
 					ba.setInstanceUrl(ci.getInstanceUrl());

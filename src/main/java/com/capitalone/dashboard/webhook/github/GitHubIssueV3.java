@@ -12,10 +12,13 @@ import com.capitalone.dashboard.model.CollectorItem;
 import com.capitalone.dashboard.model.GitRequest;
 import com.capitalone.dashboard.repository.GitRequestRepository;
 import com.capitalone.dashboard.service.CollectorService;
+import org.apache.commons.collections4.CollectionUtils;
 import org.joda.time.DateTime;
 import org.json.simple.JSONObject;
 
 import java.net.MalformedURLException;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 
 public class GitHubIssueV3 extends GitHubV3 {
@@ -118,8 +121,12 @@ public class GitHubIssueV3 extends GitHubV3 {
     }
 
     protected void setCollectorItemId(GitRequest issue) throws HygieiaException, MalformedURLException {
-        GitRequest existingIssue
-                = gitRequestRepository.findByScmUrlIgnoreCaseAndScmBranchIgnoreCaseAndNumberAndRequestTypeIgnoreCase(issue.getScmUrl(), issue.getScmBranch(), issue.getNumber(), "issue");
+        List<GitRequest> issues = gitRequestRepository.findAllByScmUrlIgnoreCaseAndScmBranchIgnoreCaseAndNumberAndRequestTypeIgnoreCase(issue.getScmUrl(), issue.getScmBranch(), issue.getNumber(), "issue");
+        GitRequest existingIssue = null;
+        if (CollectionUtils.isNotEmpty(issues)) {
+            issues.sort(Comparator.comparing(GitRequest::getTimestamp).reversed());
+            existingIssue = issues.get(0);
+        }
         if (existingIssue != null) {
             issue.setId(existingIssue.getId());
             issue.setCollectorItemId(existingIssue.getCollectorItemId());

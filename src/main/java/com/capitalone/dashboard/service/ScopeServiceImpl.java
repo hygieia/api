@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ScopeServiceImpl implements ScopeService {
@@ -53,7 +54,7 @@ public class ScopeServiceImpl implements ScopeService {
 
 		for (Scope scope : scopes) {
 		    Collector collector = collectorRepository
-				.findOne(scope.getCollectorId());
+				.findById(scope.getCollectorId()).orElseGet(() -> new Collector());
 		    scope.setCollector(collector);
 		}
 
@@ -75,8 +76,11 @@ public class ScopeServiceImpl implements ScopeService {
 	@Override
 	public DataResponse<List<Scope>> getScope(ObjectId componentId,
 			String scopeId) {
-		Component component = componentRepository.findOne(componentId);
-		CollectorItem item = component.getCollectorItems()
+		Optional<Component> component = componentRepository.findById(componentId);
+		if (component.isEmpty()) {
+			new DataResponse<>(null, 0);
+		}
+		CollectorItem item = component.get().getCollectorItems()
 				.get(CollectorType.AgileTool).get(0);
 		QScopeOwner team = new QScopeOwner("team");
 		BooleanBuilder builder = new BooleanBuilder();
@@ -87,7 +91,7 @@ public class ScopeServiceImpl implements ScopeService {
 		List<Scope> scope = scopeRepository.getScopeById(scopeId);
 
 		Collector collector = collectorRepository
-				.findOne(item.getCollectorId());
+				.findById(item.getCollectorId()).orElseGet(() -> new Collector());
 
 		return new DataResponse<>(scope, collector.getLastExecuted());
 	}

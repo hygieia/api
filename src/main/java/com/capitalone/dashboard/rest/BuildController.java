@@ -12,6 +12,7 @@ import com.capitalone.dashboard.service.BuildCommonService;
 import com.capitalone.dashboard.service.BuildService;
 import com.capitalone.dashboard.util.CommonConstants;
 import org.bson.types.ObjectId;
+import org.owasp.esapi.ESAPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,7 +85,7 @@ public class BuildController {
     @RequestMapping(value = "/v3/build", method = POST,
             consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<BuildDataCreateResponse> createBuildv3(@Valid @RequestBody BuildDataCreateRequest request) throws HygieiaException {
-        request.setClientReference(httpServletRequest.getHeader(CommonConstants.HEADER_CLIENT_CORRELATION_ID));
+        request.setClientReference(ESAPI.encoder().encodeForHTML(httpServletRequest.getHeader(CommonConstants.HEADER_CLIENT_CORRELATION_ID)));
         String requester = httpServletRequest.getHeader(CommonConstants.HEADER_API_USER);
         BuildDataCreateResponse response = buildService.createV3(request);
         String response_message = "Successfully created/updated build : "+ response.getId();

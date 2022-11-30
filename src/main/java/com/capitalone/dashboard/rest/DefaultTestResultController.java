@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.owasp.esapi.ESAPI;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -93,17 +94,16 @@ public class DefaultTestResultController {
     @RequestMapping(value = "/quality/test-result", method = POST,
             consumes = "application/json;v=3", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<String> createTest(@Valid @RequestBody TestCreateRequest request) throws HygieiaException {
-        String correlation_id = httpServletRequest.getHeader(CommonConstants.HEADER_CLIENT_CORRELATION_ID);
-        String requester = httpServletRequest.getHeader(CommonConstants.HEADER_API_USER);
-        request.setClientReference(correlation_id);
+        char[] requester = httpServletRequest.getHeader(CommonConstants.HEADER_API_USER).toCharArray();
+        request.setClientReference(ESAPI.encoder().encodeForHTML(httpServletRequest.getHeader(CommonConstants.HEADER_CLIENT_CORRELATION_ID)));
         String response = testResultService.createTest(request);
 
         //temporary fix to ensure backward compatibility
         boolean success = !StringUtils.containsIgnoreCase(response, "Hygieia does not support");
         HttpStatus httpStatus = success ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST;
         String response_status = success ? "success" : "failed";
-        LOGGER.info("correlation_id=" + correlation_id + ", application=hygieia, service=api, uri=" + httpServletRequest.getRequestURI() +
-                        ", requester=" + requester + ", response_status=" + response_status + ", response_code=" + httpStatus.value() +
+        LOGGER.info("correlation_id=" + request.getClientReference() + ", application=hygieia, service=api, uri=" + httpServletRequest.getRequestURI() +
+                        ", requester=" + String.valueOf(requester) + ", response_status=" + response_status + ", response_code=" + httpStatus.value() +
                         ", response_status_message=" + response + ", test_type=" + request.getTestType() +
                         ", test_source_format="+request.getSourceFormat() + ", test_source=" + request.getSource() +
                         ", target_app_name=" + request.getTargetAppName() + ", target_service_name=" + request.getTargetServiceName() +

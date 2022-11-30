@@ -68,8 +68,8 @@ public class DeployServiceTest {
         item.setId(ObjectId.get());
         item.setCollectorId(ObjectId.get());
         component.getCollectorItems().put(CollectorType.Deployment, Collections.singletonList(item));
-        when(componentRepository.findOne(compId)).thenReturn(component);
-        when(collectorRepository.findOne(item.getCollectorId())).thenReturn(new Collector());
+        when(componentRepository.findById(compId)).thenReturn(java.util.Optional.of(component));
+        when(collectorRepository.findById(item.getCollectorId())).thenReturn(java.util.Optional.of(new Collector()));
 
         EnvironmentComponent c_qa_api = makeEnvComponent("QA", "API", "1.1", true);
         EnvironmentComponent c_qa_ui = makeEnvComponent("QA", "UI", "1.1", true);
@@ -175,9 +175,9 @@ public class DeployServiceTest {
         item2.setId(ObjectId.get());
         item2.setCollectorId(ObjectId.get());
         component.getCollectorItems().put(CollectorType.Deployment, Arrays.asList(item, item2));
-        when(componentRepository.findOne(compId)).thenReturn(component);
-        when(collectorRepository.findOne(item.getCollectorId())).thenReturn(new Collector());
-        when(collectorRepository.findOne(item2.getCollectorId())).thenReturn(new Collector());
+        when(componentRepository.findById(compId)).thenReturn(java.util.Optional.of(component));
+        when(collectorRepository.findById(item.getCollectorId())).thenReturn(java.util.Optional.of(new Collector()));
+        when(collectorRepository.findById(item2.getCollectorId())).thenReturn(java.util.Optional.of(new Collector()));
 
         EnvironmentComponent c_qa_api = makeEnvComponent("QA", "API", "1.1", true);
         EnvironmentComponent c_qa_ui = makeEnvComponent("QA", "UI", "1.1", true);
@@ -341,8 +341,8 @@ public class DeployServiceTest {
             .thenReturn(Collections.emptyList());
         Collector collector = makeCollector();
         collector.setLastExecuted(234234L);
-        when(collectorRepository.findOne(any()))
-            .thenReturn(collector);
+        when(collectorRepository.findById(any()))
+            .thenReturn(java.util.Optional.of(collector));
         DataResponse<List<Environment>> envs = deployService.getDeployStatus("appName");
         assertEquals(234234L,envs.getLastUpdated());
         assertThat(envs.getResult().isEmpty(), is(true));
@@ -397,7 +397,7 @@ public class DeployServiceTest {
 
         DeployDataCreateRequest request = makeDataCreateRequest();
 
-        when(collectorRepository.findOne(collectorId)).thenReturn(new Collector());
+        when(collectorRepository.findById(collectorId)).thenReturn(java.util.Optional.of(new Collector()));
         when(collectorService.createCollector(any(Collector.class))).thenReturn(new Collector());
         when(collectorService.createCollectorItem(any(CollectorItem.class))).thenReturn(new CollectorItem());
 
@@ -417,7 +417,7 @@ public class DeployServiceTest {
 
         DeployDataCreateRequest request = makeDataCreateRequest();
 
-        when(collectorRepository.findOne(collectorId)).thenReturn(new Collector());
+        when(collectorRepository.findById(collectorId)).thenReturn(java.util.Optional.of(new Collector()));
         when(collectorService.createCollector(any(Collector.class))).thenReturn(new Collector());
         when(collectorService.createCollectorItem(any(CollectorItem.class))).thenReturn(new CollectorItem());
 

@@ -77,7 +77,7 @@ public class CollectorItemServiceImpl implements CollectorItemService {
                         ,collectorItems.indexOf(collectorItem)+1, collectorItems.size());
 
                 logDeletedCollectorItem(collectorType, collectorItem, loggingPrefix);
-                collectorItemRepository.delete(collectorItem.getId());
+                collectorItemRepository.deleteById(collectorItem.getId());
                 count++;
             }
         }
