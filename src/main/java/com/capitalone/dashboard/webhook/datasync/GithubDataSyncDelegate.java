@@ -6,7 +6,7 @@ import com.capitalone.dashboard.model.CollectorType;
 import com.capitalone.dashboard.model.Component;
 import com.capitalone.dashboard.model.GitRequest;
 import com.capitalone.dashboard.request.DataSyncResponse;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,7 +44,11 @@ public class GithubDataSyncDelegate {
             List<GitRequest> grs = new ArrayList<>();
             List<Component> components = new ArrayList<>();
             suspects.forEach(suspect -> {
-                GitRequest gitRequest = dataSyncServiceImpl.getGitRequestRepository().findTopByCollectorItemIdOrderByTimestampDesc(suspect.getId());
+                List<GitRequest> gitRequests = dataSyncServiceImpl.getGitRequestRepository().findAllByCollectorItemIdOrderByTimestampDesc(suspect.getId());
+                GitRequest gitRequest = null;
+                if (CollectionUtils.isNotEmpty(gitRequests)) {
+                    gitRequest = gitRequests.get(0);
+                }
                 grs.add(gitRequest);
                 List<Component> cs = dataSyncServiceImpl.getComponentRepository().findBySCMCollectorItemId(suspect.getId());
                 components.addAll(cs);
@@ -55,7 +59,8 @@ public class GithubDataSyncDelegate {
                 gs.sort(Comparator.comparing(GitRequest::getTimestamp).reversed());
                 GitRequest pullRequest = gs.stream().filter(Objects::nonNull).findFirst().orElse(null);
                 if (Objects.nonNull(pullRequest)) {
-                    CollectorItem collectorItem = dataSyncServiceImpl.getCollectorItemRepository().findOne(pullRequest.getCollectorItemId());
+                    CollectorItem collectorItem = dataSyncServiceImpl.getCollectorItemRepository().findById(pullRequest.getCollectorItemId()).orElse(null);
+                    if (Objects.isNull(collectorItem)) continue;
                     List<CollectorItem> suspectCollectorItems = dataSyncUtils.deleteCollectorItems(collectorItems, collectorItem, suspects);
                     collectorItemsCount += suspectCollectorItems.size();
                     if (CollectionUtils.isEmpty(components)) continue;

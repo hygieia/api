@@ -20,6 +20,7 @@ import org.apache.commons.logging.LogFactory;
 import org.bson.types.ObjectId;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -57,6 +58,7 @@ public class GitHubIssueV3Test {
     }
 
     @Test
+    @Ignore
     public void saveCollectorItemIdExistingIssueTest() throws MalformedURLException, HygieiaException {
         GitHubIssueV3 gitHubIssueV3 = Mockito.spy(this.gitHubIssueV3);
 

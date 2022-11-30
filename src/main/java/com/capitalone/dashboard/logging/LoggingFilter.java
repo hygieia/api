@@ -9,9 +9,10 @@ import com.capitalone.dashboard.util.CommonConstants;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.log4j.Logger;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
@@ -57,7 +58,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Order(1)
 public class LoggingFilter implements Filter {
 
-    private static final Logger LOGGER = Logger.getLogger("LoggingFilter");
+    private static final Logger LOGGER = LoggerFactory.getLogger("LoggingFilter");
 
     private static final String API_USER_KEY = "apiUser";
 

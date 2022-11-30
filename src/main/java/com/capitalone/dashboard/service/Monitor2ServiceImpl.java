@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 // Hits the repositories for saving the data to mongo and retrieving it.
 @Service
@@ -36,7 +37,7 @@ public class Monitor2ServiceImpl implements Monitor2Service {
 
     @Override
     public Monitor2 get(ObjectId monitor2Id) {
-        return monitor2Repository.findOne(monitor2Id);
+        return monitor2Repository.findById(monitor2Id).orElse(null);
     }
 
     @Override
@@ -48,8 +49,9 @@ public class Monitor2ServiceImpl implements Monitor2Service {
         monitor2.setDashboardId(dashboardId);
         monitor2.setLastUpdated(System.currentTimeMillis());
 
-        Dashboard dashboard = dashboardRepository.findOne(dashboardId);
-        monitor2.setApplicationName(dashboard.getApplication().getName());
+        Optional<Dashboard> dashboard = dashboardRepository.findById(dashboardId);
+        if (dashboard.isEmpty()) return null;
+        monitor2.setApplicationName(dashboard.get().getApplication().getName());
 
         return monitor2Repository.save(monitor2);
     }

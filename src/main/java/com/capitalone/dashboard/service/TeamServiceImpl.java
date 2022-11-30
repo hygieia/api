@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TeamServiceImpl implements TeamService {
@@ -56,7 +57,7 @@ public class TeamServiceImpl implements TeamService {
 
         for (Team team : teams) {
             Collector collector = collectorRepository
-                    .findOne(team.getCollectorId());
+                    .findById(team.getCollectorId()).orElseGet(() -> new Collector());
             team.setCollector(collector);
         }
 
@@ -78,15 +79,16 @@ public class TeamServiceImpl implements TeamService {
     @Override
     public DataResponse<Team> getTeam(ObjectId componentId,
                                               String teamId) {
-        Component component = componentRepository.findOne(componentId);
-        CollectorItem item = component.getCollectorItems()
+        Optional<Component> component = componentRepository.findById(componentId);
+        if (component.isEmpty()) return new DataResponse<>(null, 0);
+        CollectorItem item = component.get().getCollectorItems()
                 .get(CollectorType.AgileTool).get(0);
 
         // Get one scope by Id
         Team team = teamRepository.findByTeamId(teamId);
 
         Collector collector = collectorRepository
-                .findOne(item.getCollectorId());
+                .findById(item.getCollectorId()).orElseGet(() -> new Collector());
 
         return new DataResponse<>(team, collector.getLastExecuted());
     }

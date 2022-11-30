@@ -42,12 +42,12 @@ public class TokenAuthenticationServiceImpl implements TokenAuthenticationServic
 	
 	@Override
 	public void addAuthentication(HttpServletResponse response, Authentication authentication) {
-		String jwt = Jwts.builder().setSubject(authentication.getName())
+		char[] jwt = Jwts.builder().setSubject(authentication.getName())
 				.claim(DETAILS_CLAIM, authentication.getDetails())
 				.claim(ROLES_CLAIM, getRoles(authentication.getAuthorities()))
 				.setExpiration(new Date(System.currentTimeMillis() + tokenAuthProperties.getExpirationTime()))
-				.signWith(SignatureAlgorithm.HS512, tokenAuthProperties.getSecret()).compact();
-		response.addHeader(AUTH_RESPONSE_HEADER, jwt);
+				.signWith(SignatureAlgorithm.HS512, tokenAuthProperties.getSecret()).compact().toCharArray();
+		response.addHeader(AUTH_RESPONSE_HEADER, String.valueOf(jwt));
 	}
 
 	@SuppressWarnings("unchecked")

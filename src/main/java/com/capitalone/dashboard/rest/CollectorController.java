@@ -169,5 +169,4 @@ public class CollectorController {
         collectorService.deletePropertiesInCollectorById(id);
         return ResponseEntity.<Void>noContent().build();
     }
-
 }

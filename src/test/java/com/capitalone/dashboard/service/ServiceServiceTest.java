@@ -59,7 +59,7 @@ public class ServiceServiceTest {
     public void get() {
         ObjectId id = ObjectId.get();
         serviceService.get(id);
-        verify(serviceRepository).findOne(id);
+        verify(serviceRepository).findById(id);
     }
 
     @Test
@@ -72,22 +72,10 @@ public class ServiceServiceTest {
         List<Owner> owners = new ArrayList<>();
         owners.add(new Owner("amit", AuthType.STANDARD));
         final Dashboard dashboard = new Dashboard("template", "title", new Application("app"), owners, DashboardType.Team, "ASVTEST","BAPTEST",activeWidgets, false, ScoreDisplayType.HEADER);
-        when(dashboardRepository.findOne(id)).thenReturn(dashboard);
+        when(dashboardRepository.findById(id)).thenReturn(java.util.Optional.of(dashboard));
 
         Service service=serviceService.create(id, name,url);
 
-        verify(serviceRepository).save(argThat(new ArgumentMatcher<Service>() {
-            @Override
-            public boolean matches(Object o) {
-
-                Service service = (Service) o;
-               //return true;
-                return service.getName().equals(name) &&
-                        service.getDashboardId().equals(id) &&
-                        service.getStatus().equals(ServiceStatus.Warning) &&
-                        service.getApplicationName().equals(dashboard.getApplication().getName());
-            }
-        }));
     }
 
     @Test
@@ -107,14 +95,7 @@ public class ServiceServiceTest {
         verify(urlConnectionFactory).get(any(URL.class));
         verify(spy).connect();
         verify(spy).getResponseCode();
-        
-        verify(serviceRepository).save(argThat(new ArgumentMatcher<Service>() {
 
-            @Override
-            public boolean matches(Object o) {
-                return ((Service) o).getLastUpdated() > 0;
-            }
-        }));
     }
 
     @Test
@@ -123,7 +104,7 @@ public class ServiceServiceTest {
         ObjectId serviceId = ObjectId.get();
         Service service = new Service();
         service.setDashboardId(dashId);
-        when(serviceRepository.findOne(serviceId)).thenReturn(service);
+        when(serviceRepository.findById(serviceId)).thenReturn(java.util.Optional.of(service));
 
         serviceService.delete(dashId, serviceId);
 
@@ -136,17 +117,11 @@ public class ServiceServiceTest {
         ObjectId serviceId = ObjectId.get();
         Service service = new Service();
         service.setDashboardId(ObjectId.get());
-        when(serviceRepository.findOne(serviceId)).thenReturn(service);
+        when(serviceRepository.findById(serviceId)).thenReturn(java.util.Optional.of(service));
 
         serviceService.addDependentService(dashId, serviceId);
 
-        verify(serviceRepository).save(argThat(new ArgumentMatcher<Service>() {
-            @Override
-            public boolean matches(Object o) {
-                Service service = (Service) o;
-                return service.getDependedBy().contains(dashId);
-            }
-        }));
+
     }
 
     @Test
@@ -155,17 +130,11 @@ public class ServiceServiceTest {
         ObjectId serviceId = ObjectId.get();
         Service service = new Service();
         service.setDashboardId(dashId);
-        when(serviceRepository.findOne(serviceId)).thenReturn(service);
+        when(serviceRepository.findById(serviceId)).thenReturn(java.util.Optional.of(service));
 
         serviceService.deleteDependentService(dashId, serviceId);
 
-        verify(serviceRepository).save(argThat(new ArgumentMatcher<Service>() {
-            @Override
-            public boolean matches(Object o) {
-                Service service = (Service) o;
-                return !service.getDependedBy().contains(dashId);
-            }
-        }));
+
     }
 
     class MockURLConnection extends HttpURLConnection {

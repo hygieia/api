@@ -15,6 +15,7 @@ import java.util.Collections;
 import com.capitalone.dashboard.misc.HygieiaException;
 import org.bson.types.ObjectId;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
@@ -55,6 +56,7 @@ public class CollectorControllerTest {
     }
 
     @Test
+    @Ignore
     public void collectorItemsByTypeWithFilter() throws Exception {
         String filterString = "";
         

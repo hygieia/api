@@ -53,7 +53,8 @@ public class StaticSecurityDataSyncDelegate {
                 cq.sort(Comparator.comparing(CodeQuality::getTimestamp).reversed());
                 CodeQuality staticSecurity = cq.stream().filter(Objects::nonNull).findFirst().orElse(null);
                 if (Objects.nonNull(staticSecurity)) {
-                    CollectorItem collectorItem = dataSyncServiceImpl.getCollectorItemRepository().findOne(staticSecurity.getCollectorItemId());
+                    CollectorItem collectorItem = dataSyncServiceImpl.getCollectorItemRepository().findById(staticSecurity.getCollectorItemId()).orElse(null);
+                    if (Objects.isNull(collectorItem)) continue;
                     List<CollectorItem> suspectCollectorItems = dataSyncUtils.deleteCollectorItems(collectorItems, collectorItem, suspects);
                     collectorItemsCount += suspectCollectorItems.size();
                     if (CollectionUtils.isEmpty(components)) continue;

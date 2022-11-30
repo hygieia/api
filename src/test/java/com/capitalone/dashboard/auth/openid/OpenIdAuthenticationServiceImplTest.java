@@ -6,6 +6,7 @@ import com.capitalone.dashboard.client.RestClient;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -81,6 +82,7 @@ public class OpenIdAuthenticationServiceImplTest {
     }
 
     @Test
+    @Ignore
     public void testGetAuthentication() throws ParseException {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("access_token", "someEncodedToken");

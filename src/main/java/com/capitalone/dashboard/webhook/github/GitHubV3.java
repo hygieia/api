@@ -28,10 +28,7 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 
 import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public abstract class GitHubV3 {
     private static final Log LOG = LogFactory.getLog(GitHubV3.class);
@@ -139,7 +136,12 @@ public abstract class GitHubV3 {
         if (col == null)
             throw new HygieiaException("Failed creating collector.", HygieiaException.COLLECTOR_CREATE_ERROR);
 
-        CollectorItem item = collectorItemRepository.findRepoByUrlAndBranch(col.getId(), repoUrl, branch);
+        List<CollectorItem> items = collectorItemRepository.findAllRepoByUrlAndBranch(col.getId(), repoUrl, branch);
+        CollectorItem item = null;
+        if (CollectionUtils.isNotEmpty(items)) {
+            items.sort(Comparator.comparing(CollectorItem::getLastUpdated).reversed());
+            item = items.get(0);
+        }
         if (item != null)
             return item;
 
@@ -270,7 +272,12 @@ public abstract class GitHubV3 {
         if (col == null)
             throw new HygieiaException("Failed creating collector.", HygieiaException.COLLECTOR_CREATE_ERROR);
 
-        CollectorItem existingItem = getCollectorItemRepository().findRepoByUrlAndBranch(col.getId(), repoUrl, branch, true);
+        List<CollectorItem> collectorItems = getCollectorItemRepository().findAllRepoByUrlAndBranchAndEnabled(col.getId(), repoUrl, branch, true);
+        CollectorItem existingItem = null;
+        if (CollectionUtils.isNotEmpty(collectorItems)) {
+            collectorItems.sort(Comparator.comparing(CollectorItem::getLastUpdated).reversed());
+            existingItem = collectorItems.get(0);
+        }
         return existingItem != null;
     }
 }

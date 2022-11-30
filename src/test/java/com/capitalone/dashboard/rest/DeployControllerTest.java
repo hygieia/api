@@ -107,7 +107,7 @@ public class DeployControllerTest {
                 .header("X-Rundeck-Notification-Execution-ID", "test")
                 .header("X-Rundeck-Notification-Trigger", "success"))
             .andExpect(status().isCreated())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     @Test
@@ -120,7 +120,7 @@ public class DeployControllerTest {
                 .header("X-Rundeck-Notification-Execution-ID", "test")
                 .header("X-Rundeck-Notification-Trigger", "success"))
                 .andExpect(status().isCreated())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
 }

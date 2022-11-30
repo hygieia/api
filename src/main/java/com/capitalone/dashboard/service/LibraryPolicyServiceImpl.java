@@ -73,7 +73,7 @@ public class LibraryPolicyServiceImpl implements LibraryPolicyService {
                 itemResult = libraryPolicyResultsRepository.findAll(builder.getValue(), policyResult.timestamp.desc());
             } else {
                 PageRequest pageRequest =
-                        new PageRequest(0, request.getMax(), Sort.Direction.DESC, "timestamp");
+                         PageRequest.of(0, request.getMax(), Sort.Direction.DESC, "timestamp");
                 itemResult = libraryPolicyResultsRepository.findAll(builder.getValue(), pageRequest).getContent();
             }
             if (itemResult != null) {
@@ -82,7 +82,7 @@ public class LibraryPolicyServiceImpl implements LibraryPolicyService {
                     results.add(lpr);
                 }
             }
-            Collector collector = collectorRepository.findOne(item.getCollectorId());
+            Collector collector = collectorRepository.findById(item.getCollectorId()).orElse(null);
             long runTime = (collector == null) ? 0 : collector.getLastExecuted();
             lastExecuted = (runTime < lastExecuted) ? runTime : lastExecuted;
         }
@@ -91,7 +91,7 @@ public class LibraryPolicyServiceImpl implements LibraryPolicyService {
 
 
     protected List<CollectorItem> getCollectorItems(LibraryPolicyRequest request) {
-        Component component = componentRepository.findOne(request.getComponentId());
+        Component component = componentRepository.findById(request.getComponentId()).orElse(null);
         return (component != null) ? component.getCollectorItems(CollectorType.LibraryPolicy) : null;
     }
 

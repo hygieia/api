@@ -1,6 +1,7 @@
 package com.capitalone.dashboard.auth.ldap;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DirContextOperations;
@@ -14,7 +15,7 @@ import java.util.Collection;
 @Configuration
 public class CustomUserDetailsContextMapper extends LdapUserDetailsMapper {
 
-    private static final Logger LOGGER = Logger.getLogger(CustomUserDetailsContextMapper.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CustomUserDetailsContextMapper.class);
 
     @Override
     public CustomUserDetails mapUserFromContext(DirContextOperations ctx, String username, Collection authorities) {

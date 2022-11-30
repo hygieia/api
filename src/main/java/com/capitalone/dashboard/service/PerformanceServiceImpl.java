@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class PerformanceServiceImpl implements PerformanceService {
@@ -90,24 +91,24 @@ public class PerformanceServiceImpl implements PerformanceService {
             result = performanceRepository.findAll(builder.getValue(), performance.timestamp.desc());
         } else {
             PageRequest pageRequest =
-                    new PageRequest(0, request.getMax(), Sort.Direction.DESC, "timestamp");
+                     PageRequest.of(0, request.getMax(), Sort.Direction.DESC, "timestamp");
             result = performanceRepository.findAll(builder.getValue(), pageRequest).getContent();
         }
-        Collector collector = collectorRepository.findOne(item.getCollectorId());
-        long lastExecuted = (collector == null) ? 0 : collector.getLastExecuted();
+        Optional<Collector> collector = collectorRepository.findById(item.getCollectorId());
+        long lastExecuted = (collector.isEmpty()) ? 0 : collector.get().getLastExecuted();
         return new DataResponse<>(result, lastExecuted);
     }
 
     protected CollectorItem getCollectorItem(PerformanceSearchRequest request) {
-        Component component = componentRepository.findOne(request.getComponentId());
-        if (component == null) {
+        Optional<Component> component = componentRepository.findById(request.getComponentId());
+        if (component.isEmpty()) {
             return null;
         }
 
         CollectorItem item = null;
         PerformanceType qualityType = MoreObjects.firstNonNull(request.getType(),
                 PerformanceType.ApplicationPerformance);
-        List<CollectorItem> items = component.getCollectorItems().get(qualityType.collectorType());
+        List<CollectorItem> items = component.get().getCollectorItems().get(qualityType.collectorType());
         if (items != null) {
             item = Iterables.getFirst(items, null);
         }
