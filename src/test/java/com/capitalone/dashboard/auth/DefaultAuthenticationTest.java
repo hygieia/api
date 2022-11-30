@@ -10,6 +10,7 @@ import com.capitalone.dashboard.config.TestAuthConfig;
 import com.capitalone.dashboard.service.AuthenticationService;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,7 @@ import com.capitalone.dashboard.repository.UserInfoRepository;
 @SpringBootTest(classes = {TestAuthConfig.class, WebMVCConfig.class, WebSecurityConfig.class})
 @WebAppConfiguration
 @Rollback(true)
+@Ignore
 public class DefaultAuthenticationTest {
 
     @Autowired

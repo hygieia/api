@@ -13,11 +13,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.Optional;
+import java.util.Objects;
 
 import com.capitalone.dashboard.misc.HygieiaException;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -65,7 +68,7 @@ import com.google.common.collect.Multimap;
  */
 @Service("dynamic-pipeline")
 public class DynamicPipelineServiceImpl implements PipelineService {
-	private static final Logger logger = Logger.getLogger(DynamicPipelineServiceImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(DynamicPipelineServiceImpl.class);
 
     private static final int PROD_COMMIT_DATE_RANGE_DEFAULT = -90;
     
@@ -145,10 +148,15 @@ public class DynamicPipelineServiceImpl implements PipelineService {
         /**
          * get the collector item and dashboard
          */
-        CollectorItem dashboardCollectorItem = collectorItemRepository.findOne(pipeline.getCollectorItemId());
-        Dashboard dashboard = dashboardRepository.findOne(new ObjectId((String)dashboardCollectorItem.getOptions().get("dashboardId")));
-        
-        PipelineResponse pipelineResponse = new PipelineResponse();
+		PipelineResponse pipelineResponse = new PipelineResponse();
+        CollectorItem dashboardCollectorItem = collectorItemRepository.findById(pipeline.getCollectorItemId()).orElse(null);
+		if (Objects.isNull(dashboardCollectorItem) || Objects.isNull(dashboardCollectorItem.getOptions().get("dashboardId"))) {
+			return pipelineResponse;
+		}
+        Optional<Dashboard> dashboardOptional = dashboardRepository.findById(new ObjectId((String)dashboardCollectorItem.getOptions().get("dashboardId")));
+		if (dashboardOptional.isEmpty()) return pipelineResponse;
+        Dashboard dashboard = dashboardOptional.get();
+
         pipelineResponse.setCollectorItemId(dashboardCollectorItem.getId());
         // Fix for 1254
 		pipelineResponse.setProdStage(PipelineUtils.getProdStage(dashboard));
@@ -202,13 +210,13 @@ public class DynamicPipelineServiceImpl implements PipelineService {
      * @return				the <b>pipeline</b> passed in
      */
     protected Pipeline buildPipeline(Pipeline pipeline, Long lowerBound, Long upperBound) {
-        CollectorItem dashboardCollectorItem = collectorItemRepository.findOne(pipeline.getCollectorItemId());
-        Dashboard dashboard = dashboardRepository.findOne(new ObjectId((String)dashboardCollectorItem.getOptions().get("dashboardId")));
-
+        CollectorItem dashboardCollectorItem = collectorItemRepository.findById(pipeline.getCollectorItemId()).orElseGet(() -> new CollectorItem());
+        Optional<Dashboard> dashboard = dashboardRepository.findById(new ObjectId((String)dashboardCollectorItem.getOptions().get("dashboardId")));
+		if (dashboard.isEmpty()) return pipeline;
         // First gather information about our dashboard
         
         // TODO how should we handle multiple components?
-        Component component = dashboard.getApplication().getComponents().iterator().next();
+        Component component = dashboard.get().getApplication().getComponents().iterator().next();
 
         // Note - since other items link to commits we always need to pull all of our commit data
         List<Commit> commits = getCommits(component, getMinStart(), upperBound);
@@ -382,7 +390,7 @@ public class DynamicPipelineServiceImpl implements PipelineService {
      * Computes the build stage of the pipeline.
      * <p>
      * Iterates over each environment to determine what commits currently exist in the current deployment.
-     * Given an {@link Environment} this method will iterate over its {@link DeploymentUnit}s until
+     * Given an {@link Environment} this method will iterate over its {DeploymentUnit}s until
      * a unit is found that corresponds to a {@link BinaryArtifact} that exists in the artifacts
      * collection. DeploymentUnits are artifacts are currently correlated by name and version.
      * If the artifact is found an attempt is made to find the last {@link Commit} that was used
@@ -892,7 +900,7 @@ public class DynamicPipelineServiceImpl implements PipelineService {
      * Gets all commits for a given pipeline stage, taking into account the mappings for environment stages
      * @param dashboard
      * @param pipeline
-     * @param stageType
+     * @param stage
      * @return
      */
     private Map<String, PipelineCommit> findCommitsForStage(Dashboard dashboard, Pipeline pipeline, PipelineStage stage) throws HygieiaException {

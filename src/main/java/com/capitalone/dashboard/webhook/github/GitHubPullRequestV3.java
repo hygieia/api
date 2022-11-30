@@ -20,7 +20,7 @@ import com.capitalone.dashboard.repository.GitRequestRepository;
 import com.capitalone.dashboard.service.CollectorService;
 import com.capitalone.dashboard.webhook.settings.GitHubWebHookSettings;
 import com.capitalone.dashboard.webhook.settings.WebHookSettings;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.logging.Log;
@@ -32,12 +32,7 @@ import org.json.simple.parser.ParseException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import java.net.MalformedURLException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 
 public class GitHubPullRequestV3 extends GitHubV3 {
     private static final Log LOG = LogFactory.getLog(GitHubPullRequestV3.class);
@@ -281,9 +276,13 @@ public class GitHubPullRequestV3 extends GitHubV3 {
     protected void setCollectorItemId (GitRequest pull) throws MalformedURLException, HygieiaException {
         long start = System.currentTimeMillis();
 
-        GitRequest existingPR
-                = gitRequestRepository.findByScmUrlIgnoreCaseAndScmBranchIgnoreCaseAndNumberAndRequestTypeIgnoreCase(pull.getScmUrl(), pull.getScmBranch(), pull.getNumber(), "pull");
-
+        List<GitRequest> gitRequests
+                = gitRequestRepository.findAllByScmUrlIgnoreCaseAndScmBranchIgnoreCaseAndNumberAndRequestTypeIgnoreCase(pull.getScmUrl(), pull.getScmBranch(), pull.getNumber(), "pull");
+        GitRequest existingPR = null;
+        if (CollectionUtils.isNotEmpty(gitRequests)) {
+            gitRequests.sort(Comparator.comparing(GitRequest::getTimestamp).reversed());
+            existingPR = gitRequests.get(0);
+        }
         if (existingPR != null) {
             pull.setId(existingPR.getId());
             pull.setCollectorItemId(existingPR.getCollectorItemId());

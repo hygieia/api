@@ -596,7 +596,7 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
         if (existingCount == 0) {
             List<Commit> newCommits = getCommits();
             newCommits.forEach(c -> c.setCollectorItemId(repo.getId()));
-            Iterable<Commit> saved = commitRepository.save(newCommits);
+            Iterable<Commit> saved = commitRepository.saveAll(newCommits);
             count = saved != null ? Lists.newArrayList(saved).size() : 0;
         } else {
             Collection<Commit> nonDupCommits = getCommits().stream()
@@ -669,7 +669,7 @@ public class GitHubSyncServiceImpl implements GitHubSyncService {
         List<Commit> orphanSaveList = orphanCommits.stream().filter(c -> !StringUtils.isEmpty(c.getPullNumber())).collect(Collectors.toList());
         orphanSaveList.forEach(c -> LOG.info("Updating orphan " + c.getScmRevisionNumber() + " " +
                 new DateTime(c.getScmCommitTimestamp()).toString("yyyy-MM-dd hh:mm:ss.SSa") + " with pull " + c.getPullNumber()));
-        commitRepository.save(orphanSaveList);
+        commitRepository.saveAll(orphanSaveList);
     }
 
 

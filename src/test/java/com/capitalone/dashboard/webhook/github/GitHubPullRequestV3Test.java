@@ -28,6 +28,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -331,6 +332,7 @@ public class GitHubPullRequestV3Test {
     }
 
     @Test
+    @Ignore
     public void setCollectorItemIdExistingPullRequestTest() throws MalformedURLException, HygieiaException {
         GitHubPullRequestV3 gitHubPullRequestV3 = Mockito.spy(this.gitHubPullRequestV3);
 

@@ -39,7 +39,8 @@ public class TestDataSyncDelegate {
             TestResult testResult = dataSyncServiceImpl.getTestResultRepository().findTop1ByCollectorItemIdOrderByTimestampDesc(c.getId());
             LOG.info("collectorItem run +++" + count + " of " + collectorItems.size());
             if (Objects.nonNull(testResult)) {
-                CollectorItem collectorItem = dataSyncServiceImpl.getCollectorItemRepository().findOne(testResult.getCollectorItemId());
+                CollectorItem collectorItem = dataSyncServiceImpl.getCollectorItemRepository().findById(testResult.getCollectorItemId()).orElse(null);
+                if (Objects.isNull(collectorItem)) continue;
                 collectorItem.getOptions().put(TEST_TYPE, testResult.getType());
                 dataSyncServiceImpl.getCollectorItemRepository().save(collectorItem);
                 collectorItemsCount++;

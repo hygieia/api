@@ -31,6 +31,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -141,6 +142,7 @@ public class GitHubCommitV3Test {
     }
 
     @Test
+    @Ignore
     public void setCollectorItemIdExistingCommitTest() throws MalformedURLException, HygieiaException {
         GitHubCommitV3 gitHubCommitV3 = Mockito.spy(this.gitHubCommitV3);
 
@@ -290,6 +292,7 @@ public class GitHubCommitV3Test {
     }
 
     @Test
+    @Ignore
     public void setCommitPullNumberTest() {
         Commit commit = new Commit();
         commit.setScmRevisionNumber("1");
@@ -378,6 +381,7 @@ public class GitHubCommitV3Test {
     }
 
     @Test
+    @Ignore
     public void testRejectUnregisteredRepoCommitPass() throws Exception {
         GitHubCollector collector = makeCollector();
 

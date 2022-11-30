@@ -42,9 +42,9 @@ public class ConfigurationServiceTest {
 		for(Configuration create : createRequest) {
 			create.setId(new ObjectId());
 		}
-		Mockito.doReturn(createRequest).when(configurationRepository).save(Matchers.anyListOf(Configuration.class));
+		Mockito.doReturn(createRequest).when(configurationRepository).saveAll(Matchers.anyListOf(Configuration.class));
 		service.insertConfigurationData(createRequest);
-		Mockito.verify(configurationRepository, times(1)).save(createRequest);
+		Mockito.verify(configurationRepository, times(1)).saveAll(createRequest);
 		
 	}
 	

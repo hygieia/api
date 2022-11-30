@@ -27,24 +27,17 @@ import com.google.common.collect.Sets;
 import com.querydsl.core.BooleanBuilder;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 import org.joda.time.LocalDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class BuildServiceImpl implements BuildService {
@@ -60,7 +53,7 @@ public class BuildServiceImpl implements BuildService {
     @Autowired
     private ApiSettings settings;
 
-    private static final Logger LOGGER = Logger.getLogger(BuildService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BuildService.class);
 
     @Autowired
     public BuildServiceImpl(BuildRepository buildRepository,
@@ -84,9 +77,9 @@ public class BuildServiceImpl implements BuildService {
     @Override
     public DataResponse<Iterable<Build>> search(BuildSearchRequest request) {
         CollectorItem item = null;
-        Component component = componentRepository.findOne(request.getComponentId());
-        if ( (component == null)
-                || ((item = component.getLastUpdatedCollectorItemForType(CollectorType.Build)) == null) ) {
+        Optional<Component> component = componentRepository.findById(request.getComponentId());
+        if ( (component.isEmpty())
+                || ((item = component.get().getLastUpdatedCollectorItemForType(CollectorType.Build)) == null) ) {
             Iterable<Build> results = new ArrayList<>();
             return new DataResponse<>(results, new Date().getTime());
         }
@@ -115,13 +108,13 @@ public class BuildServiceImpl implements BuildService {
             builder.and(build.buildStatus.in(request.getBuildStatuses()));
         }
 
-        Collector collector = collectorRepository.findOne(item.getCollectorId());
+        Collector collector = collectorRepository.findById(item.getCollectorId()).orElseGet(() -> new Collector());
 
         Iterable<Build> result;
         if (request.getMax() == null) {
             result = buildRepository.findAll(builder.getValue());
         } else {
-            PageRequest pageRequest = new PageRequest(0, request.getMax(), Sort.Direction.DESC, "timestamp");
+            PageRequest pageRequest =  PageRequest.of(0, request.getMax(), Sort.Direction.DESC, "timestamp");
             result = buildRepository.findAll(builder.getValue(), pageRequest).getContent();
         }
 
@@ -179,8 +172,9 @@ public class BuildServiceImpl implements BuildService {
         }
         response.setClientReference(clientReference);
         // Will be refactored soon
-        CollectorItem buildCollectorItem = collectorItemRepository.findOne(build.getCollectorItemId());
-        if (buildCollectorItem != null) {
+        Optional<CollectorItem> buildCollectorItemOptional = collectorItemRepository.findById(build.getCollectorItemId());
+        if (buildCollectorItemOptional.isPresent()) {
+            CollectorItem buildCollectorItem = buildCollectorItemOptional.get();
             LOGGER.info("correlation_id=" + clientReference
                     + ", build_url=" + build.getBuildUrl()
                     + ", build_duration_millis=" + build.getDuration()
@@ -241,11 +235,11 @@ public class BuildServiceImpl implements BuildService {
     private void populateDashboardId(BuildDataCreateResponse response) {
         if (response == null) return;
 
-        CollectorItem collectorItem = collectorItemRepository.findOne(response.getCollectorItemId());
-        if (collectorItem == null) return;
+        Optional<CollectorItem> collectorItem = collectorItemRepository.findById(response.getCollectorItemId());
+        if (collectorItem.isEmpty()) return;
 
         List<Dashboard> dashboards = dashboardService.getDashboardsByCollectorItems
-                (Collections.singleton(collectorItem), CollectorType.Build);
+                (Collections.singleton(collectorItem.get()), CollectorType.Build);
         /*
          * retrieve the dashboardId only if 1 dashboard is associated for this collectorItem
          * */
@@ -362,8 +356,13 @@ public class BuildServiceImpl implements BuildService {
             Collector collector = collectorRepository.findByName(settings.getGitToolName());
             if (collector == null) return;
             // check if collector item exists and is disabled.
-            CollectorItem item = collectorItemRepository.findRepoByUrlAndBranch(collector.getId(),
+            CollectorItem item = null;
+            List<CollectorItem> items = collectorItemRepository.findAllRepoByUrlAndBranch(collector.getId(),
                     repoBranch.getBranch(), repoBranch.getUrl());
+            if (CollectionUtils.isNotEmpty(items)) {
+                items.sort(Comparator.comparing(CollectorItem::getLastUpdated).reversed());
+                item = items.get(0);
+            }
             if (item == null) {
                 item = new CollectorItem();
                 item.setCollectorId(collector.getId());

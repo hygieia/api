@@ -5,7 +5,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
+import java.util.Objects;
 
+import com.capitalone.dashboard.model.Application;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +54,7 @@ public class ServiceServiceImpl implements ServiceService {
 
     @Override
     public Service get(ObjectId id) {
-        return serviceRepository.findOne(id);
+        return serviceRepository.findById(id).orElse(null);
     }
 
     @Override
@@ -63,8 +65,8 @@ public class ServiceServiceImpl implements ServiceService {
         service.setDashboardId(dashboardId);
         service.setStatus(ServiceStatus.Warning);
         service.setLastUpdated(System.currentTimeMillis());
-        Dashboard dashboard = dashboardRepository.findOne(dashboardId);
-        service.setApplicationName(dashboard.getApplication().getName());
+        Dashboard dashboard = dashboardRepository.findById(dashboardId).orElseGet(() -> new Dashboard());
+        service.setApplicationName(Objects.nonNull(dashboard.getApplication()) ? dashboard.getApplication().getName() : "");
         return serviceRepository.save(service);
     }
 
@@ -112,8 +114,8 @@ public class ServiceServiceImpl implements ServiceService {
         service.setDashboardId(dashboardId);
         service.setStatus(getServiceStatus(service.getUrl(), dashboardId));
         service.setLastUpdated(System.currentTimeMillis());
-        Dashboard dashboard = dashboardRepository.findOne(dashboardId);
-        service.setApplicationName(dashboard.getApplication().getName());
+        Dashboard dashboard = dashboardRepository.findById(dashboardId).orElseGet(() -> new Dashboard());
+        service.setApplicationName(Objects.nonNull(dashboard.getApplication()) ? dashboard.getApplication().getName() : "");
         serviceRepository.save(service);
     }
 

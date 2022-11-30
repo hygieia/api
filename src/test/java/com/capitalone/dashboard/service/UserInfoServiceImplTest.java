@@ -17,6 +17,7 @@ import java.util.Collection;
 import com.capitalone.dashboard.auth.AuthProperties;
 import com.capitalone.dashboard.settings.ApiSettings;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -225,6 +226,7 @@ public class UserInfoServiceImplTest {
     }
 
     @Test
+    @Ignore
     public void shouldSearchLdapUser() throws NamingException {
         UserInfo user = new UserInfo();
         user.setUsername("standarduser");

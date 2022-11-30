@@ -14,6 +14,7 @@ import javax.validation.Valid;
 import com.capitalone.dashboard.auth.access.Admin;
 import com.capitalone.dashboard.util.PaginationHeaderUtility;
 import org.bson.types.ObjectId;
+import org.owasp.esapi.ESAPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -487,7 +488,7 @@ public class DashboardController {
     @RequestMapping(value = "/dashboard/removeWidgetDuplicates", method = DELETE)
     public ResponseEntity<String> removeWidgetDuplicates(@RequestParam(value="title", required = false)String title,
     @RequestParam(value="dryRun", required = true, defaultValue = "true") boolean dryRun){
-        String message = dashboardService.removeWidgetDuplicatesHelper(title, dryRun);
+        String message = dashboardService.removeWidgetDuplicatesHelper(ESAPI.encoder().encodeForHTML(title), dryRun);
         return ResponseEntity.ok().body(message);
     }
 }

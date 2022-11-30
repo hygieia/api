@@ -3,7 +3,8 @@ package com.capitalone.dashboard.auth.sso;
 import java.util.ArrayList;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -16,7 +17,7 @@ import com.capitalone.dashboard.model.AuthType;
 
 @Component
 public class SsoAuthenticationUtil {
-	private static final Logger LOGGER = Logger.getLogger(SsoAuthenticationUtil.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(SsoAuthenticationUtil.class);
 	
 	@Autowired
 	private AuthProperties authProperties;

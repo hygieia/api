@@ -52,9 +52,9 @@ public class AutoDiscoveryServiceImpl implements AutoDiscoveryService {
         AutoDiscovery autoDiscovery;
         FeatureFlag featureFlag = featureFlagRepository.findByName(FeatureFlagsEnum.auto_discover.toString());
 
-        if (autoDiscoveryRepository.exists(id)) {
+        if (autoDiscoveryRepository.existsById(id)) {
             // update existing AutoDiscovery record with the status from request
-            autoDiscovery = autoDiscoveryRepository.findOne(id);
+            autoDiscovery = autoDiscoveryRepository.findById(id).get();
             updateAutoDiscovery(autoDiscovery, request, featureFlag);
             autoDiscovery.setModifiedTimestamp(System.currentTimeMillis());
         } else {

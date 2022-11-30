@@ -10,6 +10,8 @@ import com.capitalone.dashboard.model.Dashboard;
 import com.capitalone.dashboard.model.Owner;
 import com.capitalone.dashboard.repository.DashboardRepository;
 
+import java.util.Optional;
+
 @Component
 public class MethodLevelSecurityHandler {
 
@@ -21,10 +23,11 @@ public class MethodLevelSecurityHandler {
 	}
 	
 	public boolean isOwnerOfDashboard(ObjectId dashboardId) {
-		Dashboard dashboard = dashboardRepository.findOne(dashboardId);
-		if (dashboard == null) {
+		Optional<Dashboard> dashboardOptional = dashboardRepository.findById(dashboardId);
+		if (dashboardOptional.isEmpty()) {
 			return false;
 		}
+		Dashboard dashboard = dashboardOptional.get();
 		
 		String username = AuthenticationUtil.getUsernameFromContext();
 		AuthType authType = AuthenticationUtil.getAuthTypeFromContext();

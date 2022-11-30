@@ -17,7 +17,8 @@ import com.capitalone.dashboard.model.AuthType;
 import com.capitalone.dashboard.settings.ApiSettings;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.Http401AuthenticationEntryPoint;
+//import org.springframework.boot.autoconfigure.security.Http401AuthenticationEntryPoint;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -34,8 +35,12 @@ import org.springframework.security.ldap.authentication.NullLdapAuthoritiesPopul
 import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAuthenticationProvider;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 @Configuration
 @EnableWebSecurity
@@ -64,9 +69,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private ApiSettings apiSettings;
 
+    @Value("${cors.allowed-origins:}")
+    private String[] allowedOrigins;
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.headers().cacheControl();
+        if (Objects.nonNull(allowedOrigins) && allowedOrigins.length > 0) {
+            http.cors().configurationSource(corsConfigSource());
+        }
         http.csrf().disable()
                 .authorizeRequests().antMatchers("/appinfo").permitAll()
                 .antMatchers("/registerUser").permitAll()
@@ -105,8 +116,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilterBefore(apiTokenRequestFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(openIdAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(githubWebhookRequestFilter(), UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling().authenticationEntryPoint(new Http401AuthenticationEntryPoint("Authorization"));
+                .addFilterBefore(githubWebhookRequestFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
     @Override
@@ -214,5 +224,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public RestClient restClient() {
         return new RestClient(RestTemplate::new);
     }
+    private CorsConfigurationSource corsConfigSource() {
+        final CorsConfiguration corsConfig = new CorsConfiguration();
+        corsConfig.addAllowedHeader(CorsConfiguration.ALL);
+        corsConfig.addAllowedMethod(CorsConfiguration.ALL);
+        corsConfig.addExposedHeader("x-authentication-token");
+        Stream.of(allowedOrigins).forEach(
+                origin -> corsConfig.addAllowedOriginPattern(origin)
+        );
 
+        return request -> corsConfig;
+    }
 }
