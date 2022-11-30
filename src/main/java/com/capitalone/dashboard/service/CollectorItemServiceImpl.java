@@ -73,7 +73,7 @@ public class CollectorItemServiceImpl implements CollectorItemService {
         for (CollectorItem collectorItem : collectorItems) {
             if (!hasComponent(collectorType, collectorItem.getId())) {
 
-                String loggingPrefix = String.format("cleanup :: Removing (#%d of %d):: could not find a dashboard for the collectorItem with the following options:"
+                String loggingPrefix = String.format("cleanup :: Removing (#%d of %d) :: could not find a dashboard for the collectorItem with the following options:"
                         ,collectorItems.indexOf(collectorItem)+1, collectorItems.size());
 
                 logDeletedCollectorItem(collectorType, collectorItem, loggingPrefix);
