@@ -1,3 +1,5 @@
+# Due to changes in the priorities, this project is currently not being supported. The project is archived as of 6/1/2023 and will be available in a read-only state. Please note, since archival, the project is not maintained or reviewed
+
 ## Hygieia Api
 
 [![Build Status](https://api.travis-ci.com/Hygieia/api.svg?branch=master)](https://travis-ci.com/Hygieia/api?branch=master) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Hygieia_api&metric=alert_status)](https://sonarcloud.io/dashboard?id=Hygieia_api)
